@@ -26,9 +26,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [showPolylineModal, setShowPolylineModal] = useState(false);
   const [showPolylineListModal, setShowPolylineListModal] = useState(false);
+  const [showModelSelectModal, setShowModelSelectModal] = useState(false);
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [selectedPolyline, setSelectedPolyline] = useState<Polyline | null>(null);
+  const [availableModels] = useState(['model1.pth', 'model2.pth', 'model3.pth', 'advanced_model.pth']);
+  const [selectedModel, setSelectedModel] = useState('model2.pth');
 
   const handleSummarySubmit = () => {
     if (title.trim() && summary.trim()) {
@@ -96,6 +99,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
         >
           Polylines List
+        </button>
+
+        <button
+          onClick={() => setShowModelSelectModal(true)}
+          className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+        >
+          Select DQN Model
         </button>
 
         <button
@@ -374,6 +384,57 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     No polylines generated yet. Create a learning summary to generate your first polyline.
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Select DQN Model Modal */}
+      {showModelSelectModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-semibold text-gray-800">Select DQN Model</h3>
+                <button
+                  onClick={() => setShowModelSelectModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Available Models
+                  </label>
+                  <select
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  >
+                    {availableModels.map((model) => (
+                      <option key={model} value={model}>
+                        {model}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex justify-start mt-6">
+                <button
+                  onClick={() => {
+                    // Handle model selection logic here
+                    console.log('Selected model:', selectedModel);
+                    setShowModelSelectModal(false);
+                  }}
+                  className="py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Select Model
+                </button>
               </div>
             </div>
           </div>
