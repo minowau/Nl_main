@@ -33,21 +33,14 @@ function App() {
 
   const handleResourceClick = useCallback((resource: Resource) => {
     if (!resource.visited) {
-      // Mark resource as visited
       setResources(prev => prev.map(r => 
         r.id === resource.id ? { ...r, visited: true } : r
       ));
       
-      // Update agent state
       visitResource(resource);
-      
-      // Move agent to resource position
       moveAgent(resource.position);
-      
-      // Update learning path
       setLearningPath(prev => [...prev, resource.title]);
       
-      // Update learning data
       setLearningData(prev => ({
         ...prev,
         visitedResources: prev.visitedResources + 1
@@ -55,57 +48,39 @@ function App() {
     }
   }, [visitResource, moveAgent]);
 
-  const handleSummarizeLearning = useCallback(async () => {
+  const handleSummarizeLearning = useCallback(async (title: string, summary: string) => {
     setIsLoading(true);
     try {
-      const visitedResources = resources.filter(r => r.visited);
-      const summary = await generateLearningSummary(visitedResources);
-      const newPolylines = generatePolylines(visitedResources);
-      
-      setLearningData(summary);
-      setPolylines(newPolylines);
-    } catch (error) {
-      console.error('Error generating learning summary:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [resources, generateLearningSummary, generatePolylines]);
+      // Move agent to random position
+      const randomX = Math.floor(Math.random() * 20);
+      const randomY = Math.floor(Math.random() * 20);
+      moveAgent({ x: randomX, y: randomY });
 
-  const handleSummarizeLearningWithText = useCallback(async (summaryText: string) => {
-    setIsLoading(true);
-    try {
-      // Simulate processing the user's summary text
-      console.log('Processing summary:', summaryText);
-      
       const visitedResources = resources.filter(r => r.visited);
-      const summary = await generateLearningSummary(visitedResources);
+      const learningSummary = await generateLearningSummary(visitedResources);
       const newPolylines = generatePolylines(visitedResources);
       
-      // Add a new polyline based on the summary
+      // Create a new polyline based on the summary
       const summaryPolyline: Polyline = {
         id: `summary-${Date.now()}`,
-        name: `Learning Summary ${polylines.length + 1}`,
+        name: title || `Learning Summary ${polylines.length + 1}`,
         path: visitedResources.map(r => r.position),
         color: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.4)`,
         isActive: false,
-        confidence: 0.75 + Math.random() * 0.2
+        confidence: 0.75 + Math.random() * 0.2,
+        summary: summary
       };
       
-      setLearningData(summary);
+      setLearningData(learningSummary);
       setPolylines(prev => [...prev, ...newPolylines, summaryPolyline]);
-      
-      // Update agent position based on DQN recommendation
-      const dqnPath = generateDQNPath(agent.position, visitedResources);
-      if (dqnPath.length > 1) {
-        moveAgent(dqnPath[1]); // Move to next optimal position
-      }
       
     } catch (error) {
       console.error('Error processing learning summary:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [resources, generateLearningSummary, generatePolylines, polylines.length, generateDQNPath, agent.position, moveAgent]);
+  }, [resources, generateLearningSummary, generatePolylines, polylines.length, moveAgent]);
+
   const handleShowPolyline = useCallback((polylineId: string) => {
     setPolylines(prev => prev.map(p => ({
       ...p,
@@ -115,8 +90,6 @@ function App() {
 
   const handleToggleSimulation = useCallback(() => {
     if (!isSimulationRunning) {
-      // Start simulation - show mock DQN path
-      const visitedResources = resources.filter(r => r.visited);
       const dqnPath = generateDQNPath(agent.position, resources);
       
       const simulationPolyline: Polyline = {
@@ -138,14 +111,15 @@ function App() {
   }, [moveAgent]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">
-              DQN Learning Environment
+              Discrete Mathematics
             </h1>
-            <div className="hidden sm:flex items-center space-x-4 text-sm text-gray-600">
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
               <div className="flex items-center space-x-2">
                 <span>Agent Level:</span>
                 <span className="font-semibold text-blue-600">{agent.level}</span>
@@ -154,14 +128,18 @@ function App() {
                 <span>Total Reward:</span>
                 <span className="font-semibold text-green-600">{agent.totalReward}</span>
               </div>
+              <div className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                learner
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 lg:px-6 py-4 lg:py-6">
-        <div className="flex gap-6 h-[calc(100vh-200px)]">
-          {/* Left Panel - Learning Environment */}
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-6">
+        <div className="flex gap-6 h-[calc(100vh-140px)]">
+          {/* Left Panel - 2D Grid Environment */}
           <div className="flex-1">
             <GridVisualization
               resources={resources}
@@ -173,10 +151,9 @@ function App() {
           </div>
 
           {/* Right Panel - Control Center */}
-          <div className="w-96 flex-shrink-0">
+          <div className="w-80 flex-shrink-0">
             <ControlPanel
               onSummarizeLearning={handleSummarizeLearning}
-              onSummarizeLearningWithText={handleSummarizeLearningWithText}
               onShowPolyline={handleShowPolyline}
               onToggleSimulation={handleToggleSimulation}
               learningData={learningData}
@@ -189,7 +166,7 @@ function App() {
         </div>
       </main>
     </div>
-  )
+  );
 }
 
 export default App;

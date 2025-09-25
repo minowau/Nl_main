@@ -27,6 +27,7 @@ export interface Polyline {
   color: string;
   isActive: boolean;
   confidence: number;
+  summary?: string;
 }
 
 export interface LearningActivity {
