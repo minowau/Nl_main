@@ -10,8 +10,8 @@ interface GridVisualizationProps {
   onAgentMove: (position: GridPosition) => void;
 }
 
-const GRID_SIZE = 10; // Changed to 10x10 grid to match App.js
-const CELL_SIZE = 40; // Increased cell size for better visibility
+const GRID_SIZE = 20;
+const CELL_SIZE = 32;
 
 const ResourceIcon = ({ type }: { type: Resource['type'] }) => {
   const iconProps = { size: 12, className: "text-white w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" };
@@ -81,14 +81,12 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
           <div
             key={`${x}-${y}`}
             className={`
-              border border-gray-300 cursor-pointer transition-all duration-200 relative
+              w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 border border-gray-200 cursor-pointer transition-all duration-200 relative
               ${isPath ? 'bg-opacity-30' : 'bg-white hover:bg-gray-50'}
               ${isAgent ? 'ring-2 ring-red-500 ring-offset-1' : ''}
               ${resource?.visited ? 'bg-green-100' : ''}
             `}
             style={{
-              width: `${CELL_SIZE}px`,
-              height: `${CELL_SIZE}px`,
               backgroundColor: isPath ? getPathColor(x, y) : undefined,
               gridColumn: x + 1,
               gridRow: y + 1,
@@ -97,23 +95,23 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
           >
             {resource && (
               <div className={`
-                w-8 h-8 rounded-md flex items-center justify-center absolute inset-0 m-auto shadow-sm
+                w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-6 lg:h-6 rounded-md flex items-center justify-center absolute inset-0 m-auto shadow-sm
                 ${resource.visited ? 'bg-green-600 shadow-green-200' : 'bg-blue-600 shadow-blue-200'}
                 ${selectedResource?.id === resource.id ? 'ring-2 ring-yellow-400 ring-offset-1' : ''}
                 hover:scale-110 hover:shadow-lg transition-all duration-200
               `}>
-                <span className="text-white text-lg font-bold">📚</span>
+                <ResourceIcon type={resource.type} />
               </div>
             )}
             
             {isAgent && (
               <div className={`
-                w-8 h-8 bg-red-500 rounded-full absolute inset-0 m-auto shadow-lg
+                w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-6 lg:h-6 bg-red-500 rounded-full absolute inset-0 m-auto shadow-lg
                 flex items-center justify-center z-10
                 ${animatingAgent ? 'scale-110' : 'scale-100'}
                 transition-all duration-300 shadow-red-200
               `}>
-                <div className="w-3 h-3 bg-white rounded-full shadow-sm"></div>
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 md:w-2.5 md:h-2.5 lg:w-2.5 lg:h-2.5 bg-white rounded-full shadow-sm"></div>
               </div>
             )}
           </div>
@@ -146,10 +144,10 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
       
       <div className="flex-1 flex items-center justify-center overflow-auto">
         <div 
-          className="grid gap-1 border-2 border-gray-800 bg-gray-100 p-3 rounded-lg mx-auto shadow-inner"
+          className="grid gap-0 border-2 border-gray-300 bg-gray-50 p-2 rounded-lg mx-auto shadow-inner"
           style={{
-            gridTemplateColumns: `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`,
-            gridTemplateRows: `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`,
+            gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(28px, ${CELL_SIZE + 4}px))`,
+            gridTemplateRows: `repeat(${GRID_SIZE}, minmax(28px, ${CELL_SIZE + 4}px))`,
             maxWidth: '100%',
             maxHeight: '100%',
           }}
