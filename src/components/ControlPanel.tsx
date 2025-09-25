@@ -107,7 +107,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       </div>
 
       {/* Learning Timeline */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 overflow-hidden flex flex-col">
         <div className="space-y-4">
           <div className="text-sm text-gray-600 mb-4">
             <div className="flex items-center justify-between mb-2">
@@ -117,7 +117,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
 
           {/* Timeline items */}
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 max-h-64 pr-2">
             {learningPath.slice(-3).map((item, index) => (
               <div key={index} className="flex items-start space-x-3">
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
