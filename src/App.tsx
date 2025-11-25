@@ -96,7 +96,7 @@ function App() {
         id: 'dqn-simulation',
         name: 'DQN Simulation Path',
         path: dqnPath,
-        color: 'rgba(16, 185, 129, 0.6)',
+        color: 'rgba(239, 68, 68, 0.5)',
         isActive: true,
         confidence: 0.95
       };

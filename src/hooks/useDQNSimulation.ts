@@ -58,32 +58,20 @@ export const useDQNSimulation = () => {
     let currentPos = { ...startPos };
     const unvisitedResources = resources.filter(r => !agent.visitedResources.includes(r.id));
     
-    // Create a single optimal path through resources, prioritizing right and top movement
+    // Create a mock optimal path through several resources
     const targetResources = unvisitedResources
-      .sort((a, b) => {
-        // Sort by reward first, then by position (prefer right and top)
-        if (b.reward !== a.reward) return b.reward - a.reward;
-        // Prefer positions that are more to the right and top
-        const aScore = a.position.x + a.position.y;
-        const bScore = b.position.x + b.position.y;
-        return bScore - aScore;
-      })
-      .slice(0, Math.min(3, unvisitedResources.length));
+      .sort((a, b) => b.reward - a.reward)
+      .slice(0, Math.min(5, unvisitedResources.length));
     
     targetResources.forEach(resource => {
-      // Generate path to this resource with priority: right first, then up
+      // Generate path to this resource
       while (currentPos.x !== resource.position.x || currentPos.y !== resource.position.y) {
         const dx = resource.position.x - currentPos.x;
         const dy = resource.position.y - currentPos.y;
         
-        // Priority: move right first, then up
-        if (dx > 0) {
+        if (Math.abs(dx) > Math.abs(dy)) {
           currentPos.x += dx > 0 ? 1 : -1;
-        } else if (dy > 0) {
-          currentPos.y += dy > 0 ? 1 : -1;
-        } else if (dx < 0) {
-          currentPos.x += dx > 0 ? 1 : -1;
-        } else if (dy < 0) {
+        } else if (dy !== 0) {
           currentPos.y += dy > 0 ? 1 : -1;
         }
         
@@ -138,6 +126,15 @@ export const useDQNSimulation = () => {
       });
     }
 
+    // Add some mock predicted paths
+    polylines.push({
+      id: 'optimal-path-1',
+      name: 'DQN Recommended Path',
+      path: generateDQNPath(agent.position, visitedResources),
+      color: 'rgba(16, 185, 129, 0.4)',
+      isActive: false,
+      confidence: 0.92
+    });
 
     return polylines;
   }, [agent.position, generateDQNPath]);
