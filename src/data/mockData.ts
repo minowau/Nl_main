@@ -4,7 +4,7 @@ export const mockResources: Resource[] = [
   // Discrete Mathematics Resources with Subtopics
   { 
     id: '1', 
-    position: { x: 1, y: 9 }, 
+    position: { x: 0, y: 2 }, 
     type: 'book', 
     title: 'Propositional Logic', 
     subtopics: ['Truth Tables', 'Logical Operators', 'Tautologies', 'Contradictions', 'Logical Equivalence'],
@@ -14,7 +14,7 @@ export const mockResources: Resource[] = [
   },
   { 
     id: '2', 
-    position: { x: 3, y: 8 }, 
+    position: { x: 2, y: 1 }, 
     type: 'video', 
     title: 'Predicate Logic', 
     subtopics: ['Quantifiers', 'Predicates', 'Domain of Discourse', 'Nested Quantifiers', 'Logical Inference'],
@@ -24,7 +24,7 @@ export const mockResources: Resource[] = [
   },
   { 
     id: '3', 
-    position: { x: 5, y: 7 }, 
+    position: { x: 1, y: 4 }, 
     type: 'quiz', 
     title: 'Proof Strategies', 
     subtopics: ['Direct Proof', 'Proof by Contradiction', 'Mathematical Induction', 'Strong Induction', 'Proof by Cases'],
@@ -34,7 +34,7 @@ export const mockResources: Resource[] = [
   },
   { 
     id: '4', 
-    position: { x: 7, y: 6 }, 
+    position: { x: 4, y: 3 }, 
     type: 'assignment', 
     title: 'Sets and Relations', 
     subtopics: ['Set Operations', 'Venn Diagrams', 'Binary Relations', 'Reflexive Relations', 'Transitive Relations'],
@@ -44,7 +44,7 @@ export const mockResources: Resource[] = [
   },
   { 
     id: '5', 
-    position: { x: 2, y: 6 }, 
+    position: { x: 3, y: 5 }, 
     type: 'book', 
     title: 'Equivalence Relations', 
     subtopics: ['Equivalence Classes', 'Partitions', 'Quotient Sets', 'Congruence Relations', 'Modular Arithmetic'],
@@ -54,7 +54,7 @@ export const mockResources: Resource[] = [
   },
   { 
     id: '6', 
-    position: { x: 4, y: 5 }, 
+    position: { x: 5, y: 4 }, 
     type: 'video', 
     title: 'Partial Orderings', 
     subtopics: ['Posets', 'Hasse Diagrams', 'Maximal Elements', 'Minimal Elements', 'Lattices'],
@@ -64,7 +64,7 @@ export const mockResources: Resource[] = [
   },
   { 
     id: '7', 
-    position: { x: 6, y: 4 }, 
+    position: { x: 6, y: 6 }, 
     type: 'quiz', 
     title: 'Functions', 
     subtopics: ['Injective Functions', 'Surjective Functions', 'Bijective Functions', 'Inverse Functions', 'Composition'],
@@ -74,7 +74,7 @@ export const mockResources: Resource[] = [
   },
   { 
     id: '8', 
-    position: { x: 8, y: 3 }, 
+    position: { x: 7, y: 5 }, 
     type: 'book', 
     title: 'Combinatorics', 
     subtopics: ['Permutations', 'Combinations', 'Pigeonhole Principle', 'Inclusion-Exclusion', 'Generating Functions'],
@@ -84,7 +84,7 @@ export const mockResources: Resource[] = [
   },
   { 
     id: '9', 
-    position: { x: 9, y: 2 }, 
+    position: { x: 8, y: 7 }, 
     type: 'assignment', 
     title: 'Graph Theory', 
     subtopics: ['Graph Representation', 'Eulerian Paths', 'Hamiltonian Cycles', 'Tree Algorithms', 'Graph Coloring'],
@@ -94,7 +94,7 @@ export const mockResources: Resource[] = [
   },
   { 
     id: '10', 
-    position: { x: 1, y: 4 }, 
+    position: { x: 6, y: 8 }, 
     type: 'video', 
     title: 'Number Theory', 
     subtopics: ['Prime Numbers', 'GCD and LCM', 'Euclidean Algorithm', 'Modular Arithmetic', 'Chinese Remainder Theorem'],
@@ -104,7 +104,7 @@ export const mockResources: Resource[] = [
   },
   { 
     id: '11', 
-    position: { x: 3, y: 2 }, 
+    position: { x: 8, y: 8 }, 
     type: 'quiz', 
     title: 'Abstract Algebra', 
     subtopics: ['Groups', 'Rings', 'Fields', 'Homomorphisms', 'Isomorphisms'],
@@ -114,7 +114,7 @@ export const mockResources: Resource[] = [
   },
   { 
     id: '12', 
-    position: { x: 5, y: 1 }, 
+    position: { x: 9, y: 9 }, 
     type: 'book', 
     title: 'Discrete Probability', 
     subtopics: ['Sample Spaces', 'Conditional Probability', 'Bayes Theorem', 'Random Variables', 'Expected Value'],
