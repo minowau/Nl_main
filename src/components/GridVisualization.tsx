@@ -159,6 +159,19 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
       {selectedResource && (
         <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200 shadow-sm">
           <h3 className="font-semibold text-blue-900 text-sm">{selectedResource.title}</h3>
+          <div className="mt-2">
+            <p className="text-xs text-blue-700 font-medium mb-1">Subtopics:</p>
+            <div className="flex flex-wrap gap-1">
+              {selectedResource.subtopics.map((subtopic, index) => (
+                <span 
+                  key={index}
+                  className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                >
+                  {subtopic}
+                </span>
+              ))}
+            </div>
+          </div>
           <p className="text-xs text-blue-700 mt-1">
             Type: {selectedResource.type} | Difficulty: {selectedResource.difficulty}/5 | 
             Reward: {selectedResource.reward} points

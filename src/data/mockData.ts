@@ -1,40 +1,127 @@
 import { Resource, LearningMap, LearningActivity } from '../types';
 
 export const mockResources: Resource[] = [
-  // Beginner resources
-  { id: '1', position: { x: 2, y: 18 }, type: 'book', title: 'Introduction to Programming', visited: false, difficulty: 1, reward: 50 },
-  { id: '2', position: { x: 4, y: 16 }, type: 'video', title: 'Basic Algorithms', visited: false, difficulty: 1, reward: 40 },
-  { id: '3', position: { x: 6, y: 14 }, type: 'quiz', title: 'Variables & Data Types', visited: false, difficulty: 1, reward: 30 },
-  
-  // Intermediate resources
-  { id: '4', position: { x: 8, y: 12 }, type: 'assignment', title: 'Build a Calculator', visited: false, difficulty: 2, reward: 80 },
-  { id: '5', position: { x: 10, y: 10 }, type: 'book', title: 'Object-Oriented Programming', visited: false, difficulty: 3, reward: 100 },
-  { id: '6', position: { x: 12, y: 8 }, type: 'video', title: 'Design Patterns', visited: false, difficulty: 3, reward: 90 },
-  { id: '7', position: { x: 14, y: 6 }, type: 'quiz', title: 'Advanced Data Structures', visited: false, difficulty: 4, reward: 120 },
-  
-  // Advanced resources - clustered area
-  { id: '8', position: { x: 13, y: 4 }, type: 'book', title: 'Machine Learning Basics', visited: false, difficulty: 4, reward: 150 },
-  { id: '9', position: { x: 14, y: 4 }, type: 'video', title: 'Neural Networks', visited: false, difficulty: 5, reward: 180 },
-  { id: '10', position: { x: 15, y: 4 }, type: 'assignment', title: 'Build a CNN', visited: false, difficulty: 5, reward: 200 },
-  { id: '11', position: { x: 13, y: 3 }, type: 'quiz', title: 'Deep Learning Assessment', visited: false, difficulty: 5, reward: 160 },
-  { id: '12', position: { x: 14, y: 3 }, type: 'book', title: 'Advanced ML Techniques', visited: false, difficulty: 5, reward: 190 },
-  { id: '13', position: { x: 15, y: 3 }, type: 'video', title: 'Reinforcement Learning', visited: false, difficulty: 5, reward: 220 },
-  { id: '14', position: { x: 16, y: 4 }, type: 'assignment', title: 'DQN Implementation', visited: false, difficulty: 5, reward: 250 },
-  { id: '15', position: { x: 16, y: 3 }, type: 'quiz', title: 'AI Ethics & Safety', visited: false, difficulty: 4, reward: 140 },
-  
-  // Scattered intermediate resources
-  { id: '16', position: { x: 11, y: 6 }, type: 'book', title: 'Database Design', visited: false, difficulty: 3, reward: 110 },
-  { id: '17', position: { x: 13, y: 8 }, type: 'video', title: 'Web Development', visited: false, difficulty: 2, reward: 70 },
-  { id: '18', position: { x: 15, y: 10 }, type: 'assignment', title: 'Full-Stack Project', visited: false, difficulty: 4, reward: 170 },
-  { id: '19', position: { x: 17, y: 12 }, type: 'quiz', title: 'System Design', visited: false, difficulty: 4, reward: 130 },
-  { id: '20', position: { x: 18, y: 14 }, type: 'book', title: 'Cloud Computing', visited: false, difficulty: 3, reward: 100 },
-  
-  // Additional scattered resources
-  { id: '21', position: { x: 9, y: 16 }, type: 'video', title: 'Git & Version Control', visited: false, difficulty: 2, reward: 60 },
-  { id: '22', position: { x: 7, y: 18 }, type: 'quiz', title: 'Testing & Debugging', visited: false, difficulty: 2, reward: 50 },
-  { id: '23', position: { x: 1, y: 16 }, type: 'book', title: 'Programming Fundamentals', visited: false, difficulty: 1, reward: 45 },
-  { id: '24', position: { x: 3, y: 14 }, type: 'assignment', title: 'First Program', visited: false, difficulty: 1, reward: 35 },
-  { id: '25', position: { x: 19, y: 16 }, type: 'video', title: 'Career in Tech', visited: false, difficulty: 1, reward: 40 }
+  // Discrete Mathematics Resources with Subtopics
+  { 
+    id: '1', 
+    position: { x: 0, y: 2 }, 
+    type: 'book', 
+    title: 'Propositional Logic', 
+    subtopics: ['Truth Tables', 'Logical Operators', 'Tautologies', 'Contradictions', 'Logical Equivalence'],
+    visited: false, 
+    difficulty: 1, 
+    reward: 50 
+  },
+  { 
+    id: '2', 
+    position: { x: 2, y: 1 }, 
+    type: 'video', 
+    title: 'Predicate Logic', 
+    subtopics: ['Quantifiers', 'Predicates', 'Domain of Discourse', 'Nested Quantifiers', 'Logical Inference'],
+    visited: false, 
+    difficulty: 2, 
+    reward: 60 
+  },
+  { 
+    id: '3', 
+    position: { x: 1, y: 4 }, 
+    type: 'quiz', 
+    title: 'Proof Strategies', 
+    subtopics: ['Direct Proof', 'Proof by Contradiction', 'Mathematical Induction', 'Strong Induction', 'Proof by Cases'],
+    visited: false, 
+    difficulty: 3, 
+    reward: 80 
+  },
+  { 
+    id: '4', 
+    position: { x: 4, y: 3 }, 
+    type: 'assignment', 
+    title: 'Sets and Relations', 
+    subtopics: ['Set Operations', 'Venn Diagrams', 'Binary Relations', 'Reflexive Relations', 'Transitive Relations'],
+    visited: false, 
+    difficulty: 2, 
+    reward: 70 
+  },
+  { 
+    id: '5', 
+    position: { x: 3, y: 5 }, 
+    type: 'book', 
+    title: 'Equivalence Relations', 
+    subtopics: ['Equivalence Classes', 'Partitions', 'Quotient Sets', 'Congruence Relations', 'Modular Arithmetic'],
+    visited: false, 
+    difficulty: 3, 
+    reward: 90 
+  },
+  { 
+    id: '6', 
+    position: { x: 5, y: 4 }, 
+    type: 'video', 
+    title: 'Partial Orderings', 
+    subtopics: ['Posets', 'Hasse Diagrams', 'Maximal Elements', 'Minimal Elements', 'Lattices'],
+    visited: false, 
+    difficulty: 4, 
+    reward: 100 
+  },
+  { 
+    id: '7', 
+    position: { x: 6, y: 6 }, 
+    type: 'quiz', 
+    title: 'Functions', 
+    subtopics: ['Injective Functions', 'Surjective Functions', 'Bijective Functions', 'Inverse Functions', 'Composition'],
+    visited: false, 
+    difficulty: 3, 
+    reward: 85 
+  },
+  { 
+    id: '8', 
+    position: { x: 7, y: 5 }, 
+    type: 'book', 
+    title: 'Combinatorics', 
+    subtopics: ['Permutations', 'Combinations', 'Pigeonhole Principle', 'Inclusion-Exclusion', 'Generating Functions'],
+    visited: false, 
+    difficulty: 4, 
+    reward: 120 
+  },
+  { 
+    id: '9', 
+    position: { x: 8, y: 7 }, 
+    type: 'assignment', 
+    title: 'Graph Theory', 
+    subtopics: ['Graph Representation', 'Eulerian Paths', 'Hamiltonian Cycles', 'Tree Algorithms', 'Graph Coloring'],
+    visited: false, 
+    difficulty: 5, 
+    reward: 150 
+  },
+  { 
+    id: '10', 
+    position: { x: 6, y: 8 }, 
+    type: 'video', 
+    title: 'Number Theory', 
+    subtopics: ['Prime Numbers', 'GCD and LCM', 'Euclidean Algorithm', 'Modular Arithmetic', 'Chinese Remainder Theorem'],
+    visited: false, 
+    difficulty: 4, 
+    reward: 110 
+  },
+  { 
+    id: '11', 
+    position: { x: 8, y: 8 }, 
+    type: 'quiz', 
+    title: 'Abstract Algebra', 
+    subtopics: ['Groups', 'Rings', 'Fields', 'Homomorphisms', 'Isomorphisms'],
+    visited: false, 
+    difficulty: 5, 
+    reward: 140 
+  },
+  { 
+    id: '12', 
+    position: { x: 9, y: 9 }, 
+    type: 'book', 
+    title: 'Discrete Probability', 
+    subtopics: ['Sample Spaces', 'Conditional Probability', 'Bayes Theorem', 'Random Variables', 'Expected Value'],
+    visited: false, 
+    difficulty: 4, 
+    reward: 130 
+  }
 ];
 
 const learningActivities: LearningActivity[] = [
