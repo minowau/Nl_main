@@ -8,6 +8,7 @@ export interface Resource {
   position: GridPosition;
   type: 'book' | 'quiz' | 'video' | 'assignment';
   title: string;
+  subtopics: string[];
   visited: boolean;
   difficulty: number;
   reward: number;
