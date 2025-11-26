@@ -52,35 +52,55 @@ export const useDQNSimulation = () => {
     return { x: Math.max(0, Math.min(19, newX)), y: Math.max(0, Math.min(19, newY)) };
   }, [agent.visitedResources]);
 
-  // Generate mock DQN path for simulation
-  const generateDQNPath = useCallback((startPos: GridPosition, resources: Resource[]): GridPosition[] => {
-    const path: GridPosition[] = [startPos];
-    let currentPos = { ...startPos };
-    const unvisitedResources = resources.filter(r => !agent.visitedResources.includes(r.id));
-    
-    // Create a mock optimal path through several resources
-    const targetResources = unvisitedResources
-      .sort((a, b) => b.reward - a.reward)
-      .slice(0, Math.min(5, unvisitedResources.length));
-    
-    targetResources.forEach(resource => {
-      // Generate path to this resource
-      while (currentPos.x !== resource.position.x || currentPos.y !== resource.position.y) {
-        const dx = resource.position.x - currentPos.x;
-        const dy = resource.position.y - currentPos.y;
-        
-        if (Math.abs(dx) > Math.abs(dy)) {
-          currentPos.x += dx > 0 ? 1 : -1;
-        } else if (dy !== 0) {
-          currentPos.y += dy > 0 ? 1 : -1;
-        }
-        
-        path.push({ ...currentPos });
+  const generateDQNPath = useCallback((startPos: GridPosition, resources: Resource[]): { path: GridPosition[], finalResource: Resource | null, totalReward: number } => {
+    const unvisitedResources = resources.filter(r => !r.visited);
+
+    if (unvisitedResources.length === 0) {
+      return { path: [startPos], finalResource: null, totalReward: 0 };
+    }
+
+    let bestPath: GridPosition[] = [];
+    let bestResource: Resource | null = null;
+    let bestScore = -Infinity;
+
+    unvisitedResources.forEach(resource => {
+      const distance = Math.abs(resource.position.x - startPos.x) +
+                      Math.abs(resource.position.y - startPos.y);
+
+      const score = resource.reward - (distance * 0.5);
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestResource = resource;
       }
     });
-    
-    return path;
-  }, [agent.visitedResources]);
+
+    if (!bestResource) {
+      return { path: [startPos], finalResource: null, totalReward: 0 };
+    }
+
+    const path: GridPosition[] = [startPos];
+    let currentPos = { ...startPos };
+
+    while (currentPos.x !== bestResource.position.x || currentPos.y !== bestResource.position.y) {
+      const dx = bestResource.position.x - currentPos.x;
+      const dy = bestResource.position.y - currentPos.y;
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        currentPos = { ...currentPos, x: currentPos.x + (dx > 0 ? 1 : -1) };
+      } else if (dy !== 0) {
+        currentPos = { ...currentPos, y: currentPos.y + (dy > 0 ? 1 : -1) };
+      }
+
+      path.push({ ...currentPos });
+    }
+
+    return {
+      path,
+      finalResource: bestResource,
+      totalReward: bestResource.reward
+    };
+  }, []);
   // Simulate BERT analysis for learning summary
   const generateLearningSummary = useCallback(async (visitedResources: Resource[]): Promise<LearningSummary> => {
     return new Promise((resolve) => {

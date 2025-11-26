@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Resource, Agent, GridPosition, Polyline } from '../types';
-import { BookOpen, Play, FileText, PenTool } from 'lucide-react';
+import { BookOpen, Play, FileText, PenTool, RefreshCw } from 'lucide-react';
 
 interface GridVisualizationProps {
   resources: Resource[];
@@ -8,6 +8,9 @@ interface GridVisualizationProps {
   polylines: Polyline[];
   onResourceClick: (resource: Resource) => void;
   onAgentMove: (position: GridPosition) => void;
+  isSimulationRunning: boolean;
+  dqnPathInfo: { resource: Resource | null, reward: number } | null;
+  onRefreshDQNPath: () => void;
 }
 
 const GRID_SIZE = 20;
@@ -35,7 +38,10 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   agent,
   polylines,
   onResourceClick,
-  onAgentMove
+  onAgentMove,
+  isSimulationRunning,
+  dqnPathInfo,
+  onRefreshDQNPath
 }) => {
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [animatingAgent, setAnimatingAgent] = useState(false);
@@ -125,7 +131,19 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   return (
     <div className="bg-white p-4 lg:p-6 rounded-lg shadow-lg h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-base lg:text-lg font-semibold text-gray-800">Learning Environment</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-base lg:text-lg font-semibold text-gray-800">Learning Environment</h2>
+          {isSimulationRunning && (
+            <button
+              onClick={onRefreshDQNPath}
+              className="flex items-center gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition-colors shadow-sm"
+              title="Refresh DQN Path"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Refresh Path</span>
+            </button>
+          )}
+        </div>
         <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
           <div className="flex items-center space-x-1">
             <div className="w-3 h-3 bg-red-500 rounded-full shadow-sm"></div>
@@ -141,6 +159,23 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
           </div>
         </div>
       </div>
+
+      {isSimulationRunning && dqnPathInfo?.resource && (
+        <div className="mb-4 p-3 bg-red-50 border-2 border-red-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-red-900">DQN Optimal Target</h3>
+              <p className="text-xs text-red-700 mt-1">
+                {dqnPathInfo.resource.title}
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-lg font-bold text-red-600">{dqnPathInfo.reward}</div>
+              <div className="text-xs text-red-700">reward</div>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="flex-1 flex items-center justify-center overflow-auto">
         <div 

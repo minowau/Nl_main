@@ -22,6 +22,7 @@ function App() {
   const [resources, setResources] = useState<Resource[]>(mockResources);
   const [polylines, setPolylines] = useState<Polyline[]>([]);
   const [learningPath, setLearningPath] = useState<string[]>([]);
+  const [dqnPathInfo, setDqnPathInfo] = useState<{ resource: Resource | null, reward: number } | null>(null);
   const [learningData, setLearningData] = useState<LearningSummary>({
     totalResources: mockResources.length,
     visitedResources: 0,
@@ -90,21 +91,49 @@ function App() {
 
   const handleToggleSimulation = useCallback(() => {
     if (!isSimulationRunning) {
-      const dqnPath = generateDQNPath(agent.position, resources);
-      
+      const dqnResult = generateDQNPath(agent.position, resources);
+
       const simulationPolyline: Polyline = {
         id: 'dqn-simulation',
-        name: 'DQN Simulation Path',
-        path: dqnPath,
+        name: 'DQN Optimal Path',
+        path: dqnResult.path,
         color: 'rgba(239, 68, 68, 0.5)',
         isActive: true,
         confidence: 0.95
       };
-      
+
       setPolylines(prev => [...prev.filter(p => p.id !== 'dqn-simulation'), simulationPolyline]);
+      setDqnPathInfo({
+        resource: dqnResult.finalResource,
+        reward: dqnResult.totalReward
+      });
+    } else {
+      setPolylines(prev => prev.filter(p => p.id !== 'dqn-simulation'));
+      setDqnPathInfo(null);
     }
     setIsSimulationRunning(!isSimulationRunning);
   }, [isSimulationRunning, setIsSimulationRunning, generateDQNPath, agent.position, resources]);
+
+  const handleRefreshDQNPath = useCallback(() => {
+    if (isSimulationRunning) {
+      const dqnResult = generateDQNPath(agent.position, resources);
+
+      const simulationPolyline: Polyline = {
+        id: 'dqn-simulation',
+        name: 'DQN Optimal Path',
+        path: dqnResult.path,
+        color: 'rgba(239, 68, 68, 0.5)',
+        isActive: true,
+        confidence: 0.95
+      };
+
+      setPolylines(prev => [...prev.filter(p => p.id !== 'dqn-simulation'), simulationPolyline]);
+      setDqnPathInfo({
+        resource: dqnResult.finalResource,
+        reward: dqnResult.totalReward
+      });
+    }
+  }, [isSimulationRunning, generateDQNPath, agent.position, resources]);
 
   const handleAgentMove = useCallback((position: { x: number; y: number }) => {
     moveAgent(position);
@@ -147,6 +176,9 @@ function App() {
               polylines={polylines}
               onResourceClick={handleResourceClick}
               onAgentMove={handleAgentMove}
+              isSimulationRunning={isSimulationRunning}
+              dqnPathInfo={dqnPathInfo}
+              onRefreshDQNPath={handleRefreshDQNPath}
             />
           </div>
 
