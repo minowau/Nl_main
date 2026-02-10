@@ -1,0 +1,875 @@
+{
+    "users": [],
+    "learning_sessions": {
+        "default": {
+            "position": {
+                "x": 18,
+                "y": 7
+            },
+            "level": 4,
+            "totalReward": 650,
+            "visitedResources": [
+                "18",
+                "13",
+                "3",
+                "16",
+                "17",
+                "1",
+                "10",
+                "8",
+                "11",
+                "6",
+                "15",
+                "2",
+                "7"
+            ]
+        }
+    },
+    "polylines": {
+        "polyline_0": {
+            "id": "polyline_0",
+            "name": "hi",
+            "path": [],
+            "color": "rgba(124, 111, 197, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "hiiii"
+        },
+        "polyline_1": {
+            "id": "polyline_1",
+            "name": "HI",
+            "path": [],
+            "color": "rgba(233, 165, 150, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "HII"
+        },
+        "polyline_2": {
+            "id": "polyline_2",
+            "name": "Hey",
+            "path": [],
+            "color": "rgba(209, 233, 75, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "Helloo",
+            "keywords_found": [],
+            "module_scores": [
+                0.5484583564915045,
+                0.46220741047368424,
+                0.46279993894614624,
+                0.4622026423083014,
+                0.48167479720554324,
+                0.5185239739531438,
+                0.47663528950961,
+                0.5005995736735275,
+                0.45502656055000007,
+                0.4580010883357644,
+                0.45637659612686454,
+                0.5112952634097881,
+                0.5216384772372223,
+                0.5355484607706302,
+                0.5135652915368838,
+                0.46179487959519183,
+                0.5207722130936243,
+                0.49757484056057777
+            ]
+        },
+        "polyline_3": {
+            "id": "polyline_3",
+            "name": "finetuning",
+            "path": [],
+            "color": "rgba(121, 211, 92, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "I studied fine tuning and RAG",
+            "keywords_found": [
+                "Fine tuning LLM",
+                "Retrieval Augmented Generation"
+            ],
+            "module_scores": [
+                0.49860121134816787,
+                0.4500395442873277,
+                0.471618804424644,
+                0.6583558195456436,
+                0.4580364051366949,
+                0.5067814340383607,
+                0.5267787555517994,
+                0.45159593526792297,
+                0.5354930330453695,
+                0.4633757771977945,
+                0.7440110046152995,
+                0.5165231405422576,
+                0.5131620206629675,
+                0.5382607288711271,
+                0.548322797358488,
+                0.4885586287263669,
+                0.5297033776671244,
+                0.5269894013550447
+            ]
+        },
+        "polyline_4": {
+            "id": "polyline_4",
+            "name": "main",
+            "path": [],
+            "color": "rgba(213, 61, 92, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "I studied fine tuning and RAG",
+            "keywords_found": [
+                "Fine tuning LLM",
+                "Retrieval Augmented Generation"
+            ],
+            "module_scores": [
+                0.15775318443775177,
+                0.20897206664085388,
+                0.20236347615718842,
+                0.6945049047470093,
+                0.4463333487510681,
+                0.12979882955551147,
+                0.4455224275588989,
+                0.1599089652299881,
+                0.10129339247941971,
+                0.19735002517700195,
+                0.412064354121685,
+                0.15838992595672607,
+                0.1395527720451355,
+                0.06164519488811493,
+                0.19151057302951813,
+                0.05123066157102585,
+                0.046856656670570374,
+                0.09634523838758469
+            ]
+        },
+        "polyline_5": {
+            "id": "polyline_5",
+            "name": "Test Summary",
+            "path": [
+                {
+                    "x": 7,
+                    "y": 0
+                },
+                {
+                    "x": 14,
+                    "y": 1
+                }
+            ],
+            "color": "rgba(63, 91, 199, 0.4)",
+            "isActive": true,
+            "confidence": 0.73,
+            "summary": "I learned about BERT and Transformers.",
+            "keywords_found": [],
+            "module_scores": [
+                0.41952282190322876,
+                0.4550943672657013,
+                0.38158124685287476,
+                0.22420939803123474,
+                0.21500593423843384,
+                0.2883783280849457,
+                0.08223940432071686,
+                0.2931893765926361,
+                0.12915080785751343,
+                0.09058266133069992,
+                0.19895221292972565,
+                0.10976134240627289,
+                0.10291370004415512,
+                0.17602239549160004,
+                0.28020530939102173,
+                0.2765440344810486,
+                0.153752401471138,
+                0.1386902928352356
+            ]
+        },
+        "polyline_6": {
+            "id": "polyline_6",
+            "name": "work",
+            "path": [
+                {
+                    "x": 9,
+                    "y": 18
+                },
+                {
+                    "x": 1,
+                    "y": 15
+                },
+                {
+                    "x": 6,
+                    "y": 19
+                },
+                {
+                    "x": 7,
+                    "y": 19
+                }
+            ],
+            "color": "rgba(181, 126, 100, 0.4)",
+            "isActive": true,
+            "confidence": 0.76,
+            "summary": "I have learned a lot about rag and preprocessing it was pretty good understanding.",
+            "keywords_found": [
+                "Retrieval Augmented Generation"
+            ],
+            "module_scores": [
+                0.2574118673801422,
+                0.2806059718132019,
+                0.18621119856834412,
+                0.10942331701517105,
+                0.26856184005737305,
+                0.3550261855125427,
+                0.07388029992580414,
+                0.3707934617996216,
+                0.1708703488111496,
+                0.2050769031047821,
+                0.5013039708137512,
+                0.1576768010854721,
+                0.10632561147212982,
+                0.12748579680919647,
+                0.19742925465106964,
+                0.05362231656908989,
+                0.07185838371515274,
+                0.055319223552942276
+            ]
+        },
+        "polyline_7": {
+            "id": "polyline_7",
+            "name": "Hey",
+            "path": [],
+            "color": "rgba(102, 156, 166, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "heyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.017389550805091858,
+                0.10327564924955368,
+                0.09360406547784805,
+                0.03690618276596069,
+                0.04519070312380791,
+                0.038354936987161636,
+                0.07477933913469315,
+                0.005562630016356707,
+                0.0,
+                0.0,
+                0.0,
+                0.05210745334625244,
+                0.002015892416238785,
+                0.07473935186862946,
+                0.0972217470407486,
+                0.0,
+                0.05581950396299362
+            ]
+        },
+        "polyline_8": {
+            "id": "polyline_8",
+            "name": "DQN Learning",
+            "path": [
+                {
+                    "x": 5,
+                    "y": 2
+                },
+                {
+                    "x": 9,
+                    "y": 10
+                }
+            ],
+            "color": "rgba(228, 246, 240, 0.4)",
+            "isActive": true,
+            "confidence": 0.73,
+            "summary": "I studied Policy learning using DQN and reinforcement learning agents.",
+            "keywords_found": [
+                "Agentic AI",
+                "Policy learning using DQN"
+            ],
+            "module_scores": [
+                0.3080591907103858,
+                0.32459903260072087,
+                0.10327564924955368,
+                0.3576170255740485,
+                0.03690618276596069,
+                0.5689638306697211,
+                0.038354936987161636,
+                0.7058747758467994,
+                0.005562630016356707,
+                0.0,
+                0.0,
+                0.0,
+                0.05210745334625244,
+                1.0,
+                0.07473935186862946,
+                0.0972217470407486,
+                1.0,
+                1.0
+            ]
+        },
+        "polyline_9": {
+            "id": "polyline_9",
+            "name": "heyyy",
+            "path": [],
+            "color": "rgba(144, 174, 69, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "heyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.3080591907103858,
+                0.32459903260072087,
+                0.6197177293813891,
+                0.5326734754360385,
+                0.03690618276596069,
+                0.5689638306697211,
+                0.038354936987161636,
+                0.7058747758467994,
+                0.005562630016356707,
+                0.0,
+                0.0,
+                0.0,
+                0.15920396625167793,
+                1.0,
+                0.36289105295307106,
+                0.5652326095021434,
+                1.0,
+                1.0
+            ]
+        },
+        "polyline_10": {
+            "id": "polyline_10",
+            "name": "hii",
+            "path": [],
+            "color": "rgba(78, 166, 73, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "hiii",
+            "keywords_found": [],
+            "module_scores": [
+                0.5118434429168701,
+                0.7275236248970032,
+                0.5195397734642029,
+                0.2506510019302368,
+                0.5906199216842651,
+                0.460385799407959,
+                0.9057682156562805,
+                0.577440083026886,
+                0.44362306594848633,
+                0.6044198870658875,
+                0.26611554622650146,
+                0.5114411115646362,
+                0.49167001247406006,
+                0.6330015063285828,
+                0.38416922092437744,
+                0.5338788628578186,
+                0.37343931198120117,
+                0.7777066826820374
+            ]
+        },
+        "polyline_11": {
+            "id": "polyline_11",
+            "name": "hii",
+            "path": [],
+            "color": "rgba(199, 83, 212, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "nocajco",
+            "keywords_found": [],
+            "module_scores": [
+                0.035517044365406036,
+                0.07075861096382141,
+                0.021871453151106834,
+                0.00989073608070612,
+                0.019412130117416382,
+                0.0,
+                0.11922578513622284,
+                0.039588794112205505,
+                0.06686414033174515,
+                0.09156952798366547,
+                0.03569290041923523,
+                0.0679011419415474,
+                0.03752126544713974,
+                0.00478791818022728,
+                0.07304392009973526,
+                0.011222838424146175,
+                0.026982085779309273,
+                0.054899897426366806
+            ]
+        },
+        "polyline_12": {
+            "id": "polyline_12",
+            "name": "hii",
+            "path": [],
+            "color": "rgba(159, 210, 119, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "heyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.03199615329504013,
+                0.11629796773195267,
+                0.09658470749855042,
+                0.03200055658817291,
+                0.054899267852306366,
+                0.03489005193114281,
+                0.10348626226186752,
+                0.008831196464598179,
+                0.0,
+                0.0008121263235807419,
+                0.0,
+                0.051078762859106064,
+                0.01544315367937088,
+                0.07961554080247879,
+                0.11205136775970459,
+                0.007900607772171497,
+                0.0693073719739914
+            ]
+        },
+        "polyline_13": {
+            "id": "polyline_13",
+            "name": "hello",
+            "path": [
+                {
+                    "x": 3,
+                    "y": 19
+                }
+            ],
+            "color": "rgba(230, 228, 186, 0.4)",
+            "isActive": true,
+            "confidence": 0.71,
+            "summary": "rag and everything was good",
+            "keywords_found": [
+                "Retrieval Augmented Generation"
+            ],
+            "module_scores": [
+                0.05804816260933876,
+                0.09254653751850128,
+                0.10877598077058792,
+                0.012610942125320435,
+                0.03797341510653496,
+                0.015777718275785446,
+                0.059225354343652725,
+                0.028679510578513145,
+                0.055405281484127045,
+                0.10398496687412262,
+                0.31428444385528564,
+                0.0,
+                0.0,
+                0.002234384650364518,
+                0.0014527571620419621,
+                0.025889771059155464,
+                0.012727380730211735,
+                0.0
+            ]
+        },
+        "polyline_14": {
+            "id": "polyline_14",
+            "name": "hello",
+            "path": [
+                {
+                    "x": 13,
+                    "y": 15
+                }
+            ],
+            "color": "rgba(53, 84, 159, 0.4)",
+            "isActive": true,
+            "confidence": 0.71,
+            "summary": "rag and many other things such as pretrainig objectives and all were good",
+            "keywords_found": [
+                "Pre training objectives",
+                "Retrieval Augmented Generation"
+            ],
+            "module_scores": [
+                0.8379164934158325,
+                0.3340357542037964,
+                0.17760807275772095,
+                0.22517074644565582,
+                0.26595813035964966,
+                0.23630976676940918,
+                0.28637999296188354,
+                0.19740065932273865,
+                0.15292729437351227,
+                0.13514529168605804,
+                0.42122960090637207,
+                0.10186541825532913,
+                0.11643099039793015,
+                0.16304181516170502,
+                0.1428326964378357,
+                0.1396074891090393,
+                0.21233661472797394,
+                0.17357251048088074
+            ]
+        },
+        "polyline_15": {
+            "id": "polyline_15",
+            "name": "hey ",
+            "path": [],
+            "color": "rgba(167, 117, 238, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "hey",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.023556426167488098,
+                0.07454296201467514,
+                0.10734860599040985,
+                0.03490018844604492,
+                0.061513230204582214,
+                0.06893599033355713,
+                0.11837682127952576,
+                0.01902083493769169,
+                0.02021801471710205,
+                0.020470205694437027,
+                0.0,
+                0.05460038036108017,
+                0.018192946910858154,
+                0.034782107919454575,
+                0.10332289338111877,
+                0.011397147551178932,
+                0.07992972433567047
+            ]
+        },
+        "polyline_16": {
+            "id": "polyline_16",
+            "name": "hey",
+            "path": [],
+            "color": "rgba(167, 64, 198, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "hey",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.023556426167488098,
+                0.07454296201467514,
+                0.10734860599040985,
+                0.03490018844604492,
+                0.061513230204582214,
+                0.06893599033355713,
+                0.11837682127952576,
+                0.01902083493769169,
+                0.02021801471710205,
+                0.020470205694437027,
+                0.0,
+                0.05460038036108017,
+                0.018192946910858154,
+                0.034782107919454575,
+                0.10332289338111877,
+                0.011397147551178932,
+                0.07992972433567047
+            ]
+        },
+        "polyline_17": {
+            "id": "polyline_17",
+            "name": "hey",
+            "path": [],
+            "color": "rgba(142, 153, 121, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "hey",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.023556426167488098,
+                0.07454296201467514,
+                0.10734860599040985,
+                0.03490018844604492,
+                0.061513230204582214,
+                0.06893599033355713,
+                0.11837682127952576,
+                0.01902083493769169,
+                0.02021801471710205,
+                0.020470205694437027,
+                0.0,
+                0.05460038036108017,
+                0.018192946910858154,
+                0.034782107919454575,
+                0.10332289338111877,
+                0.011397147551178932,
+                0.07992972433567047
+            ]
+        },
+        "polyline_18": {
+            "id": "polyline_18",
+            "name": "heyy",
+            "path": [],
+            "color": "rgba(205, 206, 221, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "heyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.017389550805091858,
+                0.10327564924955368,
+                0.09360406547784805,
+                0.03690618276596069,
+                0.04519070312380791,
+                0.038354936987161636,
+                0.07477933913469315,
+                0.005562630016356707,
+                0.0,
+                0.0,
+                0.0,
+                0.05210745334625244,
+                0.002015892416238785,
+                0.07473935186862946,
+                0.0972217470407486,
+                0.0,
+                0.05581950396299362
+            ]
+        },
+        "polyline_19": {
+            "id": "polyline_19",
+            "name": "heyy",
+            "path": [],
+            "color": "rgba(188, 202, 118, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "I love rag with my pre trining",
+            "keywords_found": [
+                "Retrieval Augmented Generation"
+            ],
+            "module_scores": [
+                0.09309744089841843,
+                0.12534257769584656,
+                0.18787196278572083,
+                0.05221807584166527,
+                0.053495265543460846,
+                0.14688314497470856,
+                0.09295167028903961,
+                0.13856445252895355,
+                0.11419141292572021,
+                0.0,
+                0.3,
+                0.04010733589529991,
+                0.0,
+                0.045714717358350754,
+                0.06977400183677673,
+                0.03902996703982353,
+                0.010432184673845768,
+                0.014520765282213688
+            ]
+        }
+    },
+    "summaries": [
+        {
+            "id": "summary_default_5",
+            "title": "Test Summary",
+            "summary": "I learned about BERT and Transformers.",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 2,
+            "currentLevel": 1,
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 100
+        },
+        {
+            "id": "summary_default_6",
+            "title": "work",
+            "summary": "I have learned a lot about rag and preprocessing it was pretty good understanding.",
+            "keywords_found": [
+                "Retrieval Augmented Generation"
+            ],
+            "totalResources": 18,
+            "visitedResources": 4,
+            "currentLevel": 2,
+            "strengths": [
+                "Prompt based learning",
+                "Incontext Learning",
+                "Retrieval Methods",
+                "Retrieval Augmented Generation"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 200
+        },
+        {
+            "id": "summary_default_7",
+            "title": "Hey",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_8",
+            "title": "DQN Learning",
+            "summary": "I studied Policy learning using DQN and reinforcement learning agents.",
+            "keywords_found": [
+                "Agentic AI",
+                "Policy learning using DQN"
+            ],
+            "totalResources": 18,
+            "visitedResources": 2,
+            "currentLevel": 1,
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 100
+        },
+        {
+            "id": "summary_default_9",
+            "title": "heyyy",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_10",
+            "title": "hii",
+            "summary": "hiii",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_11",
+            "title": "hii",
+            "summary": "nocajco",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_12",
+            "title": "hii",
+            "summary": "heyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_13",
+            "title": "hello",
+            "summary": "rag and everything was good",
+            "keywords_found": [
+                "Retrieval Augmented Generation"
+            ],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Retrieval Methods"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
+        },
+        {
+            "id": "summary_default_14",
+            "title": "hello",
+            "summary": "rag and many other things such as pretrainig objectives and all were good",
+            "keywords_found": [
+                "Pre training objectives",
+                "Retrieval Augmented Generation"
+            ],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Pre training objectives"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
+        },
+        {
+            "id": "summary_default_15",
+            "title": "hey ",
+            "summary": "hey",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_16",
+            "title": "hey",
+            "summary": "hey",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_17",
+            "title": "hey",
+            "summary": "hey",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_18",
+            "title": "heyy",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_19",
+            "title": "heyy",
+            "summary": "I love rag with my pre trining",
+            "keywords_found": [
+                "Retrieval Augmented Generation"
+            ],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        }
+    ]
+}

@@ -47,10 +47,17 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     }
   };
 
-  // Generate mock chart data for polyline visualization
+  // Generate chart data for polyline visualization
   const generateChartData = (polyline: Polyline) => {
+    if (polyline.module_scores && polyline.module_scores.length > 0) {
+      return polyline.module_scores.map((score, index) => ({
+        x: index + 1,
+        y: score
+      }));
+    }
+
     const data = [];
-    for (let i = 1; i <= 12; i++) {
+    for (let i = 1; i <= 18; i++) {
       data.push({
         x: i,
         y: 0.5 + (Math.random() - 0.5) * 0.1 + Math.sin(i * 0.5) * 0.05
@@ -59,7 +66,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     return data;
   };
 
-  const topicLegend = "Propositional Logic: 1  Predicate Logic: 2  Proof Strategies and Induction: 3  Sets and Relations: 4  Equivalence Relations: 5  Partitions: 6  Partial Orderings and Functions: 7  Theory of Countability: 8  Combinatorics: 9  Graph Theory: 10  Number theory: 11  Abstract Algebra: 12";
+  const topicLegendItems = [
+    "Pre training objectives", "Pre trained models", "Tutorial: Introduction to huggingface",
+    "Fine tuning LLM", "Instruction tuning", "Prompt based learning",
+    "Parameter efficient fine tuning", "Incontext Learning", "Prompting methods",
+    "Retrieval Methods", "Retrieval Augmented Generation", "Quantization",
+    "Mixture of Experts Model", "Agentic AI", "Multimodal LLMs",
+    "Vision Language Models", "Policy learning using DQN", "RLHF"
+  ];
 
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
@@ -209,6 +223,20 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 </button>
               </div>
               
+              {/* Keywords Detected */}
+              {selectedPolyline.keywords_found && selectedPolyline.keywords_found.length > 0 && (
+                <div className="mb-4 p-4 bg-green-50 rounded-lg border border-green-100">
+                  <div className="text-sm font-medium text-green-800 mb-2">Keywords Detected from Summary:</div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedPolyline.keywords_found.map((keyword, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-white text-green-700 text-xs rounded-full border border-green-200 shadow-sm">
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               {/* Chart Container */}
               <div className="border border-gray-300 rounded-lg p-6 mb-4">
                 <div className="relative h-80">
@@ -222,16 +250,16 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     <rect width="100%" height="100%" fill="url(#grid)" />
                     
                     {/* Y-axis labels */}
-                    <text x="20" y="50" fontSize="12" fill="#6b7280">0.59</text>
-                    <text x="20" y="100" fontSize="12" fill="#6b7280">0.58</text>
-                    <text x="20" y="150" fontSize="12" fill="#6b7280">0.57</text>
-                    <text x="20" y="200" fontSize="12" fill="#6b7280">0.56</text>
-                    <text x="20" y="250" fontSize="12" fill="#6b7280">0.55</text>
-                    <text x="20" y="290" fontSize="12" fill="#6b7280">0.54</text>
+                    <text x="20" y="30" fontSize="12" fill="#6b7280">1.0</text>
+                    <text x="20" y="80" fontSize="12" fill="#6b7280">0.8</text>
+                    <text x="20" y="130" fontSize="12" fill="#6b7280">0.6</text>
+                    <text x="20" y="180" fontSize="12" fill="#6b7280">0.4</text>
+                    <text x="20" y="230" fontSize="12" fill="#6b7280">0.2</text>
+                    <text x="20" y="280" fontSize="12" fill="#6b7280">0.0</text>
                     
                     {/* X-axis labels */}
-                    {[1,2,3,4,5,6,7,8,9,10,11,12].map(i => (
-                      <text key={i} x={40 + i * 45} y="290" fontSize="12" fill="#6b7280" textAnchor="middle">{i}</text>
+                    {Array.from({length: 18}, (_, i) => i + 1).map(i => (
+                      <text key={i} x={30 + i * 30} y="290" fontSize="10" fill="#6b7280" textAnchor="middle">{i}</text>
                     ))}
                     
                     {/* Chart line */}
@@ -239,16 +267,20 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       fill="none"
                       stroke="#2563eb"
                       strokeWidth="3"
-                      points="85,80 130,120 175,110 220,100 265,60 310,90 355,80 400,50 445,140 490,110 535,70 580,60"
+                      points={generateChartData(selectedPolyline).map((point, i) => 
+                        `${30 + (i + 1) * 30},${280 - point.y * 250}`
+                      ).join(' ')}
                     />
                     
                     {/* Data points */}
-                    {[
-                      {x: 85, y: 80}, {x: 130, y: 120}, {x: 175, y: 110}, {x: 220, y: 100},
-                      {x: 265, y: 60}, {x: 310, y: 90}, {x: 355, y: 80}, {x: 400, y: 50},
-                      {x: 445, y: 140}, {x: 490, y: 110}, {x: 535, y: 70}, {x: 580, y: 60}
-                    ].map((point, i) => (
-                      <circle key={i} cx={point.x} cy={point.y} r="4" fill="#2563eb" />
+                    {generateChartData(selectedPolyline).map((point, i) => (
+                      <circle 
+                        key={i} 
+                        cx={30 + (i + 1) * 30} 
+                        cy={280 - point.y * 250} 
+                        r="4" 
+                        fill="#2563eb" 
+                      />
                     ))}
                   </svg>
                   
@@ -263,10 +295,15 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               </div>
               
               {/* Topic Legend */}
-              <div className="text-sm text-gray-700">
+              <div className="text-sm text-gray-700 mt-4">
                 <div className="font-medium mb-2">Topic Legend:</div>
-                <div className="text-xs leading-relaxed">
-                  {topicLegend}
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  {topicLegendItems.map((item, index) => (
+                    <div key={index} className="flex items-start space-x-1">
+                      <span className="font-bold text-gray-500 w-5">{index + 1}:</span>
+                      <span className="truncate" title={item}>{item}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -322,16 +359,16 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                         
                         {/* Y-axis */}
                         <line x1="30" y1="20" x2="30" y2="180" stroke="#6b7280" strokeWidth="1"/>
-                        <text x="25" y="25" fontSize="10" fill="#6b7280" textAnchor="end">0.58</text>
-                        <text x="25" y="60" fontSize="10" fill="#6b7280" textAnchor="end">0.57</text>
-                        <text x="25" y="100" fontSize="10" fill="#6b7280" textAnchor="end">0.56</text>
-                        <text x="25" y="140" fontSize="10" fill="#6b7280" textAnchor="end">0.54</text>
-                        <text x="25" y="175" fontSize="10" fill="#6b7280" textAnchor="end">0.50</text>
+                        <text x="25" y="25" fontSize="10" fill="#6b7280" textAnchor="end">1.0</text>
+                        <text x="25" y="60" fontSize="10" fill="#6b7280" textAnchor="end">0.8</text>
+                        <text x="25" y="100" fontSize="10" fill="#6b7280" textAnchor="end">0.5</text>
+                        <text x="25" y="140" fontSize="10" fill="#6b7280" textAnchor="end">0.2</text>
+                        <text x="25" y="175" fontSize="10" fill="#6b7280" textAnchor="end">0.0</text>
                         
                         {/* X-axis */}
-                        <line x1="30" y1="180" x2="370" y2="180" stroke="#6b7280" strokeWidth="1"/>
-                        {[1,2,3,4,5,6,7,8,9,10,11,12].map(i => (
-                          <text key={i} x={30 + i * 28} y="195" fontSize="10" fill="#6b7280" textAnchor="middle">{i}</text>
+                        <line x1="20" y1="180" x2="380" y2="180" stroke="#6b7280" strokeWidth="1"/>
+                        {Array.from({length: 18}, (_, i) => i + 1).map(i => (
+                          <text key={i} x={20 + i * 20} y="195" fontSize="10" fill="#6b7280" textAnchor="middle">{i}</text>
                         ))}
                         
                         {/* Data line */}
@@ -340,7 +377,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                           stroke="#2563eb"
                           strokeWidth="2"
                           points={generateChartData(polyline).map((point, i) => 
-                            `${30 + (i + 1) * 28},${180 - (point.y - 0.4) * 400}`
+                            `${20 + (i + 1) * 20},${180 - point.y * 150}`
                           ).join(' ')}
                         />
                         
@@ -348,8 +385,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                         {generateChartData(polyline).map((point, i) => (
                           <circle 
                             key={i} 
-                            cx={30 + (i + 1) * 28} 
-                            cy={180 - (point.y - 0.4) * 400} 
+                            cx={20 + (i + 1) * 20} 
+                            cy={180 - point.y * 150} 
                             r="3" 
                             fill="#2563eb" 
                           />
@@ -362,9 +399,16 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     </div>
                     
                     {/* Legend */}
-                    <div className="text-xs text-gray-600 leading-relaxed">
+                    <div className="text-xs text-gray-600 leading-relaxed mt-3">
                       <div className="font-medium mb-1">Topic Legend:</div>
-                      {topicLegend}
+                      <div className="grid grid-cols-3 gap-x-2 gap-y-1">
+                        {topicLegendItems.map((item, index) => (
+                          <div key={index} className="flex items-start space-x-1">
+                            <span className="font-bold text-gray-500 w-4">{index + 1}:</span>
+                            <span className="truncate" title={item}>{item}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ))}

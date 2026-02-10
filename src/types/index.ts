@@ -28,6 +28,8 @@ export interface Polyline {
   isActive: boolean;
   confidence: number;
   summary?: string;
+  keywords_found?: string[];
+  module_scores?: number[];
 }
 
 export interface LearningActivity {

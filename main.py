@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, Query
 from pydantic import BaseModel
 import torch
 import json
@@ -6,16 +6,88 @@ import numpy as np
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict, Any, Optional
+import uuid
+import random
 
+# --- Models ---
 
-# Load resource data from JSON file
-resource_data_path = os.path.join(os.path.dirname(__file__), "extracted_data.json")
-with open(resource_data_path, "r") as f:
-    resource_data = json.load(f)
+class GridPosition(BaseModel):
+    x: int
+    y: int
+
+class Resource(BaseModel):
+    id: str
+    position: GridPosition
+    type: str  # 'book', 'quiz', 'video', 'assignment'
+    title: str
+    visited: bool
+    difficulty: int
+    reward: int
+    url: Optional[str] = None
+    description: Optional[str] = None
+
+class Agent(BaseModel):
+    position: GridPosition
+    level: int
+    totalReward: int
+    visitedResources: List[str]
+
+class Polyline(BaseModel):
+    id: str
+    name: str
+    path: List[GridPosition]
+    color: str
+    isActive: bool
+    confidence: float
+    summary: Optional[str] = None
+
+# Request Models
+class MoveAgentRequest(BaseModel):
+    session_id: str
+    position: GridPosition
+
+class VisitResourceRequest(BaseModel):
+    session_id: str
+    resource_id: str
+
+class CreateSummaryRequest(BaseModel):
+    session_id: str
+    title: str
+    summary: str
+    visited_resources: List[str]
+
+class TogglePolylineRequest(BaseModel):
+    isActive: bool
+
+class DQNPathRequest(BaseModel):
+    session_id: str
+    agent_position: GridPosition
+    visited_resource_ids: List[str]
+
+# Response Models
+class LearningSummaryResponse(BaseModel):
+    summary: Any
+    polyline: Polyline
+
+class LearningDataResponse(BaseModel):
+    totalResources: int
+    visitedResources: int
+    currentLevel: int
+    strengths: List[str]
+    recommendations: List[str]
+    nextOptimalResource: Optional[GridPosition]
+    totalReward: int
+
+class DQNPathResponse(BaseModel):
+    path: List[GridPosition]
+    finalResource: Optional[Resource]
+    totalReward: int
+    pathLength: int
+
+# --- Application Setup ---
 
 app = FastAPI()
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,400 +96,247 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Load Resource Data ---
+# --- Data Loading & Processing ---
+
 SCALE = 200
-json_path = os.path.join(os.path.dirname(__file__), "extracted_data.json")
-with open(json_path, "r") as f:
-    extracted_data = json.load(f)
 
-resource_cells = []
-resource_names = []
-for name, data in extracted_data.items():
-    x = int(float(data['x_coordinate']) * SCALE)
-    y = int(float(data['y_coordinate']) * SCALE)
-    resource_cells.append((x, y))
-    resource_names.append(name)
+def load_and_process_resources():
+    json_path = os.path.join(os.path.dirname(__file__), "extracted_data.json")
+    if not os.path.exists(json_path):
+        print(f"Warning: {json_path} not found.")
+        return [], {}, 20, 20
 
-min_x = min(x for x, y in resource_cells)
-min_y = min(y for x, y in resource_cells)
-# Convert resource positions to the format used in the simulation
-adjusted_resources = [[x - min_x, y - min_y] for x, y in resource_cells]
+    with open(json_path, "r") as f:
+        extracted_data = json.load(f)
 
-# Handle duplicate coordinates by offsetting to adjacent cells
-from collections import defaultdict
-coord_groups = defaultdict(list)
-for idx, (x_adj, y_adj) in enumerate(adjusted_resources):
-    coord_groups[(x_adj, y_adj)].append((resource_names[idx], y_adj, idx))
-
-# Sort each group by y coordinate (lower y first = bottom)
-for coord in coord_groups:
-    coord_groups[coord].sort(key=lambda item: item[1])
-
-# Adjust coordinates for duplicates and build final resource list
-final_resources = []
-resource_map: Dict[str, str] = {}
-
-for coord, resources_at_coord in coord_groups.items():
-    x_base, y_base = coord
+    resource_cells = []
+    resource_names = []
     
-    if len(resources_at_coord) == 1:
-        # Single resource at this coordinate
-        name = resources_at_coord[0][0]
-        final_resources.append([x_base, y_base])
-        resource_map[f"{x_base},{y_base}"] = name
-    else:
-        # Multiple resources at same coordinate - offset to adjacent cells
-        for offset_idx, (name, y_val, orig_idx) in enumerate(resources_at_coord):
-            if offset_idx == 0:
-                # First (lowest y) resource stays at original position
-                final_resources.append([x_base, y_base])
-                resource_map[f"{x_base},{y_base}"] = name
-            else:
-                # Other resources offset to adjacent cells (right/down pattern)
-                # Use different offsets for each duplicate
-                offset_x = x_base + 1 if offset_idx % 2 == 1 else x_base
-                offset_y = y_base - 1 if offset_idx % 2 == 1 else y_base + 1
-                final_resources.append([offset_x, offset_y])
-                resource_map[f"{offset_x},{offset_y}"] = name
+    # Initial scaling
+    for name, data in extracted_data.items():
+        x = int(float(data['x_coordinate']) * SCALE)
+        y = int(float(data['y_coordinate']) * SCALE)
+        resource_cells.append((x, y))
+        resource_names.append(name)
 
-adjusted_resources = final_resources
+    if not resource_cells:
+        return [], {}, 20, 20
 
-# Add padding to distribute resources better
-GRID_PADDING = 8
-GRID_SIZE_X = max(x for x, y in adjusted_resources) + 1 + GRID_PADDING
-GRID_SIZE_Y = max(y for x, y in adjusted_resources) + 1 + GRID_PADDING
-
-# --- DQN Model ---
-class DQN(torch.nn.Module):
-    def __init__(self, state_size, action_size):
-        super(DQN, self).__init__()
-        self.fc1 = torch.nn.Linear(state_size, 128)
-        self.relu = torch.nn.ReLU()
-        self.fc2 = torch.nn.Linear(128, action_size)
-
-    def forward(self, x):
-        x = self.relu(self.fc1(x))
-        return self.fc2(x)
-
-# --- Simulation State ---
-class SimulationState(BaseModel):
-    agent_pos: list
-    path: list
-    goal_pos: list
-    reward: int = 0
-
-# Global simulation state with multiple agents (one per model)
-sim_states = {}
-active_models = []
-
-# Device configuration
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-state_size = GRID_SIZE_X * GRID_SIZE_Y
-action_size = 2
-
-# Models dictionary to store loaded models
-models = {}
-
-# --- Helpers: robust model loading ---
-def _strip_prefix_from_state_dict_keys(state_dict: Dict[str, Any], prefix: str) -> Dict[str, Any]:
-    if all(k.startswith(prefix) for k in state_dict.keys()):
-        return {k[len(prefix):]: v for k, v in state_dict.items()}
-    return state_dict
-
-def _normalize_state_dict_keys(state_dict: Dict[str, Any]) -> Dict[str, Any]:
-    # Handle common wrappers and prefixes (e.g., DataParallel 'module.')
-    normalized = _strip_prefix_from_state_dict_keys(state_dict, "module.")
-
-    # Map some common layer naming schemes to our DQN's 'fc1' and 'fc2'
-    key_map = {
-        "layers.0.weight": "fc1.weight",
-        "layers.0.bias": "fc1.bias",
-        "layers.2.weight": "fc2.weight",
-        "layers.2.bias": "fc2.bias",
-        "linear1.weight": "fc1.weight",
-        "linear1.bias": "fc1.bias",
-        "linear2.weight": "fc2.weight",
-        "linear2.bias": "fc2.bias",
-    }
-
-    remapped = {}
-    for k, v in normalized.items():
-        target_key = key_map.get(k, k)
-        remapped[target_key] = v
-    return remapped
-
-def _load_weights_into_model(model: torch.nn.Module, weights: Dict[str, Any]) -> bool:
-    try:
-        normalized = _normalize_state_dict_keys(weights)
-        # Convert numpy arrays to tensors if needed
-        for k, v in list(normalized.items()):
-            if isinstance(v, np.ndarray):
-                normalized[k] = torch.from_numpy(v)
-        missing, unexpected = model.load_state_dict(normalized, strict=False)
-        if missing:
-            print(f"Warning: missing keys when loading model: {missing}")
-        if unexpected:
-            print(f"Warning: unexpected keys when loading model: {unexpected}")
-        return True
-    except Exception as e:
-        print(f"Failed to load weights into model: {e}")
-        return False
-
-# --- API Endpoints ---
-@app.get("/grid")
-def get_grid():
-    return {
-        "grid_size_x": GRID_SIZE_X,
-        "grid_size_y": GRID_SIZE_Y,
-        "resources": adjusted_resources,
-        "resource_map": resource_map,
-    }
-
-@app.get("/state")
-def get_state():
-    return {
-        "active_models": active_models,
-        "states": sim_states
-    }
-
-@app.post("/step")
-async def step():
-    # Initialize ensemble voting
-    action_votes = {0: 0, 1: 0}  # 0: UP, 1: RIGHT
-    ensemble_pos = None
+    min_x = min(x for x, y in resource_cells)
+    min_y = min(y for x, y in resource_cells)
     
-    # If ensemble state doesn't exist yet, create it
-    if "ensemble" not in sim_states and active_models:
-        # Initialize ensemble state with the same structure as model states
-        # but with its own path tracking
-        first_model = next(iter(active_models))
-        if first_model in sim_states:
-            sim_states["ensemble"] = {
-                "agent_pos": sim_states[first_model]["agent_pos"].copy(),
-                "path": [sim_states[first_model]["agent_pos"].copy()],
-                "goal_pos": sim_states[first_model]["goal_pos"].copy(),
-                "reward": 0
-            }
+    # Normalize
+    adjusted_resources = [[x - min_x, y - min_y] for x, y in resource_cells]
+
+    # Duplicate Handling (Smart Offsetting)
+    from collections import defaultdict
+    coord_groups = defaultdict(list)
+    for idx, (x_adj, y_adj) in enumerate(adjusted_resources):
+        coord_groups[(x_adj, y_adj)].append((resource_names[idx], y_adj, idx))
+
+    for coord in coord_groups:
+        coord_groups[coord].sort(key=lambda item: item[1])
+
+    final_resources_list = []
     
-    results = {}
-    # First pass: collect votes from all models
-    for model_name in active_models:
-        if model_name not in models or model_name not in sim_states:
-            continue
-            
-        model = models[model_name]
-        sim_state = sim_states[model_name]
+    for coord, resources_at_coord in coord_groups.items():
+        x_base, y_base = coord
         
-        ax, ay = sim_state["agent_pos"]
-        goal_pos = sim_state["goal_pos"]
-        path = sim_state["path"]
-        state = int(ay) * GRID_SIZE_X + int(ax)
-        state_tensor = torch.eye(state_size)[state].unsqueeze(0).to(device)
-        
-        with torch.no_grad():
-            q_values = model(state_tensor)
-            action = torch.argmax(q_values).item()
-        
-        # Add vote for this model's preferred action
-        action_votes[action] += 1
-            
-        # Calculate if agent has reached goal
-        goal_reached = (ax == sim_state["goal_pos"][0] and ay == sim_state["goal_pos"][1])
-        
-        # Move agent only if not at goal
-        if not goal_reached:
-            if action == 0 and ay < GRID_SIZE_Y - 1:
-                ay += 1  # UP
-            elif action == 1 and ax < GRID_SIZE_X - 1:
-                ax += 1  # RIGHT
-            
-        sim_state["agent_pos"] = [ax, ay]
-        if [ax, ay] not in path:
-            path.append([ax, ay])
-            # Check if agent found a resource (book)
-            if [ax, ay] in adjusted_resources:
-                # Find which resource was found based on position
-                for resource_name, data in resource_data.items():
-                    # Convert coordinates to grid positions
-                    x_coord = float(data["x_coordinate"])
-                    y_coord = float(data["y_coordinate"])
-                    
-                    # Scale coordinates to grid positions (approximate)
-                    grid_x = int(x_coord * GRID_SIZE_X)
-                    grid_y = int(y_coord * GRID_SIZE_Y)
-                    
-                    # If agent position matches this resource's position
-                    if ax == grid_x and ay == grid_y:
-                        # Calculate reward based on coordinates
-                        reward_value = int((x_coord + y_coord) * 50)
-                        reward_value = min(10, reward_value)
-                        sim_state["reward"] += reward_value
-                        break
+        if len(resources_at_coord) == 1:
+            name = resources_at_coord[0][0]
+            final_resources_list.append({'name': name, 'x': x_base, 'y': y_base})
+        else:
+            for offset_idx, (name, y_val, orig_idx) in enumerate(resources_at_coord):
+                if offset_idx == 0:
+                    final_resources_list.append({'name': name, 'x': x_base, 'y': y_base})
                 else:
-                    # Default reward if no specific resource match found
-                    sim_state["reward"] += 10
-                
-        sim_state["path"] = path
-        sim_states[model_name] = sim_state
-        results[model_name] = sim_state
+                    offset_x = x_base + 1 if offset_idx % 2 == 1 else x_base
+                    offset_y = y_base - 1 if offset_idx % 2 == 1 else y_base + 1
+                    final_resources_list.append({'name': name, 'x': offset_x, 'y': offset_y})
+
+    max_x = max(r['x'] for r in final_resources_list)
+    max_y = max(r['y'] for r in final_resources_list)
     
-    # Second pass: determine winning action by voting for ensemble agent
-    if "ensemble" in sim_states and active_models:
-        # Get ensemble state
-        ensemble_state = sim_states["ensemble"]
-        ex, ey = ensemble_state["agent_pos"]
-        ensemble_path = ensemble_state["path"]
+    # Mirroring (Flip Y)
+    grid_h = max(20, max_y + 1)
+    
+    processed_resources = []
+    types = ['book', 'video', 'quiz', 'assignment']
+    resource_map = {}
+    
+    for r in final_resources_list:
+        mirrored_y = (grid_h - 1) - r['y']
         
-        # Calculate if ensemble agent has reached goal
-        goal_reached = (ex == ensemble_state["goal_pos"][0] and ey == ensemble_state["goal_pos"][1])
+        res_id = str(len(processed_resources) + 1)
+        res_type = types[len(processed_resources) % len(types)]
+        difficulty = (len(processed_resources) % 5) + 1
+        reward = 50 + (difficulty * 10)
         
-        # Determine winning action (soft voting)
-        if not goal_reached:
-            winning_action = max(action_votes.items(), key=lambda kv: kv[1])[0]
-            
-            # Move ensemble agent according to winning action
-            if winning_action == 0 and ey < GRID_SIZE_Y - 1:
-                ey += 1  # UP
-            elif winning_action == 1 and ex < GRID_SIZE_X - 1:
-                ex += 1  # RIGHT
-            
-            # Update ensemble position and path
-            ensemble_state["agent_pos"] = [ex, ey]
-            if [ex, ey] not in ensemble_path:
-                ensemble_path.append([ex, ey])
-                # Check if ensemble agent found a resource
-                if [ex, ey] in adjusted_resources:
-                    # Find which resource was found based on position
-                    for resource_name, data in resource_data.items():
-                        # Convert coordinates to grid positions
-                        x_coord = float(data["x_coordinate"])
-                        y_coord = float(data["y_coordinate"])
-                        
-                        # Scale coordinates to grid positions (approximate)
-                        grid_x = int(x_coord * GRID_SIZE_X)
-                        grid_y = int(y_coord * GRID_SIZE_Y)
-                        
-                        # If agent position matches this resource's position
-                        if ex == grid_x and ey == grid_y:
-                            # Calculate reward based on coordinates
-                            reward_value = int((x_coord + y_coord) * 50)
-                            reward_value = max(10, reward_value)
-                            ensemble_state["reward"] += reward_value
-                            break
-                    else:
-                        # Default reward if no specific resource match found
-                        ensemble_state["reward"] += 10
-            
-            ensemble_state["path"] = ensemble_path
-            sim_states["ensemble"] = ensemble_state
-            results["ensemble"] = ensemble_state
+        processed_resources.append(Resource(
+            id=res_id,
+            position=GridPosition(x=r['x'], y=mirrored_y),
+            type=res_type,
+            title=r['name'],
+            visited=False,
+            difficulty=difficulty,
+            reward=reward,
+            description=f"Learn about {r['name']}",
+            url=f"https://example.com/{res_id}"
+        ))
+        resource_map[f"{r['x']},{mirrored_y}"] = r['name']
+
+    return processed_resources, resource_map, max(20, max_x + 1), grid_h
+
+RESOURCES, RESOURCE_MAP, GRID_WIDTH, GRID_HEIGHT = load_and_process_resources()
+
+# --- State Management ---
+
+AGENT_STATE = Agent(
+    position=GridPosition(x=0, y=0),
+    level=1,
+    totalReward=0,
+    visitedResources=[]
+)
+
+POLYLINES: List[Polyline] = []
+SIMULATION_RUNNING = False
+
+# --- Endpoints ---
+
+@app.get("/api/resources", response_model=List[Resource])
+def get_resources():
+    return RESOURCES
+
+@app.get("/api/resources/{resource_id}", response_model=Resource)
+def get_resource(resource_id: str):
+    res = next((r for r in RESOURCES if r.id == resource_id), None)
+    if not res:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    return res
+
+@app.get("/api/agent", response_model=Agent)
+def get_agent(session_id: str = Query("default")):
+    return AGENT_STATE
+
+@app.post("/api/agent/move", response_model=Agent)
+def move_agent(req: MoveAgentRequest):
+    AGENT_STATE.position = req.position
+    
+    # Check for resource visit (implicit)
+    for res in RESOURCES:
+        if res.position.x == req.position.x and res.position.y == req.position.y:
+            if res.id not in AGENT_STATE.visitedResources:
+                AGENT_STATE.visitedResources.append(res.id)
+                res.visited = True
+                AGENT_STATE.totalReward += res.reward
+                AGENT_STATE.level = 1 + (len(AGENT_STATE.visitedResources) // 3)
+    
+    return AGENT_STATE
+
+@app.post("/api/resource/visit", response_model=Agent)
+def visit_resource(req: VisitResourceRequest):
+    if req.resource_id not in AGENT_STATE.visitedResources:
+        res = next((r for r in RESOURCES if r.id == req.resource_id), None)
+        if res:
+            AGENT_STATE.visitedResources.append(req.resource_id)
+            res.visited = True
+            AGENT_STATE.totalReward += res.reward
+            AGENT_STATE.level = 1 + (len(AGENT_STATE.visitedResources) // 3)
+    return AGENT_STATE
+
+@app.post("/api/summary/create", response_model=LearningSummaryResponse)
+def create_learning_summary(req: CreateSummaryRequest):
+    # Create a polyline representing the learning path
+    visited_objs = [r for r in RESOURCES if r.id in req.visited_resources]
+    # Sort by visit order? Assuming req.visited_resources is ordered
+    # Actually AGENT_STATE.visitedResources tracks order better if appended sequentially
+    
+    # Just use current resources positions
+    path = [r.position for r in visited_objs]
+    
+    new_polyline = Polyline(
+        id=str(uuid.uuid4()),
+        name=req.title,
+        path=path,
+        color="rgba(59, 130, 246, 0.6)",
+        isActive=True,
+        confidence=0.9,
+        summary=req.summary
+    )
+    POLYLINES.append(new_polyline)
+    
+    return LearningSummaryResponse(
+        summary={"title": req.title, "content": req.summary},
+        polyline=new_polyline
+    )
+
+@app.get("/api/polylines", response_model=List[Polyline])
+def get_polylines():
+    return POLYLINES
+
+@app.get("/api/polylines/{polyline_id}", response_model=Polyline)
+def get_polyline(polyline_id: str):
+    pl = next((p for p in POLYLINES if p.id == polyline_id), None)
+    if not pl:
+        raise HTTPException(status_code=404, detail="Polyline not found")
+    return pl
+
+@app.post("/api/polylines/{polyline_id}/toggle", response_model=Polyline)
+def toggle_polyline(polyline_id: str, req: TogglePolylineRequest):
+    pl = next((p for p in POLYLINES if p.id == polyline_id), None)
+    if not pl:
+        raise HTTPException(status_code=404, detail="Polyline not found")
+    pl.isActive = req.isActive
+    return pl
+
+@app.post("/api/dqn-path", response_model=DQNPathResponse)
+def generate_dqn_path(req: DQNPathRequest):
+    current_pos = req.agent_position
+    path = [current_pos]
+    
+    # Simple heuristic: find nearest unvisited resource
+    unvisited = [r for r in RESOURCES if r.id not in req.visited_resource_ids]
+    
+    final_res = None
+    if unvisited:
+        # Find closest
+        target = min(unvisited, key=lambda r: abs(r.position.x - current_pos.x) + abs(r.position.y - current_pos.y))
+        final_res = target
         
-    return {
-        "active_models": active_models,
-        "states": sim_states
-    }
-
-@app.post("/reset")
-def reset():
-    for model_name in active_models:
-        if model_name in sim_states:
-            sim_states[model_name] = {
-                "agent_pos": [0, 0],
-                "path": [[0, 0]],
-                "goal_pos": [GRID_SIZE_X - 1, GRID_SIZE_Y - 1],
-                "reward": 0
-            }
-        if 'ensemble' in sim_states:
-            sim_states['ensemble'] = {
-                "agent_pos": [0, 0],
-                "path": [[0, 0]],
-                "goal_pos": [GRID_SIZE_X - 1, GRID_SIZE_Y - 1],
-                "reward": 0
-            }
-            
-    
-    return {
-        "active_models": active_models,
-        "states": sim_states
-    }
-
-@app.get("/models", response_model=List[str])
-def list_models():
-    # List all .pth files in the project root
-    model_files = [f for f in os.listdir(os.path.join(os.path.dirname(__file__), "..")) if f.endswith('.pth') or f.endswith('.npz')]
-    return model_files
-    
-
-@app.post("/set_active_models")
-async def set_active_models(request: Request):
-    data = await request.json()
-    model_names = data.get("model_names", [])
-    
-    global active_models, models, sim_states
-    active_models = []
-    
-    for model_name in model_names:
-        model_path = os.path.join(os.path.dirname(__file__), "..", model_name)
-        if not os.path.exists(model_path):
-            continue
-            
-        # Load model if not already loaded
-        if model_name not in models:
-            try:
-                model = DQN(state_size, action_size).to(device)
-                loaded_ok = False
-
-                ext = os.path.splitext(model_path)[1].lower()
-                if ext == ".npz":
-                    try:
-                        npz = np.load(model_path, allow_pickle=True)
-                        weights = {k: npz[k] for k in npz.files}
-                        loaded_ok = _load_weights_into_model(model, weights)
-                    except Exception as e:
-                        print(f"Error loading npz model {model_name}: {e}")
-                        loaded_ok = False
-                else:
-                    try:
-                        obj = torch.load(model_path, map_location=device)
-                        # Case 1: raw state_dict
-                        if isinstance(obj, dict):
-                            # Some checkpoints use {'state_dict': ...}
-                            if "state_dict" in obj and isinstance(obj["state_dict"], dict):
-                                loaded_ok = _load_weights_into_model(model, obj["state_dict"])
-                            else:
-                                loaded_ok = _load_weights_into_model(model, obj)
-                        # Case 2: full nn.Module saved
-                        elif hasattr(obj, "state_dict"):
-                            loaded_ok = _load_weights_into_model(model, obj.state_dict())
-                        else:
-                            loaded_ok = False
-                    except Exception as e:
-                        print(f"Error loading pth model {model_name}: {e}")
-                        loaded_ok = False
-
-                if not loaded_ok:
-                    print(f"Using randomly initialized weights for {model_name} (could not load).")
-                model.eval()
-                models[model_name] = model
-            except Exception as e:
-                print(f"Error loading model {model_name}: {e}")
-                # Create a dummy model that can still be used
-                model = DQN(state_size, action_size).to(device)
-                model.eval()
-                models[model_name] = model
-            
-        # Initialize or reset simulation state for this model
-        sim_states[model_name] = {
-            "agent_pos": [0, 0],
-            "path": [[0, 0]],
-            "goal_pos": [GRID_SIZE_X - 1, GRID_SIZE_Y - 1],
-            "reward": 0
-        }
+        # Generate simple path (Manhattan)
+        curr_x, curr_y = current_pos.x, current_pos.y
+        tgt_x, tgt_y = target.position.x, target.position.y
         
-        active_models.append(model_name)
+        # Basic interpolation (max 10 steps)
+        steps = 0
+        while (curr_x != tgt_x or curr_y != tgt_y) and steps < 10:
+            if curr_x < tgt_x: curr_x += 1
+            elif curr_x > tgt_x: curr_x -= 1
+            
+            if curr_y < tgt_y: curr_y += 1
+            elif curr_y > tgt_y: curr_y -= 1
+            
+            path.append(GridPosition(x=curr_x, y=curr_y))
+            steps += 1
+            
+    return DQNPathResponse(
+        path=path,
+        finalResource=final_res,
+        totalReward=100, # Mock
+        pathLength=len(path)
+    )
+
+@app.get("/api/learning-data", response_model=LearningDataResponse)
+def get_learning_data(session_id: str = Query("default")):
+    unvisited = [r for r in RESOURCES if not r.visited]
+    next_res = unvisited[0].position if unvisited else None
     
-    return {
-        "success": True,
-        "active_models": active_models,
-        "states": sim_states
-    }
+    return LearningDataResponse(
+        totalResources=len(RESOURCES),
+        visitedResources=len(AGENT_STATE.visitedResources),
+        currentLevel=AGENT_STATE.level,
+        strengths=["NLP Concepts", "Deep Learning"],
+        recommendations=["Practice Transformers", "Review Attention Mechanisms"],
+        nextOptimalResource=next_res,
+        totalReward=AGENT_STATE.totalReward
+    )

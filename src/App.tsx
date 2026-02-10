@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { GridVisualization } from './components/GridVisualization';
 import { ControlPanel } from './components/ControlPanel';
 import { useDQNSimulation } from './hooks/useDQNSimulation';
-import { mockResources } from './data/mockData';
 import { Resource, Polyline, LearningSummary } from './types';
+import { nlpApi } from './services/nlpApi';
 
 function App() {
   const {
@@ -19,18 +19,35 @@ function App() {
     generateDQNPath
   } = useDQNSimulation();
 
-  const [resources, setResources] = useState<Resource[]>(mockResources);
+  const [resources, setResources] = useState<Resource[]>([]);
   const [polylines, setPolylines] = useState<Polyline[]>([]);
   const [learningPath, setLearningPath] = useState<string[]>([]);
   const [dqnPathInfo, setDqnPathInfo] = useState<{ resource: Resource | null, reward: number } | null>(null);
   const [learningData, setLearningData] = useState<LearningSummary>({
-    totalResources: mockResources.length,
+    totalResources: 0,
     visitedResources: 0,
     currentLevel: 1,
     strengths: [],
     recommendations: [],
     nextOptimalResource: null
   });
+
+  // Load resources from backend on mount
+  useEffect(() => {
+    const loadResources = async () => {
+      try {
+        const data = await nlpApi.getResources();
+        setResources(data);
+        setLearningData(prev => ({
+          ...prev,
+          totalResources: data.length
+        }));
+      } catch (error) {
+        console.error('Failed to load resources:', error);
+      }
+    };
+    loadResources();
+  }, []);
 
   const handleResourceClick = useCallback((resource: Resource) => {
     if (!resource.visited) {
@@ -52,35 +69,37 @@ function App() {
   const handleSummarizeLearning = useCallback(async (title: string, summary: string) => {
     setIsLoading(true);
     try {
-      // Move agent to random position
-      const randomX = Math.floor(Math.random() * 20);
-      const randomY = Math.floor(Math.random() * 20);
-      moveAgent({ x: randomX, y: randomY });
+      const visitedIds = resources.filter(r => r.visited).map(r => r.id);
+      const result = await nlpApi.createLearnningSummary('default', title, summary, visitedIds);
+      
+      // Move agent to next unvisited resource or random resource if all visited
+      const unvisited = resources.filter(r => !r.visited);
+      let targetPos;
+      
+      if (unvisited.length > 0) {
+        // Find nearest unvisited (simple heuristic: first one)
+        targetPos = unvisited[0].position;
+      } else {
+        // If all visited, pick a random resource
+        const randomResource = resources[Math.floor(Math.random() * resources.length)];
+        targetPos = randomResource.position;
+      }
+      
+      moveAgent(targetPos);
 
       const visitedResources = resources.filter(r => r.visited);
       const learningSummary = await generateLearningSummary(visitedResources);
       const newPolylines = generatePolylines(visitedResources);
       
-      // Create a new polyline based on the summary
-      const summaryPolyline: Polyline = {
-        id: `summary-${Date.now()}`,
-        name: title || `Learning Summary ${polylines.length + 1}`,
-        path: visitedResources.map(r => r.position),
-        color: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.4)`,
-        isActive: false,
-        confidence: 0.75 + Math.random() * 0.2,
-        summary: summary
-      };
-      
       setLearningData(learningSummary);
-      setPolylines(prev => [...prev, ...newPolylines, summaryPolyline]);
+      setPolylines(prev => [...prev, result.polyline, ...newPolylines]);
       
     } catch (error) {
       console.error('Error processing learning summary:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [resources, generateLearningSummary, generatePolylines, polylines.length, moveAgent]);
+  }, [resources, generateLearningSummary, generatePolylines, moveAgent, setIsLoading]);
 
   const handleShowPolyline = useCallback((polylineId: string) => {
     setPolylines(prev => prev.map(p => ({
@@ -89,24 +108,28 @@ function App() {
     })));
   }, []);
 
-  const handleToggleSimulation = useCallback(() => {
+  const handleToggleSimulation = useCallback(async () => {
     if (!isSimulationRunning) {
-      const dqnResult = generateDQNPath(agent.position, resources);
+      try {
+        const dqnResult = await generateDQNPath(agent.position, resources);
 
-      const simulationPolyline: Polyline = {
-        id: 'dqn-simulation',
-        name: 'DQN Optimal Path',
-        path: dqnResult.path,
-        color: 'rgba(239, 68, 68, 0.5)',
-        isActive: true,
-        confidence: 0.95
-      };
+        const simulationPolyline: Polyline = {
+          id: 'dqn-simulation',
+          name: 'DQN Optimal Path',
+          path: dqnResult.path,
+          color: 'rgba(239, 68, 68, 0.5)',
+          isActive: true,
+          confidence: 0.95
+        };
 
-      setPolylines(prev => [...prev.filter(p => p.id !== 'dqn-simulation'), simulationPolyline]);
-      setDqnPathInfo({
-        resource: dqnResult.finalResource,
-        reward: dqnResult.totalReward
-      });
+        setPolylines(prev => [...prev.filter(p => p.id !== 'dqn-simulation'), simulationPolyline]);
+        setDqnPathInfo({
+          resource: dqnResult.finalResource,
+          reward: dqnResult.totalReward
+        });
+      } catch (error) {
+        console.error('Error starting DQN simulation:', error);
+      }
     } else {
       setPolylines(prev => prev.filter(p => p.id !== 'dqn-simulation'));
       setDqnPathInfo(null);
@@ -114,24 +137,28 @@ function App() {
     setIsSimulationRunning(!isSimulationRunning);
   }, [isSimulationRunning, setIsSimulationRunning, generateDQNPath, agent.position, resources]);
 
-  const handleRefreshDQNPath = useCallback(() => {
+  const handleRefreshDQNPath = useCallback(async () => {
     if (isSimulationRunning) {
-      const dqnResult = generateDQNPath(agent.position, resources);
+      try {
+        const dqnResult = await generateDQNPath(agent.position, resources);
 
-      const simulationPolyline: Polyline = {
-        id: 'dqn-simulation',
-        name: 'DQN Optimal Path',
-        path: dqnResult.path,
-        color: 'rgba(239, 68, 68, 0.5)',
-        isActive: true,
-        confidence: 0.95
-      };
+        const simulationPolyline: Polyline = {
+          id: 'dqn-simulation',
+          name: 'DQN Optimal Path',
+          path: dqnResult.path,
+          color: 'rgba(239, 68, 68, 0.5)',
+          isActive: true,
+          confidence: 0.95
+        };
 
-      setPolylines(prev => [...prev.filter(p => p.id !== 'dqn-simulation'), simulationPolyline]);
-      setDqnPathInfo({
-        resource: dqnResult.finalResource,
-        reward: dqnResult.totalReward
-      });
+        setPolylines(prev => [...prev.filter(p => p.id !== 'dqn-simulation'), simulationPolyline]);
+        setDqnPathInfo({
+          resource: dqnResult.finalResource,
+          reward: dqnResult.totalReward
+        });
+      } catch (error) {
+        console.error('Error refreshing DQN path:', error);
+      }
     }
   }, [isSimulationRunning, generateDQNPath, agent.position, resources]);
 

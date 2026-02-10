@@ -15,6 +15,74 @@ This file contains utility (i.e. globally used) functions in accordance with DRY
 import numpy as np
 import math
 import heapq
+import re
+from bs4 import BeautifulSoup
+import nltk
+from nltk.stem import WordNetLemmatizer, PorterStemmer
+from nltk.corpus import stopwords
+
+# Ensure NLTK data is downloaded
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
+
+try:
+    nltk.data.find('corpora/wordnet')
+except LookupError:
+    nltk.download('wordnet')
+
+# ===========================
+# utils_preprocess_text
+# ===========================
+def utils_preprocess_text(text: str, flg_stemm: bool = False, flg_lemm: bool = True, lst_stopwords: list = None) -> str:
+    """
+    Preprocess text by removing HTML tags, punctuations, numbers, stopwords, and applying stemming/lemmatization.
+
+    Parameters:
+        text (str): The text to preprocess.
+        flg_stemm (bool): Flag to apply stemming. Default is False.
+        flg_lemm (bool): Flag to apply lemmatization. Default is True.
+        lst_stopwords (list): List of stopwords to remove. Default is None.
+
+    Returns:
+        str: The preprocessed text.
+    """
+    if not text:
+        return ""
+
+    # Remove HTML
+    soup = BeautifulSoup(text, 'lxml')
+    text = soup.get_text()
+
+    # Remove punctuations and numbers
+    text = re.sub('[^a-zA-Z]', ' ', text)
+
+    # Single character removal
+    text = re.sub(r"\s+[a-zA-Z]\s+", ' ', text)
+
+    # Remove multiple spaces
+    text = re.sub(r'\s+', ' ', text)
+
+    # Tokenize text
+    lst_text = text.split()
+
+    # Remove stopwords
+    if lst_stopwords is not None:
+        lst_text = [word for word in lst_text if word not in lst_stopwords]
+
+    # Apply stemming
+    if flg_stemm:
+        ps = PorterStemmer()
+        lst_text = [ps.stem(word) for word in lst_text]
+
+    # Apply lemmatization
+    if flg_lemm:
+        lem = WordNetLemmatizer()
+        lst_text = [lem.lemmatize(word) for word in lst_text]
+
+    text = " ".join(lst_text)
+    return text
 
 # ===========================
 # convert_to_lists
