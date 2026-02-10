@@ -19,14 +19,4 @@ SQLAlchemy==2.0.31
 torch
 Werkzeug==3.0.3
 youtube-transcript-api==0.6.3
-keybert
-sentence-transformers
-transformers
-youtube-transcript-api
-nltk
-beautifulsoup4
 lxml
-sympy
-scikit-learn
-numpy
-torch

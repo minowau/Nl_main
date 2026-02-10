@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LearningSummary, Polyline } from '../types';
-import { X } from 'lucide-react';
+import { X, BookOpen, Activity, Map, PlayCircle, HelpCircle } from 'lucide-react';
 
 interface ControlPanelProps {
   onSummarizeLearning: (title: string, summary: string) => void;
@@ -76,133 +76,174 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
+    <div className="bg-white h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b">
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">My Learning Map</h2>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Need help ?</span>
-          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-            <span className="text-gray-600 text-sm">?</span>
-          </div>
+      <div className="px-6 py-5 border-b border-gray-100 bg-white sticky top-0 z-10">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-lg font-bold text-gray-900">Control Center</h2>
+          <button className="text-gray-400 hover:text-blue-600 transition-colors">
+            <HelpCircle className="w-5 h-5" />
+          </button>
         </div>
+        <p className="text-xs text-gray-500">Manage your learning journey and analysis</p>
       </div>
 
-      {/* Control Buttons */}
-      <div className="p-6 space-y-3">
+      {/* Control Actions */}
+      <div className="p-6 space-y-3 bg-gray-50/50 border-b border-gray-100">
+        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Actions</label>
         <button
           onClick={() => setShowSummaryModal(true)}
           disabled={isLoading}
-          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white text-sm rounded-xl font-medium transition-all shadow-sm hover:shadow-md"
         >
-          Summarise My Learning
+          <BookOpen className="w-4 h-4" />
+          Summarize Learning
         </button>
 
-        <button
-          onClick={handleShowPolyline}
-          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-        >
-          See polyline
-        </button>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={handleShowPolyline}
+            className="flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm rounded-xl font-medium transition-all"
+          >
+            <Activity className="w-4 h-4 text-blue-500" />
+            Current Polyline
+          </button>
 
-        <button
-          onClick={() => setShowPolylineListModal(true)}
-          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-        >
-          Polylines List
-        </button>
+          <button
+            onClick={() => setShowPolylineListModal(true)}
+            className="flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm rounded-xl font-medium transition-all"
+          >
+            <Map className="w-4 h-4 text-purple-500" />
+            History
+          </button>
+        </div>
 
         <button
           onClick={onToggleSimulation}
-          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+          className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 border text-sm rounded-xl font-medium transition-all ${isSimulationRunning
+            ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
+            : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'
+            }`}
         >
-          {isSimulationRunning ? 'Stop DQN' : 'Start DQN'}
+          <PlayCircle className="w-4 h-4" />
+          {isSimulationRunning ? 'Stop DQN Simulation' : 'Start DQN Simulation'}
         </button>
       </div>
 
-      {/* Learning Timeline */}
-      <div className="flex-1 p-6 overflow-hidden flex flex-col">
-        <div className="space-y-4">
-          <div className="text-sm text-gray-600 mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-medium">Beginning of Activities</span>
-              <span className="text-xs text-gray-500">Start</span>
-            </div>
-          </div>
+      {/* Learning Stats */}
+      {(learningData.strengths.length > 0 || learningData.recommendations.length > 0) && (
+        <div className="px-6 py-4 bg-white border-b border-gray-100">
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Insights</h3>
 
-          {/* Timeline items */}
-          <div className="space-y-4 overflow-y-auto flex-1 max-h-64 pr-2">
-            {learningPath.slice(-3).map((item, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-                  <div className="w-4 h-4 bg-white rounded"></div>
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-800">{item}</div>
-                  <div className="text-xs text-gray-500">
-                    Fri, 11 Apr, 2025, 06:04:{40 + index * 6} pm IST
-                  </div>
-                  <div className="text-xs text-blue-600 mt-1">
-                    Resource https://www.youtube.com/watch?v=example{index}
-                  </div>
+          {learningData.strengths.length > 0 && (
+            <div className="mb-3">
+              <span className="text-xs font-semibold text-green-600 mb-1 block">Strengths</span>
+              <div className="flex flex-wrap gap-1.5">
+                {learningData.strengths.slice(0, 3).map((strength, i) => (
+                  <span key={i} className="px-2 py-0.5 bg-green-50 text-green-700 text-[10px] font-medium rounded border border-green-100">
+                    {strength}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {learningData.recommendations.length > 0 && (
+            <div>
+              <span className="text-xs font-semibold text-blue-600 mb-1 block">Recommended</span>
+              <div className="flex flex-wrap gap-1.5">
+                {learningData.recommendations.slice(0, 2).map((rec, i) => (
+                  <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-medium rounded border border-blue-100">
+                    {rec}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Learning Timeline */}
+      <div className="flex-1 p-6 overflow-hidden flex flex-col min-h-0 bg-white">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold text-gray-900">Activity Log</h3>
+          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{learningPath.length} items</span>
+        </div>
+
+        <div className="space-y-0 overflow-y-auto flex-1 pr-2 -mr-2 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+          <div className="relative pl-4 border-l-2 border-gray-100 space-y-6 py-2">
+            {[...learningPath].reverse().slice(0, 10).map((item, index) => (
+              <div key={index} className="relative group">
+                <div className="absolute -left-[21px] top-1.5 w-3 h-3 bg-white border-2 border-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-400 mb-0.5">Just now</span>
+                  <span className="text-sm font-medium text-gray-800 leading-tight group-hover:text-blue-600 transition-colors">{item}</span>
                 </div>
               </div>
             ))}
+
+            <div className="relative">
+              <div className="absolute -left-[21px] top-1.5 w-3 h-3 bg-gray-200 rounded-full"></div>
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-400">Session Start</span>
+                <span className="text-sm text-gray-500">Initialized learning environment</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Summary Modal */}
       {showSummaryModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-800">Learning Summary</h3>
-                <button
-                  onClick={() => setShowSummaryModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden scale-100 animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-gray-900">Summarize Learning</h3>
+              <button
+                onClick={() => setShowSummaryModal(false)}
+                className="p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Title</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g., Introduction to Transformers"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400"
+                />
               </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Enter the title"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Summary
-                  </label>
-                  <textarea
-                    value={summary}
-                    onChange={(e) => setSummary(e.target.value)}
-                    placeholder="Enter the summary or upload a pdf"
-                    className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Key Takeaways</label>
+                <textarea
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                  placeholder="Describe what you learned..."
+                  className="w-full h-32 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400"
+                />
               </div>
-              
-              <div className="flex justify-start mt-6">
-                <button
-                  onClick={handleSummarySubmit}
-                  disabled={!title.trim() || !summary.trim() || isLoading}
-                  className="py-3 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
-                >
-                  {isLoading ? 'Processing...' : 'Update My Position'}
-                </button>
-              </div>
+            </div>
+
+            <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+              <button
+                onClick={() => setShowSummaryModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-200/50 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSummarySubmit}
+                disabled={!title.trim() || !summary.trim() || isLoading}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg shadow-sm shadow-blue-200 transition-all transform active:scale-95"
+              >
+                {isLoading ? 'Processing...' : 'Save Summary'}
+              </button>
             </div>
           </div>
         </div>
@@ -210,101 +251,119 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
       {/* Polyline Chart Modal */}
       {showPolylineModal && selectedPolyline && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-gray-800">Learner Polyline</h3>
-                <button
-                  onClick={() => setShowPolylineModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Learning Analysis</h3>
+                <p className="text-sm text-gray-500">Polyline visualization of your learning path</p>
               </div>
-              
+              <button
+                onClick={() => setShowPolylineModal(false)}
+                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6">
               {/* Keywords Detected */}
               {selectedPolyline.keywords_found && selectedPolyline.keywords_found.length > 0 && (
-                <div className="mb-4 p-4 bg-green-50 rounded-lg border border-green-100">
-                  <div className="text-sm font-medium text-green-800 mb-2">Keywords Detected from Summary:</div>
+                <div className="mb-6">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Detected Keywords</h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedPolyline.keywords_found.map((keyword, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-white text-green-700 text-xs rounded-full border border-green-200 shadow-sm">
+                      <span key={idx} className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded-full border border-blue-100">
                         {keyword}
                       </span>
                     ))}
                   </div>
                 </div>
               )}
-              
+
               {/* Chart Container */}
-              <div className="border border-gray-300 rounded-lg p-6 mb-4">
-                <div className="relative h-80">
-                  <svg width="100%" height="100%" viewBox="0 0 600 300">
+              <div className="bg-gray-50/50 border border-gray-200 rounded-2xl p-6 mb-6">
+                <div className="relative h-80 w-full">
+                  <svg width="100%" height="100%" viewBox="0 0 600 300" className="overflow-visible">
                     {/* Grid lines */}
                     <defs>
-                      <pattern id="grid" width="50" height="25" patternUnits="userSpaceOnUse">
-                        <path d="M 50 0 L 0 0 0 25" fill="none" stroke="#e5e7eb" strokeWidth="1" strokeDasharray="2,2"/>
+                      <pattern id="grid" width="33.33" height="50" patternUnits="userSpaceOnUse">
+                        <path d="M 33.33 0 L 0 0 0 50" fill="none" stroke="#e5e7eb" strokeWidth="1" strokeDasharray="3,3" />
                       </pattern>
                     </defs>
-                    <rect width="100%" height="100%" fill="url(#grid)" />
-                    
+                    <rect width="100%" height="100%" fill="url(#grid)" opacity="0.6" />
+
                     {/* Y-axis labels */}
-                    <text x="20" y="30" fontSize="12" fill="#6b7280">1.0</text>
-                    <text x="20" y="80" fontSize="12" fill="#6b7280">0.8</text>
-                    <text x="20" y="130" fontSize="12" fill="#6b7280">0.6</text>
-                    <text x="20" y="180" fontSize="12" fill="#6b7280">0.4</text>
-                    <text x="20" y="230" fontSize="12" fill="#6b7280">0.2</text>
-                    <text x="20" y="280" fontSize="12" fill="#6b7280">0.0</text>
-                    
+                    <g className="text-[10px] fill-gray-400">
+                      <text x="-10" y="30" textAnchor="end">1.0</text>
+                      <text x="-10" y="155" textAnchor="end">0.5</text>
+                      <text x="-10" y="280" textAnchor="end">0.0</text>
+                    </g>
+
                     {/* X-axis labels */}
-                    {Array.from({length: 18}, (_, i) => i + 1).map(i => (
-                      <text key={i} x={30 + i * 30} y="290" fontSize="10" fill="#6b7280" textAnchor="middle">{i}</text>
+                    {Array.from({ length: 18 }, (_, i) => i + 1).map(i => (
+                      <text key={i} x={33.33 * i - 16} y="315" fontSize="10" fill="#9ca3af" textAnchor="middle">{i}</text>
                     ))}
-                    
-                    {/* Chart line */}
+
+                    {/* Chart area */}
+                    <path
+                      d={`M 0 300 ${generateChartData(selectedPolyline).map((point, i) =>
+                        `L ${33.33 * (i + 1)} ${280 - point.y * 250}`
+                      ).join(' ')} L 600 300 Z`}
+                      fill="url(#gradient)"
+                      opacity="0.1"
+                    />
+                    <defs>
+                      <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#2563eb" />
+                        <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+
                     <polyline
                       fill="none"
                       stroke="#2563eb"
                       strokeWidth="3"
-                      points={generateChartData(selectedPolyline).map((point, i) => 
-                        `${30 + (i + 1) * 30},${280 - point.y * 250}`
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      points={generateChartData(selectedPolyline).map((point, i) =>
+                        `${33.33 * (i + 1)},${280 - point.y * 250}`
                       ).join(' ')}
+                      className="drop-shadow-sm"
                     />
-                    
+
                     {/* Data points */}
                     {generateChartData(selectedPolyline).map((point, i) => (
-                      <circle 
-                        key={i} 
-                        cx={30 + (i + 1) * 30} 
-                        cy={280 - point.y * 250} 
-                        r="4" 
-                        fill="#2563eb" 
+                      <circle
+                        key={i}
+                        cx={33.33 * (i + 1)}
+                        cy={280 - point.y * 250}
+                        r="4"
+                        className="fill-white stroke-blue-600 stroke-2 hover:r-6 hover:stroke-4 transition-all cursor-pointer"
                       />
                     ))}
                   </svg>
-                  
-                  {/* Axis labels */}
-                  <div className="absolute left-4 top-1/2 transform -rotate-90 -translate-y-1/2 text-sm text-gray-600">
-                    Assimilation
+
+                  {/* Axis titles */}
+                  <div className="absolute -left-12 top-1/2 transform -rotate-90 -translate-y-1/2 text-xs font-semibold text-gray-400 tracking-wider">
+                    ASSIMILATION SCORE
                   </div>
-                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-sm text-gray-600">
-                    Topic Index
+                  <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 text-xs font-semibold text-gray-400 tracking-wider">
+                    TOPIC INDEX
                   </div>
                 </div>
               </div>
-              
+
               {/* Topic Legend */}
-              <div className="text-sm text-gray-700 mt-4">
-                <div className="font-medium mb-2">Topic Legend:</div>
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  {topicLegendItems.map((item, index) => (
-                    <div key={index} className="flex items-start space-x-1">
-                      <span className="font-bold text-gray-500 w-5">{index + 1}:</span>
-                      <span className="truncate" title={item}>{item}</span>
-                    </div>
-                  ))}
-                </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {topicLegendItems.map((item, index) => (
+                  <div key={index} className="flex items-start gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 bg-gray-100 rounded text-[10px] font-bold text-gray-600">
+                      {index + 1}
+                    </span>
+                    <span className="text-xs text-gray-600 leading-tight" title={item}>{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -313,112 +372,69 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
       {/* Polylines List Modal */}
       {showPolylineListModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-gray-800">My Learning Journey</h3>
-                <button
-                  onClick={() => setShowPolylineListModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Journey History</h3>
+                <p className="text-sm text-gray-500">Track how your knowledge map evolved</p>
               </div>
-              
-              <div className="space-y-8">
-                {polylines.map((polyline, index) => (
-                  <div key={polyline.id} className="border-b border-gray-200 pb-6 last:border-b-0">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-medium text-gray-800">
-                        {index === 0 ? 'Initial Polyline' : `After ${index} Contribution${index > 1 ? 's' : ''}`}
-                      </h4>
-                      <button
-                        onClick={() => {
-                          onShowPolyline(polyline.id);
-                          setSelectedPolyline(polyline);
-                          setShowPolylineListModal(false);
-                          setShowPolylineModal(true);
-                        }}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                      >
-                        View Details
-                      </button>
-                    </div>
-                    
-                    {/* Mini Chart */}
-                    <div className="border border-gray-300 rounded p-4 mb-3">
-                      <svg width="100%" height="200" viewBox="0 0 400 200">
-                        {/* Grid */}
-                        <defs>
-                          <pattern id={`grid-${index}`} width="33" height="20" patternUnits="userSpaceOnUse">
-                            <path d="M 33 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" strokeWidth="1" strokeDasharray="1,1"/>
-                          </pattern>
-                        </defs>
-                        <rect width="100%" height="100%" fill={`url(#grid-${index})`} />
-                        
-                        {/* Y-axis */}
-                        <line x1="30" y1="20" x2="30" y2="180" stroke="#6b7280" strokeWidth="1"/>
-                        <text x="25" y="25" fontSize="10" fill="#6b7280" textAnchor="end">1.0</text>
-                        <text x="25" y="60" fontSize="10" fill="#6b7280" textAnchor="end">0.8</text>
-                        <text x="25" y="100" fontSize="10" fill="#6b7280" textAnchor="end">0.5</text>
-                        <text x="25" y="140" fontSize="10" fill="#6b7280" textAnchor="end">0.2</text>
-                        <text x="25" y="175" fontSize="10" fill="#6b7280" textAnchor="end">0.0</text>
-                        
-                        {/* X-axis */}
-                        <line x1="20" y1="180" x2="380" y2="180" stroke="#6b7280" strokeWidth="1"/>
-                        {Array.from({length: 18}, (_, i) => i + 1).map(i => (
-                          <text key={i} x={20 + i * 20} y="195" fontSize="10" fill="#6b7280" textAnchor="middle">{i}</text>
-                        ))}
-                        
-                        {/* Data line */}
-                        <polyline
-                          fill="none"
-                          stroke="#2563eb"
-                          strokeWidth="2"
-                          points={generateChartData(polyline).map((point, i) => 
-                            `${20 + (i + 1) * 20},${180 - point.y * 150}`
-                          ).join(' ')}
-                        />
-                        
-                        {/* Data points */}
-                        {generateChartData(polyline).map((point, i) => (
-                          <circle 
-                            key={i} 
-                            cx={20 + (i + 1) * 20} 
-                            cy={180 - point.y * 150} 
-                            r="3" 
-                            fill="#2563eb" 
-                          />
-                        ))}
-                      </svg>
-                      
-                      <div className="text-center mt-2">
-                        <div className="text-xs text-gray-600">Topic Index</div>
-                      </div>
-                    </div>
-                    
-                    {/* Legend */}
-                    <div className="text-xs text-gray-600 leading-relaxed mt-3">
-                      <div className="font-medium mb-1">Topic Legend:</div>
-                      <div className="grid grid-cols-3 gap-x-2 gap-y-1">
-                        {topicLegendItems.map((item, index) => (
-                          <div key={index} className="flex items-start space-x-1">
-                            <span className="font-bold text-gray-500 w-4">{index + 1}:</span>
-                            <span className="truncate" title={item}>{item}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+              <button
+                onClick={() => setShowPolylineListModal(false)}
+                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 grid gap-6 md:grid-cols-2">
+              {polylines.map((polyline, index) => (
+                <div key={polyline.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
+                  <div className="p-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                    <h4 className="font-semibold text-gray-900 text-sm">
+                      {index === 0 ? 'Initial State' : `Contribution #${index}`}
+                    </h4>
+                    <span className="text-xs text-gray-500">{polyline.confidence ? `${(polyline.confidence * 100).toFixed(0)}% Confidence` : 'N/A'}</span>
                   </div>
-                ))}
-                
-                {polylines.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    No polylines generated yet. Create a learning summary to generate your first polyline.
+
+                  <div className="p-4 relative">
+                    <svg width="100%" height="80" viewBox="0 0 300 80" className="overflow-visible">
+                      <polyline
+                        fill="none"
+                        stroke={index === polylines.length - 1 ? "#2563eb" : "#9ca3af"}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        points={generateChartData(polyline).map((point, i) =>
+                          `${(300 / 18) * (i + 1)},${80 - point.y * 60}`
+                        ).join(' ')}
+                      />
+                    </svg>
+
+                    <button
+                      onClick={() => {
+                        onShowPolyline(polyline.id);
+                        setSelectedPolyline(polyline);
+                        setShowPolylineListModal(false);
+                        setShowPolylineModal(true);
+                      }}
+                      className="absolute inset-0 flex items-center justify-center bg-white/0 group-hover:bg-white/80 transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <span className="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                        Analyze Details
+                      </span>
+                    </button>
                   </div>
-                )}
-              </div>
+                </div>
+              ))}
+
+              {polylines.length === 0 && (
+                <div className="col-span-full py-12 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                  <BookOpen className="w-10 h-10 mx-auto text-gray-300 mb-3" />
+                  <p>No history available yet.</p>
+                  <p className="text-sm mt-1">Submit a learning summary to start tracking.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

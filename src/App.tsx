@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { GridVisualization } from './components/GridVisualization';
 import { ControlPanel } from './components/ControlPanel';
 import { useDQNSimulation } from './hooks/useDQNSimulation';
@@ -51,14 +51,14 @@ function App() {
 
   const handleResourceClick = useCallback((resource: Resource) => {
     if (!resource.visited) {
-      setResources(prev => prev.map(r => 
+      setResources(prev => prev.map(r =>
         r.id === resource.id ? { ...r, visited: true } : r
       ));
-      
+
       visitResource(resource);
       moveAgent(resource.position);
       setLearningPath(prev => [...prev, resource.title]);
-      
+
       setLearningData(prev => ({
         ...prev,
         visitedResources: prev.visitedResources + 1
@@ -71,11 +71,11 @@ function App() {
     try {
       const visitedIds = resources.filter(r => r.visited).map(r => r.id);
       const result = await nlpApi.createLearnningSummary('default', title, summary, visitedIds);
-      
+
       // Move agent to next unvisited resource or random resource if all visited
       const unvisited = resources.filter(r => !r.visited);
       let targetPos;
-      
+
       if (unvisited.length > 0) {
         // Find nearest unvisited (simple heuristic: first one)
         targetPos = unvisited[0].position;
@@ -84,16 +84,16 @@ function App() {
         const randomResource = resources[Math.floor(Math.random() * resources.length)];
         targetPos = randomResource.position;
       }
-      
+
       moveAgent(targetPos);
 
       const visitedResources = resources.filter(r => r.visited);
       const learningSummary = await generateLearningSummary(visitedResources);
       const newPolylines = generatePolylines(visitedResources);
-      
+
       setLearningData(learningSummary);
       setPolylines(prev => [...prev, result.polyline, ...newPolylines]);
-      
+
     } catch (error) {
       console.error('Error processing learning summary:', error);
     } finally {
@@ -167,36 +167,40 @@ function App() {
   }, [moveAgent]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Advance NLP
+      <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl text-gray-900 font-medium">
+              Navigated Learning
             </h1>
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
-              <div className="flex items-center space-x-2">
-                <span>Agent Level:</span>
-                <span className="font-semibold text-blue-600">{agent.level}</span>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-6 text-sm">
+              <div className="flex flex-col items-end">
+                <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">Agent Level</span>
+                <span className="font-bold text-blue-600 text-lg leading-none">{agent.level}</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <span>Total Reward:</span>
-                <span className="font-semibold text-green-600">{agent.totalReward}</span>
+              <div className="h-8 w-px bg-gray-200"></div>
+              <div className="flex flex-col items-end">
+                <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">Reward</span>
+                <span className="font-bold text-green-600 text-lg leading-none">{agent.totalReward}</span>
               </div>
-              <div className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
-                learner
-              </div>
+            </div>
+            <div className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-semibold border border-gray-200">
+              v1.0.0
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-6">
-        <div className="flex gap-6 h-[calc(100vh-140px)]">
-          {/* Left Panel - 2D Grid Environment */}
-          <div className="flex-1">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col lg:flex-row gap-8 h-[calc(100vh-8rem)] min-h-[600px]">
+          {/* Left Panel - Grid Visualization */}
+          <div className="flex-1 overflow-hidden flex flex-col rounded-2xl bg-white shadow-sm border border-gray-200">
             <GridVisualization
               resources={resources}
               agent={agent}
@@ -210,7 +214,7 @@ function App() {
           </div>
 
           {/* Right Panel - Control Center */}
-          <div className="w-80 flex-shrink-0">
+          <div className="w-full lg:w-96 flex-shrink-0 flex flex-col rounded-2xl bg-white shadow-sm border border-gray-200 overflow-hidden">
             <ControlPanel
               onSummarizeLearning={handleSummarizeLearning}
               onShowPolyline={handleShowPolyline}

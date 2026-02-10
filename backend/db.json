@@ -3,11 +3,11 @@
     "learning_sessions": {
         "default": {
             "position": {
-                "x": 18,
-                "y": 7
+                "x": 7,
+                "y": 18
             },
             "level": 4,
-            "totalReward": 650,
+            "totalReward": 700,
             "visitedResources": [
                 "18",
                 "13",
@@ -21,7 +21,8 @@
                 "6",
                 "15",
                 "2",
-                "7"
+                "7",
+                "4"
             ]
         }
     },
@@ -646,6 +647,198 @@
                 0.010432184673845768,
                 0.014520765282213688
             ]
+        },
+        "polyline_20": {
+            "id": "polyline_20",
+            "name": "huu",
+            "path": [],
+            "color": "rgba(132, 67, 193, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "huuu",
+            "keywords_found": [],
+            "module_scores": [
+                0.06137967109680176,
+                0.025739794597029686,
+                0.05682278797030449,
+                0.0015102589968591928,
+                0.0,
+                0.0,
+                0.0828077420592308,
+                0.03640921786427498,
+                0.0,
+                0.048738643527030945,
+                0.0,
+                0.07323087751865387,
+                0.0,
+                0.06557325273752213,
+                0.03551648184657097,
+                0.0,
+                0.007635355927050114,
+                0.030927538871765137
+            ]
+        },
+        "polyline_21": {
+            "id": "polyline_21",
+            "name": "hello",
+            "path": [],
+            "color": "rgba(171, 185, 237, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "hello",
+            "keywords_found": [],
+            "module_scores": [
+                0.09007163345813751,
+                0.14346976578235626,
+                0.09423135966062546,
+                0.039209116250276566,
+                0.09866251051425934,
+                0.07642864435911179,
+                0.050438638776540756,
+                0.11424312740564346,
+                0.06147314980626106,
+                0.025780409574508667,
+                0.04125567153096199,
+                0.06409071385860443,
+                0.0545211136341095,
+                0.08595173060894012,
+                0.03564179316163063,
+                0.09568523615598679,
+                0.05039823427796364,
+                0.07651611417531967
+            ]
+        },
+        "polyline_22": {
+            "id": "polyline_22",
+            "name": "Introduction",
+            "path": [
+                {
+                    "x": 4,
+                    "y": 19
+                }
+            ],
+            "color": "rgba(117, 80, 114, 0.4)",
+            "isActive": true,
+            "confidence": 0.71,
+            "summary": "hello",
+            "keywords_found": [],
+            "module_scores": [
+                0.09007163345813751,
+                0.14346976578235626,
+                0.19423136115074158,
+                0.039209116250276566,
+                0.09866251051425934,
+                0.07642864435911179,
+                0.050438638776540756,
+                0.11424312740564346,
+                0.06147314980626106,
+                0.025780409574508667,
+                0.04125567153096199,
+                0.06409071385860443,
+                0.0545211136341095,
+                0.08595173060894012,
+                0.03564179316163063,
+                0.09568523615598679,
+                0.05039823427796364,
+                0.07651611417531967
+            ]
+        },
+        "polyline_23": {
+            "id": "polyline_23",
+            "name": "heyyy",
+            "path": [],
+            "color": "rgba(76, 80, 77, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "heyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.017389550805091858,
+                0.10327564924955368,
+                0.09360406547784805,
+                0.03690618276596069,
+                0.04519070312380791,
+                0.038354936987161636,
+                0.07477933913469315,
+                0.005562630016356707,
+                0.0,
+                0.0,
+                0.0,
+                0.05210745334625244,
+                0.002015892416238785,
+                0.07473935186862946,
+                0.0972217470407486,
+                0.0,
+                0.05581950396299362
+            ]
+        },
+        "polyline_24": {
+            "id": "polyline_24",
+            "name": "heyyy",
+            "path": [],
+            "color": "rgba(123, 83, 128, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "heyyyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.015168394893407822,
+                0.09509415924549103,
+                0.08808448165655136,
+                0.055125169456005096,
+                0.03878949210047722,
+                0.06340508162975311,
+                0.0406477153301239,
+                0.0,
+                0.0,
+                0.0,
+                0.012255707755684853,
+                0.07024804502725601,
+                0.005069136619567871,
+                0.06734798103570938,
+                0.08735782653093338,
+                0.0,
+                0.03643130138516426
+            ]
+        },
+        "polyline_25": {
+            "id": "polyline_25",
+            "name": "Introduction to transformers",
+            "path": [
+                {
+                    "x": 4,
+                    "y": 19
+                }
+            ],
+            "color": "rgba(143, 130, 92, 0.4)",
+            "isActive": true,
+            "confidence": 0.71,
+            "summary": "Transformers are a class of deep learning models designed to process sequential data efficiently by relying on an attention-based mechanism rather than recurrence or convolution. Introduced in the landmark paper \u201cAttention Is All You Need\u201d, transformers revolutionized natural language processing by enabling models to capture long-range dependencies in data with high parallelism.\n\nAt the core of a transformer is the self-attention mechanism, which allows the model to weigh the importance of different parts of an input sequence when processing each element. This makes transformers highly effective at understanding context, relationships, and structure within data. The architecture typically consists of an encoder\u2013decoder structure, where encoders extract meaningful representations from input data and decoders generate output sequences based on those representations.\n\nTransformers also use positional encoding to retain information about the order of tokens, since the model itself does not process data sequentially. Combined with multi-head attention and feed-forward neural networks, this design enables scalable training on large datasets.\n\nDue to their flexibility and performance, transformers form the backbone of many modern AI systems, including large language models, machine translation systems, text summarization tools, and increasingly, applications in vision, speech, and multimodal learning.",
+            "keywords_found": [
+                "Multimodal LLMs"
+            ],
+            "module_scores": [
+                0.433811753988266,
+                0.4582192003726959,
+                0.5164702534675598,
+                0.2946617603302002,
+                0.37847253680229187,
+                0.2834630310535431,
+                0.2269679754972458,
+                0.23173178732395172,
+                0.12193305790424347,
+                0.15064716339111328,
+                0.20222218334674835,
+                0.23586700856685638,
+                0.2287927120923996,
+                0.2737714946269989,
+                0.7030925154685974,
+                0.5322507619857788,
+                0.2212483286857605,
+                0.202763170003891
+            ]
         }
     },
     "summaries": [
@@ -870,6 +1063,90 @@
             "recommendations": [],
             "avgDifficulty": 0,
             "totalReward": 0
+        },
+        {
+            "id": "summary_default_20",
+            "title": "huu",
+            "summary": "huuu",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_21",
+            "title": "hello",
+            "summary": "hello",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_22",
+            "title": "Introduction",
+            "summary": "hello",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Tutorial: Introduction to huggingface"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
+        },
+        {
+            "id": "summary_default_23",
+            "title": "heyyy",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_24",
+            "title": "heyyy",
+            "summary": "heyyyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_25",
+            "title": "Introduction to transformers",
+            "summary": "Transformers are a class of deep learning models designed to process sequential data efficiently by relying on an attention-based mechanism rather than recurrence or convolution. Introduced in the landmark paper \u201cAttention Is All You Need\u201d, transformers revolutionized natural language processing by enabling models to capture long-range dependencies in data with high parallelism.\n\nAt the core of a transformer is the self-attention mechanism, which allows the model to weigh the importance of different parts of an input sequence when processing each element. This makes transformers highly effective at understanding context, relationships, and structure within data. The architecture typically consists of an encoder\u2013decoder structure, where encoders extract meaningful representations from input data and decoders generate output sequences based on those representations.\n\nTransformers also use positional encoding to retain information about the order of tokens, since the model itself does not process data sequentially. Combined with multi-head attention and feed-forward neural networks, this design enables scalable training on large datasets.\n\nDue to their flexibility and performance, transformers form the backbone of many modern AI systems, including large language models, machine translation systems, text summarization tools, and increasingly, applications in vision, speech, and multimodal learning.",
+            "keywords_found": [
+                "Multimodal LLMs"
+            ],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Tutorial: Introduction to huggingface"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
         }
     ]
 }
