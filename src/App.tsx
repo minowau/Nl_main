@@ -189,9 +189,7 @@ function App() {
                 <span className="font-bold text-green-600 text-lg leading-none">{agent.totalReward}</span>
               </div>
             </div>
-            <div className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-semibold border border-gray-200">
-              v1.0.0
-            </div>
+
           </div>
         </div>
       </header>

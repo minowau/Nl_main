@@ -3,11 +3,11 @@
     "learning_sessions": {
         "default": {
             "position": {
-                "x": 7,
+                "x": 8,
                 "y": 18
             },
             "level": 4,
-            "totalReward": 700,
+            "totalReward": 750,
             "visitedResources": [
                 "18",
                 "13",
@@ -22,7 +22,8 @@
                 "15",
                 "2",
                 "7",
-                "4"
+                "4",
+                "5"
             ]
         }
     },
@@ -839,6 +840,127 @@
                 0.2212483286857605,
                 0.202763170003891
             ]
+        },
+        "polyline_26": {
+            "id": "polyline_26",
+            "name": "heyy",
+            "path": [
+                {
+                    "x": 4,
+                    "y": 19
+                },
+                {
+                    "x": 7,
+                    "y": 18
+                },
+                {
+                    "x": 18,
+                    "y": 6
+                },
+                {
+                    "x": 9,
+                    "y": 15
+                },
+                {
+                    "x": 9,
+                    "y": 17
+                }
+            ],
+            "color": "rgba(94, 122, 221, 0.4)",
+            "isActive": true,
+            "confidence": 0.77,
+            "summary": "heyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.017389550805091858,
+                0.2032756507396698,
+                0.19360406696796417,
+                0.13690617680549622,
+                0.04519070312380791,
+                0.13835494220256805,
+                0.07477933913469315,
+                0.005562630016356707,
+                0.0,
+                0.0,
+                0.0,
+                0.05210745334625244,
+                0.002015892416238785,
+                0.17473936080932617,
+                0.0972217470407486,
+                0.0,
+                0.05581950396299362
+            ]
+        },
+        "polyline_27": {
+            "id": "polyline_27",
+            "name": "heyy",
+            "path": [
+                {
+                    "x": 4,
+                    "y": 19
+                }
+            ],
+            "color": "rgba(74, 171, 224, 0.4)",
+            "isActive": true,
+            "confidence": 0.71,
+            "summary": "heyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.017389550805091858,
+                0.2032756507396698,
+                0.09360406547784805,
+                0.03690618276596069,
+                0.04519070312380791,
+                0.038354936987161636,
+                0.07477933913469315,
+                0.005562630016356707,
+                0.0,
+                0.0,
+                0.0,
+                0.05210745334625244,
+                0.002015892416238785,
+                0.07473935186862946,
+                0.0972217470407486,
+                0.0,
+                0.05581950396299362
+            ]
+        },
+        "polyline_28": {
+            "id": "polyline_28",
+            "name": "introduction to my ",
+            "path": [
+                {
+                    "x": 4,
+                    "y": 19
+                }
+            ],
+            "color": "rgba(76, 227, 191, 0.4)",
+            "isActive": true,
+            "confidence": 0.71,
+            "summary": "transformers",
+            "keywords_found": [],
+            "module_scores": [
+                0.024954048916697502,
+                0.13416121900081635,
+                0.5420874357223511,
+                0.07039379328489304,
+                0.021926987916231155,
+                0.0,
+                0.19421246647834778,
+                0.0,
+                0.0,
+                0.0374816469848156,
+                0.0,
+                0.057812318205833435,
+                0.04283241927623749,
+                0.0,
+                0.061064332723617554,
+                0.2036512792110443,
+                0.0,
+                0.0
+            ]
         }
     },
     "summaries": [
@@ -1138,6 +1260,55 @@
             "keywords_found": [
                 "Multimodal LLMs"
             ],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Tutorial: Introduction to huggingface"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
+        },
+        {
+            "id": "summary_default_26",
+            "title": "heyy",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 5,
+            "currentLevel": 2,
+            "strengths": [
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM",
+                "Instruction tuning",
+                "Parameter efficient fine tuning",
+                "Multimodal LLMs"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 250
+        },
+        {
+            "id": "summary_default_27",
+            "title": "heyy",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Tutorial: Introduction to huggingface"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
+        },
+        {
+            "id": "summary_default_28",
+            "title": "introduction to my ",
+            "summary": "transformers",
+            "keywords_found": [],
             "totalResources": 18,
             "visitedResources": 1,
             "currentLevel": 1,
