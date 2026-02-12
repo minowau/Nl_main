@@ -166,6 +166,29 @@ function App() {
     moveAgent(position);
   }, [moveAgent]);
 
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackPath, setPlaybackPath] = useState<{ x: number, y: number }[]>([]);
+
+  const handlePlayPath = useCallback(() => {
+    if (learningPath.length < 2) return;
+
+    // Reconstruct path from titles
+    const path: { x: number, y: number }[] = [];
+    learningPath.forEach(title => {
+      const resource = resources.find(r => r.title === title);
+      const pos = resource ? resource.position : null;
+      if (pos) path.push(pos);
+    });
+
+    if (path.length > 0) {
+      setPlaybackPath(path);
+      setIsPlaying(true);
+      // Auto-reset after animation duration (estimated 1s per step or just let Grid handle it)
+      // For now, we'll let GridVisualization handle the visual state, 
+      // but we can look for a callback to reset isPlaying if needed.
+    }
+  }, [learningPath, resources]);
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900">
       {/* Header */}
@@ -208,6 +231,9 @@ function App() {
               isSimulationRunning={isSimulationRunning}
               dqnPathInfo={dqnPathInfo}
               onRefreshDQNPath={handleRefreshDQNPath}
+              isPlaying={isPlaying}
+              playbackPath={playbackPath}
+              onPlaybackComplete={() => setIsPlaying(false)}
             />
           </div>
 
@@ -217,6 +243,7 @@ function App() {
               onSummarizeLearning={handleSummarizeLearning}
               onShowPolyline={handleShowPolyline}
               onToggleSimulation={handleToggleSimulation}
+              onPlayPath={handlePlayPath}
               learningData={learningData}
               polylines={polylines}
               isSimulationRunning={isSimulationRunning}

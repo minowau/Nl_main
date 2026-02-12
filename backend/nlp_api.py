@@ -44,11 +44,29 @@ def load_nlp_resources():
         df = pd.read_excel(nlp_excel_path)
         resources = []
         
+        used_positions = set()
+        
         for idx, row in df.iterrows():
+            # Force specific position for certain key resources to be central and visible
+            name_lower = str(row.get('name', '')).lower()
+            if 'vision language models' in name_lower:
+                x, y = 10, 10
+            else:
+                # Get preferred position or random (with extra padding: 2-17 to avoid edges)
+                x = int(row.get('x', np.random.randint(2, 18)))
+                y = int(row.get('y', np.random.randint(2, 18)))
+            
+            # Resolve collisions
+            while (x, y) in used_positions:
+                # Simple random re-roll (with extra padding)
+                x = np.random.randint(2, 18)
+                y = np.random.randint(2, 18)
+                
+            used_positions.add((x, y))
+            
             resource = {
                 'id': str(idx + 1),
-                'position': {'x': int(row.get('x', np.random.randint(0, 20))), 
-                            'y': int(row.get('y', np.random.randint(0, 20)))},
+                'position': {'x': x, 'y': y},
                 'type': 'book',  # Default type since not in keyword file
                 'title': row.get('name', f'Resource {idx + 1}'),
                 'visited': False,
@@ -369,6 +387,17 @@ def create_learning_summary():
     
     polylines = get_db_polylines()
     
+    # Aggregate keywords from all polylines to find most frequent topics
+    from collections import Counter
+    all_keywords = []
+    for p in polylines.values():
+        if 'keywords_found' in p:
+            all_keywords.extend(p['keywords_found'])
+    all_keywords.extend(keywords_found)
+    
+    keyword_counts = Counter(all_keywords)
+    most_common_keywords = [k for k, v in keyword_counts.most_common(3)]
+    
     summary_result = {
         'id': f"summary_{session_id}_{len(polylines)}",
         'title': title,
@@ -385,6 +414,78 @@ def create_learning_summary():
     
     save_summary(summary_result)
     
+    # Identify dominant topics from module scores
+    dominant_topics = []
+    if module_scores:
+        # Pair scores with module names
+        scored_modules = list(zip(ordered_modules, module_scores))
+        # Sort by score descending
+        scored_modules.sort(key=lambda x: x[1], reverse=True)
+        # Take top 3 with score > 0.3
+        dominant_topics = [m for m, s in scored_modules[:3] if s > 0.3]
+
+    # Generate AI Analysis using Gemini Flash (if key) or Local Fallback
+    ai_analysis = ""
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    
+    if gemini_key:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=gemini_key)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            
+            prompt = (
+                f"Analyze this learning student.\n"
+                f"Current Summary: '{summary}'\n"
+                f"History of Focus: {', '.join(most_common_keywords)}\n"
+                f"Current Dominant Topics: {', '.join(dominant_topics)}\n"
+                f"Instruction: Provide VERY SHORT feedback (max 2 sentences).\n"
+                f"1. If the summary is poor/short, CRITICIZE their expression and tell them to improve.\n"
+                f"2. If good, praise briefly.\n"
+                f"3. Suggest a next topic based on their history of focus."
+            )
+            
+            response = model.generate_content(prompt)
+            ai_analysis = response.text
+        except Exception as e:
+            print(f"Gemini API Error: {e}")
+            ai_analysis = f"Gemini Error: {e}" # Fallthrough to local
+            
+    # Fallback to Local Model if no Gemini key or if execution failed (and analysis is empty/error)
+    if not ai_analysis or "Error" in ai_analysis:
+        try:
+            print("Using local model fallback...")
+            from transformers import pipeline
+            # Load small efficient model for CPU inference
+            # We lazy load this to avoid startup impact if not needed
+            generator = pipeline('text2text-generation', model='google/flan-t5-small')
+            
+            # Adaptive prompt for local model
+            focus_area = most_common_keywords[0] if most_common_keywords else "NLP"
+            
+            # Heuristic for summary quality to guide the simple T5 model
+            summary_quality = "bad" if len(summary.split()) < 10 else "good"
+            
+            prompt = ""
+            if summary_quality == "bad":
+                prompt = f"tell student to improve summary about {focus_area}. be critical."
+            else:
+                prompt = f"praise student for good summary about {focus_area} and suggest advanced topic."
+            
+            output = generator(prompt, max_length=60, do_sample=True, temperature=0.7)
+            generated_text = output[0]['generated_text']
+            
+            # Capitalize
+            generated_text = generated_text[0].upper() + generated_text[1:] if generated_text else "Keep learning!"
+            
+            ai_analysis = f"AI Insight: {generated_text}"
+                           
+        except Exception as e:
+            print(f"Local Model Error: {e}")
+            ai_analysis = (f"Based on your path, you have shown strong engagement with {', '.join(dominant_topics[:2])}. "
+                           f"You successfully reinforced concepts in {', '.join(strengths[:2])}. "
+                           f"Consider exploring advanced topics in {recommendations[0] if recommendations else 'new areas'} next.")
+
     # Store polyline
     polyline_id = f"polyline_{len(polylines)}"
     new_polyline = {
@@ -396,7 +497,10 @@ def create_learning_summary():
         'confidence': round(0.7 + (len(visited_resources) / len(nlp_resources)) * 0.25, 2),
         'summary': summary,
         'keywords_found': keywords_found,
-        'module_scores': module_scores
+        'module_scores': module_scores,
+        'strengths': strengths,
+        'dominant_topics': dominant_topics,
+        'ai_analysis': ai_analysis
     }
     
     save_polyline(polyline_id, new_polyline)

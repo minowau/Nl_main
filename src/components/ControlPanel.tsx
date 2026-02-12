@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { LearningSummary, Polyline } from '../types';
-import { X, BookOpen, Activity, Map, PlayCircle, HelpCircle } from 'lucide-react';
+import { X, BookOpen, Activity, Map, PlayCircle, HelpCircle, Sparkles } from 'lucide-react';
 
 interface ControlPanelProps {
   onSummarizeLearning: (title: string, summary: string) => void;
   onShowPolyline: (polylineId: string) => void;
   onToggleSimulation: () => void;
+  onPlayPath: () => void;
   learningData: LearningSummary;
   polylines: Polyline[];
   isSimulationRunning: boolean;
@@ -17,6 +18,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onSummarizeLearning,
   onShowPolyline,
   onToggleSimulation,
+  onPlayPath,
   learningData,
   polylines,
   isSimulationRunning,
@@ -115,6 +117,15 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           >
             <Map className="w-4 h-4 text-purple-500" />
             History
+          </button>
+
+          <button
+            onClick={onPlayPath}
+            disabled={learningPath.length < 2}
+            className="col-span-2 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-gray-200 hover:bg-gray-50 disabled:bg-gray-50 disabled:text-gray-400 text-gray-700 text-sm rounded-xl font-medium transition-all"
+          >
+            <PlayCircle className="w-4 h-4 text-green-500" />
+            Play Path Animation
           </button>
         </div>
 
@@ -277,6 +288,36 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                         {keyword}
                       </span>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* AI Analysis Section */}
+              {(selectedPolyline.ai_analysis || (selectedPolyline.dominant_topics && selectedPolyline.dominant_topics.length > 0)) && (
+                <div className="mb-6 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 rounded-xl p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2.5 bg-white rounded-lg shadow-sm text-indigo-600 shrink-0">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-900 mb-1">AI Path Analysis</h4>
+                      {selectedPolyline.ai_analysis && (
+                        <p className="text-sm text-gray-700 leading-relaxed max-w-2xl mb-3">
+                          {selectedPolyline.ai_analysis}
+                        </p>
+                      )}
+
+                      {selectedPolyline.dominant_topics && selectedPolyline.dominant_topics.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Key Focus:</span>
+                          {selectedPolyline.dominant_topics.map((topic, i) => (
+                            <span key={i} className="px-2 py-1 bg-white/60 text-indigo-700 text-xs font-semibold rounded border border-indigo-100 shadow-sm">
+                              {topic}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

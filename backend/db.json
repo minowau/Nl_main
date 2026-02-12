@@ -3,11 +3,11 @@
     "learning_sessions": {
         "default": {
             "position": {
-                "x": 8,
-                "y": 18
+                "x": 13,
+                "y": 9
             },
-            "level": 4,
-            "totalReward": 750,
+            "level": 5,
+            "totalReward": 900,
             "visitedResources": [
                 "18",
                 "13",
@@ -23,7 +23,10 @@
                 "2",
                 "7",
                 "4",
-                "5"
+                "5",
+                "14",
+                "12",
+                "9"
             ]
         }
     },
@@ -961,6 +964,557 @@
                 0.0,
                 0.0
             ]
+        },
+        "polyline_29": {
+            "id": "polyline_29",
+            "name": "hiii",
+            "path": [
+                {
+                    "x": 4,
+                    "y": 19
+                },
+                {
+                    "x": 7,
+                    "y": 18
+                }
+            ],
+            "color": "rgba(253, 134, 192, 0.4)",
+            "isActive": true,
+            "confidence": 0.73,
+            "summary": "transformers",
+            "keywords_found": [],
+            "module_scores": [
+                0.024954048916697502,
+                0.13416121900081635,
+                0.5420874357223511,
+                0.17039379477500916,
+                0.021926987916231155,
+                0.0,
+                0.19421246647834778,
+                0.0,
+                0.0,
+                0.0374816469848156,
+                0.0,
+                0.057812318205833435,
+                0.04283241927623749,
+                0.0,
+                0.061064332723617554,
+                0.2036512792110443,
+                0.0,
+                0.0
+            ]
+        },
+        "polyline_30": {
+            "id": "polyline_30",
+            "name": "heyy",
+            "path": [
+                {
+                    "x": 4,
+                    "y": 15
+                },
+                {
+                    "x": 11,
+                    "y": 19
+                },
+                {
+                    "x": 5,
+                    "y": 14
+                }
+            ],
+            "color": "rgba(109, 71, 172, 0.4)",
+            "isActive": true,
+            "confidence": 0.74,
+            "summary": "heyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.017389550805091858,
+                0.10327564924955368,
+                0.09360406547784805,
+                0.13690617680549622,
+                0.04519070312380791,
+                0.13835494220256805,
+                0.07477933913469315,
+                0.005562630016356707,
+                0.0,
+                0.0,
+                0.0,
+                0.05210745334625244,
+                0.002015892416238785,
+                0.17473936080932617,
+                0.0972217470407486,
+                0.0,
+                0.05581950396299362
+            ],
+            "strengths": [
+                "Instruction tuning",
+                "Parameter efficient fine tuning",
+                "Multimodal LLMs"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "Based on your path, you have shown strong engagement with . You successfully reinforced concepts in Instruction tuning, Parameter efficient fine tuning. Consider exploring advanced topics in new areas next."
+        },
+        "polyline_31": {
+            "id": "polyline_31",
+            "name": "Introduction to transformers",
+            "path": [],
+            "color": "rgba(112, 160, 225, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "Transformers are a class of deep learning models designed to process sequential data efficiently by relying on an attention-based mechanism rather than recurrence or convolution. Introduced in the landmark paper \u201cAttention Is All You Need\u201d, transformers revolutionized natural language processing by enabling models to capture long-range dependencies in data with high parallelism.\n\nAt the core of a transformer is the self-attention mechanism, which allows the model to weigh the importance of different parts of an input sequence when processing each element. This makes transformers highly effective at understanding context, relationships, and structure within data. The architecture typically consists of an encoder\u2013decoder structure, where encoders extract meaningful representations from input data and decoders generate output sequences based on those representations.\n\nTransformers also use positional encoding to retain information about the order of tokens, since the model itself does not process data sequentially. Combined with multi-head attention and feed-forward neural networks, this design enables scalable training on large datasets.\n\nDue to their flexibility and performance, transformers form the backbone of many modern AI systems, including large language models, machine translation systems, text summarization tools, and increasingly, applications in vision, speech, and multimodal learning.",
+            "keywords_found": [
+                "Multimodal LLMs"
+            ],
+            "module_scores": [
+                0.433811753988266,
+                0.4582192003726959,
+                0.4164702296257019,
+                0.2946617603302002,
+                0.37847253680229187,
+                0.2834630310535431,
+                0.2269679754972458,
+                0.23173178732395172,
+                0.12193305790424347,
+                0.15064716339111328,
+                0.20222218334674835,
+                0.23586700856685638,
+                0.2287927120923996,
+                0.2737714946269989,
+                0.7030925154685974,
+                0.5322507619857788,
+                0.2212483286857605,
+                0.202763170003891
+            ],
+            "strengths": [],
+            "dominant_topics": [
+                "Multimodal LLMs",
+                "Vision Language Models",
+                "Pre trained models"
+            ],
+            "ai_analysis": "Based on your path, you have shown strong engagement with Multimodal LLMs, Vision Language Models. You successfully reinforced concepts in . Consider exploring advanced topics in new areas next."
+        },
+        "polyline_32": {
+            "id": "polyline_32",
+            "name": "Intro",
+            "path": [],
+            "color": "rgba(65, 189, 58, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "Transformers are a class of deep learning models designed to process sequential data efficiently by relying on an attention-based mechanism rather than recurrence or convolution. Introduced in the landmark paper \u201cAttention Is All You Need\u201d, transformers revolutionized natural language processing by enabling models to capture long-range dependencies in data with high parallelism.\n\nAt the core of a transformer is the self-attention mechanism, which allows the model to weigh the importance of different parts of an input sequence when processing each element. This makes transformers highly effective at understanding context, relationships, and structure within data. The architecture typically consists of an encoder\u2013decoder structure, where encoders extract meaningful representations from input data and decoders generate output sequences based on those representations.\n\nTransformers also use positional encoding to retain information about the order of tokens, since the model itself does not process data sequentially. Combined with multi-head attention and feed-forward neural networks, this design enables scalable training on large datasets.\n\nDue to their flexibility and performance, transformers form the backbone of many modern AI systems, including large language models, machine translation systems, text summarization tools, and increasingly, applications in vision, speech, and multimodal learning.",
+            "keywords_found": [
+                "Multimodal LLMs"
+            ],
+            "module_scores": [
+                0.433811753988266,
+                0.4582192003726959,
+                0.4164702296257019,
+                0.2946617603302002,
+                0.37847253680229187,
+                0.2834630310535431,
+                0.2269679754972458,
+                0.23173178732395172,
+                0.12193305790424347,
+                0.15064716339111328,
+                0.20222218334674835,
+                0.23586700856685638,
+                0.2287927120923996,
+                0.2737714946269989,
+                0.7030925154685974,
+                0.5322507619857788,
+                0.2212483286857605,
+                0.202763170003891
+            ],
+            "strengths": [],
+            "dominant_topics": [
+                "Multimodal LLMs",
+                "Vision Language Models",
+                "Pre trained models"
+            ],
+            "ai_analysis": "To enable advanced AI analysis, set the GEMINI_API_KEY environment variable. Based on your path, you have shown strong engagement with Multimodal LLMs, Vision Language Models. You successfully reinforced concepts in . Consider exploring advanced topics in new areas next."
+        },
+        "polyline_33": {
+            "id": "polyline_33",
+            "name": "Intro",
+            "path": [
+                {
+                    "x": 5,
+                    "y": 16
+                }
+            ],
+            "color": "rgba(196, 90, 89, 0.4)",
+            "isActive": true,
+            "confidence": 0.71,
+            "summary": "Transformers are a class of deep learning models designed to process sequential data efficiently by relying on an attention-based mechanism rather than recurrence or convolution. Introduced in the landmark paper \u201cAttention Is All You Need\u201d, transformers revolutionized natural language processing by enabling models to capture long-range dependencies in data with high parallelism.\n\nAt the core of a transformer is the self-attention mechanism, which allows the model to weigh the importance of different parts of an input sequence when processing each element. This makes transformers highly effective at understanding context, relationships, and structure within data. The architecture typically consists of an encoder\u2013decoder structure, where encoders extract meaningful representations from input data and decoders generate output sequences based on those representations.\n\nTransformers also use positional encoding to retain information about the order of tokens, since the model itself does not process data sequentially. Combined with multi-head attention and feed-forward neural networks, this design enables scalable training on large datasets.\n\nDue to their flexibility and performance, transformers form the backbone of many modern AI systems, including large language models, machine translation systems, text summarization tools, and increasingly, applications in vision, speech, and multimodal learning.",
+            "keywords_found": [
+                "Multimodal LLMs"
+            ],
+            "module_scores": [
+                0.433811753988266,
+                0.4582192003726959,
+                0.4164702296257019,
+                0.2946617603302002,
+                0.37847253680229187,
+                0.2834630310535431,
+                0.2269679754972458,
+                0.23173178732395172,
+                0.12193305790424347,
+                0.15064716339111328,
+                0.20222218334674835,
+                0.23586700856685638,
+                0.2287927120923996,
+                0.2737714946269989,
+                0.8030925393104553,
+                0.5322507619857788,
+                0.2212483286857605,
+                0.202763170003891
+            ],
+            "strengths": [
+                "Multimodal LLMs"
+            ],
+            "dominant_topics": [
+                "Multimodal LLMs",
+                "Vision Language Models",
+                "Pre trained models"
+            ],
+            "ai_analysis": "To enable advanced AI analysis, set the GEMINI_API_KEY environment variable. Based on your path, you have shown strong engagement with Multimodal LLMs, Vision Language Models. You successfully reinforced concepts in Multimodal LLMs. Consider exploring advanced topics in new areas next."
+        },
+        "polyline_34": {
+            "id": "polyline_34",
+            "name": "Pre training LLM",
+            "path": [
+                {
+                    "x": 5,
+                    "y": 17
+                }
+            ],
+            "color": "rgba(231, 183, 145, 0.4)",
+            "isActive": true,
+            "confidence": 0.71,
+            "summary": "I have learnt to finetune a pre trained BERT GPT model and i am using these models for sentiment analysis task",
+            "keywords_found": [
+                "Pre trained models"
+            ],
+            "module_scores": [
+                0.43252697587013245,
+                0.6987414360046387,
+                0.2524697184562683,
+                0.4963360130786896,
+                0.26733019948005676,
+                0.28303566575050354,
+                0.11330951005220413,
+                0.2320728749036789,
+                0.07975509762763977,
+                0.13868987560272217,
+                0.21347038447856903,
+                0.13678917288780212,
+                0.20242607593536377,
+                0.20470771193504333,
+                0.19388322532176971,
+                0.24398048222064972,
+                0.25268879532814026,
+                0.3274286389350891
+            ],
+            "strengths": [
+                "Agentic AI"
+            ],
+            "dominant_topics": [
+                "Pre trained models",
+                "Fine tuning LLM",
+                "Pre training objectives"
+            ],
+            "ai_analysis": "Based on your path, you have shown strong engagement with Pre trained models, Fine tuning LLM. You successfully reinforced concepts in Agentic AI. Consider exploring advanced topics in new areas next."
+        },
+        "polyline_35": {
+            "id": "polyline_35",
+            "name": "heyy",
+            "path": [
+                {
+                    "x": 5,
+                    "y": 17
+                }
+            ],
+            "color": "rgba(95, 72, 171, 0.4)",
+            "isActive": true,
+            "confidence": 0.71,
+            "summary": "heyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.017389550805091858,
+                0.10327564924955368,
+                0.09360406547784805,
+                0.03690618276596069,
+                0.04519070312380791,
+                0.038354936987161636,
+                0.07477933913469315,
+                0.005562630016356707,
+                0.0,
+                0.0,
+                0.0,
+                0.05210745334625244,
+                0.1020158976316452,
+                0.07473935186862946,
+                0.0972217470407486,
+                0.0,
+                0.05581950396299362
+            ],
+            "strengths": [
+                "Agentic AI"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "Based on your path, you have shown strong engagement with . You successfully reinforced concepts in Agentic AI. Consider exploring advanced topics in new areas next."
+        },
+        "polyline_36": {
+            "id": "polyline_36",
+            "name": "Agentic AI",
+            "path": [
+                {
+                    "x": 5,
+                    "y": 17
+                }
+            ],
+            "color": "rgba(139, 171, 145, 0.4)",
+            "isActive": true,
+            "confidence": 0.71,
+            "summary": "agents independently solve the problem, each can have differnt loss function",
+            "keywords_found": [
+                "Agentic AI"
+            ],
+            "module_scores": [
+                0.05024600028991699,
+                0.0863848477602005,
+                0.0,
+                0.1774979680776596,
+                0.007330421358346939,
+                0.06964121013879776,
+                0.08910828828811646,
+                0.1227140724658966,
+                0.0983947366476059,
+                0.02778339385986328,
+                0.012763900682330132,
+                0.0882045105099678,
+                0.2467341423034668,
+                0.6995577812194824,
+                0.13445383310317993,
+                0.07179756462574005,
+                0.3390352427959442,
+                0.24001526832580566
+            ],
+            "strengths": [
+                "Agentic AI"
+            ],
+            "dominant_topics": [
+                "Agentic AI",
+                "Policy learning using DQN"
+            ],
+            "ai_analysis": "Based on your path, you have shown strong engagement with Agentic AI, Policy learning using DQN. You successfully reinforced concepts in Agentic AI. Consider exploring advanced topics in new areas next."
+        },
+        "polyline_37": {
+            "id": "polyline_37",
+            "name": "Agentic AI, Transformer, CNN",
+            "path": [
+                {
+                    "x": 7,
+                    "y": 16
+                },
+                {
+                    "x": 5,
+                    "y": 17
+                }
+            ],
+            "color": "rgba(124, 155, 146, 0.4)",
+            "isActive": true,
+            "confidence": 0.73,
+            "summary": "Agentic AI, AI, Artificial Intelligence, Agentic AI has agents, Agents are good, Agentic AI, Agent",
+            "keywords_found": [
+                "Agentic AI"
+            ],
+            "module_scores": [
+                0.19596125185489655,
+                0.17878513038158417,
+                0.013299948535859585,
+                0.09019515663385391,
+                0.2148519903421402,
+                0.176703080534935,
+                0.04141182824969292,
+                0.12695123255252838,
+                0.14567424356937408,
+                0.06627196818590164,
+                0.07899114489555359,
+                0.17586567997932434,
+                0.19476987421512604,
+                0.9779932498931885,
+                0.14229676127433777,
+                0.17270609736442566,
+                0.3035743236541748,
+                0.3211010694503784
+            ],
+            "strengths": [
+                "Quantization",
+                "Agentic AI"
+            ],
+            "dominant_topics": [
+                "Agentic AI",
+                "RLHF",
+                "Policy learning using DQN"
+            ],
+            "ai_analysis": "Based on your path, you have shown strong engagement with Agentic AI, RLHF. You successfully reinforced concepts in Quantization, Agentic AI. Consider exploring advanced topics in new areas next."
+        },
+        "polyline_38": {
+            "id": "polyline_38",
+            "name": "heyy",
+            "path": [
+                {
+                    "x": 7,
+                    "y": 16
+                },
+                {
+                    "x": 5,
+                    "y": 17
+                }
+            ],
+            "color": "rgba(198, 232, 160, 0.4)",
+            "isActive": true,
+            "confidence": 0.73,
+            "summary": "heyey",
+            "keywords_found": [],
+            "module_scores": [
+                0.03077820874750614,
+                0.08723001182079315,
+                0.17077267169952393,
+                0.0844632163643837,
+                0.05345889925956726,
+                0.06896784901618958,
+                0.01981256529688835,
+                0.10914305597543716,
+                0.025269674137234688,
+                0.0,
+                0.0,
+                0.12327592819929123,
+                0.08018720149993896,
+                0.1916126310825348,
+                0.07461867481470108,
+                0.14787648618221283,
+                0.01713082380592823,
+                0.15488959848880768
+            ],
+            "strengths": [
+                "Quantization",
+                "Agentic AI"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "Based on your path, you have shown strong engagement with . You successfully reinforced concepts in Quantization, Agentic AI. Consider exploring advanced topics in new areas next."
+        },
+        "polyline_39": {
+            "id": "polyline_39",
+            "name": "heyu",
+            "path": [],
+            "color": "rgba(215, 166, 66, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "heyu",
+            "keywords_found": [],
+            "module_scores": [
+                0.025842785835266113,
+                0.06289363652467728,
+                0.10655583441257477,
+                0.059236228466033936,
+                0.04497949779033661,
+                0.05150831118226051,
+                0.08413022756576538,
+                0.10349386930465698,
+                0.019398359581828117,
+                0.023599496111273766,
+                0.0,
+                0.02620738558471203,
+                0.055542171001434326,
+                0.08238955587148666,
+                0.07436030358076096,
+                0.08257163316011429,
+                0.05098576098680496,
+                0.10993840545415878
+            ],
+            "strengths": [],
+            "dominant_topics": [],
+            "ai_analysis": "Based on your path, you have shown strong engagement with . You successfully reinforced concepts in . Consider exploring advanced topics in new areas next."
+        },
+        "polyline_40": {
+            "id": "polyline_40",
+            "name": "he7yey",
+            "path": [
+                {
+                    "x": 4,
+                    "y": 2
+                },
+                {
+                    "x": 10,
+                    "y": 10
+                }
+            ],
+            "color": "rgba(68, 203, 241, 0.4)",
+            "isActive": true,
+            "confidence": 0.73,
+            "summary": "heyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.017389550805091858,
+                0.10327564924955368,
+                0.09360406547784805,
+                0.03690618276596069,
+                0.04519070312380791,
+                0.038354936987161636,
+                0.17477934062480927,
+                0.005562630016356707,
+                0.0,
+                0.0,
+                0.0,
+                0.05210745334625244,
+                0.002015892416238785,
+                0.07473935186862946,
+                0.1972217559814453,
+                0.0,
+                0.05581950396299362
+            ],
+            "strengths": [
+                "Incontext Learning",
+                "Vision Language Models"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "Based on your path, you have shown strong engagement with . You successfully reinforced concepts in Incontext Learning, Vision Language Models. Consider exploring advanced topics in new areas next."
+        },
+        "polyline_41": {
+            "id": "polyline_41",
+            "name": "heyy",
+            "path": [],
+            "color": "rgba(129, 154, 197, 0.4)",
+            "isActive": true,
+            "confidence": 0.7,
+            "summary": "hyeyyyhu",
+            "keywords_found": [],
+            "module_scores": [
+                0.053188253194093704,
+                0.0,
+                0.04981702193617821,
+                0.0,
+                0.07837709784507751,
+                0.0,
+                0.11811202019453049,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0558195635676384,
+                0.02478315681219101,
+                0.019923537969589233,
+                0.0004506018303800374,
+                0.046636879444122314
+            ],
+            "strengths": [],
+            "dominant_topics": [],
+            "ai_analysis": "Based on your path, you have shown strong engagement with . You successfully reinforced concepts in . Consider exploring advanced topics in new areas next."
         }
     },
     "summaries": [
@@ -1318,6 +1872,211 @@
             "recommendations": [],
             "avgDifficulty": 2.0,
             "totalReward": 50
+        },
+        {
+            "id": "summary_default_29",
+            "title": "hiii",
+            "summary": "transformers",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 2,
+            "currentLevel": 1,
+            "strengths": [
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 100
+        },
+        {
+            "id": "summary_default_30",
+            "title": "heyy",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 3,
+            "currentLevel": 1,
+            "strengths": [
+                "Instruction tuning",
+                "Parameter efficient fine tuning",
+                "Multimodal LLMs"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 150
+        },
+        {
+            "id": "summary_default_31",
+            "title": "Introduction to transformers",
+            "summary": "Transformers are a class of deep learning models designed to process sequential data efficiently by relying on an attention-based mechanism rather than recurrence or convolution. Introduced in the landmark paper \u201cAttention Is All You Need\u201d, transformers revolutionized natural language processing by enabling models to capture long-range dependencies in data with high parallelism.\n\nAt the core of a transformer is the self-attention mechanism, which allows the model to weigh the importance of different parts of an input sequence when processing each element. This makes transformers highly effective at understanding context, relationships, and structure within data. The architecture typically consists of an encoder\u2013decoder structure, where encoders extract meaningful representations from input data and decoders generate output sequences based on those representations.\n\nTransformers also use positional encoding to retain information about the order of tokens, since the model itself does not process data sequentially. Combined with multi-head attention and feed-forward neural networks, this design enables scalable training on large datasets.\n\nDue to their flexibility and performance, transformers form the backbone of many modern AI systems, including large language models, machine translation systems, text summarization tools, and increasingly, applications in vision, speech, and multimodal learning.",
+            "keywords_found": [
+                "Multimodal LLMs"
+            ],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_32",
+            "title": "Intro",
+            "summary": "Transformers are a class of deep learning models designed to process sequential data efficiently by relying on an attention-based mechanism rather than recurrence or convolution. Introduced in the landmark paper \u201cAttention Is All You Need\u201d, transformers revolutionized natural language processing by enabling models to capture long-range dependencies in data with high parallelism.\n\nAt the core of a transformer is the self-attention mechanism, which allows the model to weigh the importance of different parts of an input sequence when processing each element. This makes transformers highly effective at understanding context, relationships, and structure within data. The architecture typically consists of an encoder\u2013decoder structure, where encoders extract meaningful representations from input data and decoders generate output sequences based on those representations.\n\nTransformers also use positional encoding to retain information about the order of tokens, since the model itself does not process data sequentially. Combined with multi-head attention and feed-forward neural networks, this design enables scalable training on large datasets.\n\nDue to their flexibility and performance, transformers form the backbone of many modern AI systems, including large language models, machine translation systems, text summarization tools, and increasingly, applications in vision, speech, and multimodal learning.",
+            "keywords_found": [
+                "Multimodal LLMs"
+            ],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_33",
+            "title": "Intro",
+            "summary": "Transformers are a class of deep learning models designed to process sequential data efficiently by relying on an attention-based mechanism rather than recurrence or convolution. Introduced in the landmark paper \u201cAttention Is All You Need\u201d, transformers revolutionized natural language processing by enabling models to capture long-range dependencies in data with high parallelism.\n\nAt the core of a transformer is the self-attention mechanism, which allows the model to weigh the importance of different parts of an input sequence when processing each element. This makes transformers highly effective at understanding context, relationships, and structure within data. The architecture typically consists of an encoder\u2013decoder structure, where encoders extract meaningful representations from input data and decoders generate output sequences based on those representations.\n\nTransformers also use positional encoding to retain information about the order of tokens, since the model itself does not process data sequentially. Combined with multi-head attention and feed-forward neural networks, this design enables scalable training on large datasets.\n\nDue to their flexibility and performance, transformers form the backbone of many modern AI systems, including large language models, machine translation systems, text summarization tools, and increasingly, applications in vision, speech, and multimodal learning.",
+            "keywords_found": [
+                "Multimodal LLMs"
+            ],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Multimodal LLMs"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
+        },
+        {
+            "id": "summary_default_34",
+            "title": "Pre training LLM",
+            "summary": "I have learnt to finetune a pre trained BERT GPT model and i am using these models for sentiment analysis task",
+            "keywords_found": [
+                "Pre trained models"
+            ],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Agentic AI"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
+        },
+        {
+            "id": "summary_default_35",
+            "title": "heyy",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Agentic AI"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
+        },
+        {
+            "id": "summary_default_36",
+            "title": "Agentic AI",
+            "summary": "agents independently solve the problem, each can have differnt loss function",
+            "keywords_found": [
+                "Agentic AI"
+            ],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Agentic AI"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
+        },
+        {
+            "id": "summary_default_37",
+            "title": "Agentic AI, Transformer, CNN",
+            "summary": "Agentic AI, AI, Artificial Intelligence, Agentic AI has agents, Agents are good, Agentic AI, Agent",
+            "keywords_found": [
+                "Agentic AI"
+            ],
+            "totalResources": 18,
+            "visitedResources": 2,
+            "currentLevel": 1,
+            "strengths": [
+                "Quantization",
+                "Agentic AI"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 100
+        },
+        {
+            "id": "summary_default_38",
+            "title": "heyy",
+            "summary": "heyey",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 2,
+            "currentLevel": 1,
+            "strengths": [
+                "Quantization",
+                "Agentic AI"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 100
+        },
+        {
+            "id": "summary_default_39",
+            "title": "heyu",
+            "summary": "heyu",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
+        },
+        {
+            "id": "summary_default_40",
+            "title": "he7yey",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 2,
+            "currentLevel": 1,
+            "strengths": [
+                "Incontext Learning",
+                "Vision Language Models"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 100
+        },
+        {
+            "id": "summary_default_41",
+            "title": "heyy",
+            "summary": "hyeyyyhu",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 0,
+            "currentLevel": 1,
+            "strengths": [],
+            "recommendations": [],
+            "avgDifficulty": 0,
+            "totalReward": 0
         }
     ]
 }

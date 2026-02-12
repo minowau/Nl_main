@@ -30,6 +30,9 @@ export interface Polyline {
   summary?: string;
   keywords_found?: string[];
   module_scores?: number[];
+  strengths?: string[];
+  dominant_topics?: string[];
+  ai_analysis?: string;
 }
 
 export interface LearningActivity {
