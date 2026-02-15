@@ -7,13 +7,21 @@ import os
 import json
 import pandas as pd
 from flask import jsonify, request
-from init import app
 import numpy as np
 from datetime import datetime
-from database import get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines
-from request_logger import log_request
 from nltk.corpus import stopwords
-from utils import utils_preprocess_text, get_cos_sim
+
+# Import backend modules (support both script and package execution)
+try:
+    from .init import app
+    from .database import get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines
+    from .request_logger import log_request
+    from .utils import utils_preprocess_text, get_cos_sim
+except ImportError:
+    from init import app
+    from database import get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines
+    from request_logger import log_request
+    from utils import utils_preprocess_text, get_cos_sim
 
 # Define stopwords
 stop_words = set(stopwords.words('english'))
