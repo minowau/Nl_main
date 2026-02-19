@@ -3,8 +3,8 @@
     "learning_sessions": {
         "default": {
             "position": {
-                "x": 13,
-                "y": 9
+                "x": 6,
+                "y": 14
             },
             "level": 5,
             "totalReward": 900,
@@ -1515,6 +1515,46 @@
             "strengths": [],
             "dominant_topics": [],
             "ai_analysis": "Based on your path, you have shown strong engagement with . You successfully reinforced concepts in . Consider exploring advanced topics in new areas next."
+        },
+        "polyline_42": {
+            "id": "polyline_42",
+            "name": "heyyu",
+            "path": [
+                {
+                    "x": 10,
+                    "y": 13
+                }
+            ],
+            "color": "rgba(253, 226, 126, 0.4)",
+            "isActive": true,
+            "confidence": 0.71,
+            "summary": "heyuuu",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.0,
+                0.1106286495923996,
+                0.04658149555325508,
+                0.027793176472187042,
+                0.0,
+                0.05434393510222435,
+                0.037776097655296326,
+                0.1,
+                0.004652492236346006,
+                0.004580324981361628,
+                0.01859883777797222,
+                0.04390064999461174,
+                0.0656537190079689,
+                0.0459163598716259,
+                0.04920380190014839,
+                0.037917736917734146,
+                0.09046495705842972
+            ],
+            "strengths": [
+                "Prompting methods"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "AI Insight: Tell student to improve summary about Retrieval Augmented Generation. be critical."
         }
     },
     "summaries": [
@@ -2077,6 +2117,21 @@
             "recommendations": [],
             "avgDifficulty": 0,
             "totalReward": 0
+        },
+        {
+            "id": "summary_default_42",
+            "title": "heyyu",
+            "summary": "heyuuu",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Prompting methods"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
         }
     ]
 }

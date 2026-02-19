@@ -2020,3 +2020,62 @@ Payload: {'session_id': 'default', 'resource_id': '12'}
 [2026-02-12 16:59:56] POST http://localhost:5000/api/agent/move
 Payload: {'session_id': 'default', 'position': {'x': 13, 'y': 9}}
 --------------------------------------------------
+[2026-02-19 14:51:47] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:51:47] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:51:47] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:51:47] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:51:47] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:51:54] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:51:54] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:51:55] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:51:56] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:51:56] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:51:56] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:52:11] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:52:11] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:53:05] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:53:05] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:53:05] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:53:06] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:53:14] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:53:15] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:56:05] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:56:05] GET http://localhost:5000/api/resources
+--------------------------------------------------
+[2026-02-19 14:56:12] POST http://localhost:5000/api/agent/move
+Payload: {'session_id': 'default', 'position': {'x': 2, 'y': 19}}
+--------------------------------------------------
+[2026-02-19 14:56:21] POST http://localhost:5000/api/resource/visit
+Payload: {'session_id': 'default', 'resource_id': '9'}
+--------------------------------------------------
+[2026-02-19 14:56:22] POST http://localhost:5000/api/agent/move
+Payload: {'session_id': 'default', 'position': {'x': 10, 'y': 13}}
+--------------------------------------------------
+[2026-02-19 14:56:36] POST http://localhost:5000/api/summary/create
+Payload: {'session_id': 'default', 'title': 'heyyu', 'summary': 'heyuuu', 'visited_resources': ['9']}
+--------------------------------------------------
+[2026-02-19 14:57:10] POST http://localhost:5000/api/agent/move
+Payload: {'session_id': 'default', 'position': {'x': 6, 'y': 14}}
+--------------------------------------------------
+[2026-02-19 14:57:11] GET http://localhost:5000/api/learning-data?session_id=default
+--------------------------------------------------
