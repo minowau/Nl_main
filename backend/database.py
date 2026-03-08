@@ -2,7 +2,10 @@ import json
 import os
 from datetime import datetime
 
-DB_FILE = os.path.join(os.path.dirname(__file__), 'db.json')
+DB_FILE = os.path.join(os.path.dirname(__file__), 'data', 'db.json')
+
+# Ensure data directory exists
+os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
 
 def init_db():
     if not os.path.exists(DB_FILE):

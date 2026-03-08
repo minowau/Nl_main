@@ -3,8 +3,8 @@
     "learning_sessions": {
         "default": {
             "position": {
-                "x": 6,
-                "y": 14
+                "x": 13,
+                "y": 7
             },
             "level": 5,
             "totalReward": 900,

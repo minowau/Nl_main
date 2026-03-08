@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { GridVisualization } from './components/GridVisualization';
 import { ControlPanel } from './components/ControlPanel';
 import { useDQNSimulation } from './hooks/useDQNSimulation';
-import { Resource, Polyline, LearningSummary } from './types';
+import { Resource, Polyline, LearningSummary, GridPosition } from './types';
 import { nlpApi } from './services/nlpApi';
 
 function App() {
@@ -23,6 +23,7 @@ function App() {
   const [polylines, setPolylines] = useState<Polyline[]>([]);
   const [learningPath, setLearningPath] = useState<string[]>([]);
   const [dqnPathInfo, setDqnPathInfo] = useState<{ resource: Resource | null, reward: number } | null>(null);
+  const [assimilationPositions, setAssimilationPositions] = useState<GridPosition[]>([]);
   const [learningData, setLearningData] = useState<LearningSummary>({
     totalResources: 0,
     visitedResources: 0,
@@ -50,13 +51,15 @@ function App() {
   }, []);
 
   const handleResourceClick = useCallback((resource: Resource) => {
+    // Always move agent to the resource position
+    moveAgent(resource.position);
+
     if (!resource.visited) {
       setResources(prev => prev.map(r =>
         r.id === resource.id ? { ...r, visited: true } : r
       ));
 
       visitResource(resource);
-      moveAgent(resource.position);
       setLearningPath(prev => [...prev, resource.title]);
 
       setLearningData(prev => ({
@@ -70,36 +73,59 @@ function App() {
     setIsLoading(true);
     try {
       const visitedIds = resources.filter(r => r.visited).map(r => r.id);
-      const result = await nlpApi.createLearnningSummary('default', title, summary, visitedIds);
+      const result = await nlpApi.createLearningSummary('default', title, summary, visitedIds);
 
-      // Move agent to next unvisited resource or random resource if all visited
-      const unvisited = resources.filter(r => !r.visited);
-      let targetPos;
-
-      if (unvisited.length > 0) {
-        // Find nearest unvisited (simple heuristic: first one)
-        targetPos = unvisited[0].position;
-      } else {
-        // If all visited, pick a random resource
-        const randomResource = resources[Math.floor(Math.random() * resources.length)];
-        targetPos = randomResource.position;
+      // Capture assimilation position from API response
+      if (result.assimilation_position) {
+        setAssimilationPositions(prev => [...prev, result.assimilation_position!]);
       }
 
-      moveAgent(targetPos);
+      // Move agent to DQN-recommended resource or fallback to nearest unvisited
+      const nextRecPos = result.next_recommendation?.position;
+      if (nextRecPos) {
+        moveAgent(nextRecPos);
+      } else {
+        const unvisited = resources.filter(r => !r.visited);
+        if (unvisited.length > 0) moveAgent(unvisited[0].position);
+      }
 
       const visitedResources = resources.filter(r => r.visited);
       const learningSummary = await generateLearningSummary(visitedResources);
-      const newPolylines = generatePolylines(visitedResources);
 
-      setLearningData(learningSummary);
-      setPolylines(prev => [...prev, result.polyline, ...newPolylines]);
+      // Surface next recommendation in learning data
+      const nextRecTitle = result.next_recommendation?.title;
+      setLearningData({
+        ...learningSummary,
+        recommendations: nextRecTitle
+          ? [nextRecTitle, ...learningSummary.recommendations.filter(r => r !== nextRecTitle)].slice(0, 3)
+          : learningSummary.recommendations
+      });
+
+      // ONLY add the backend summary polyline to the state (don't add redundant 'Current Learning Path')
+      setPolylines(prev => {
+        // Keep existing summaries and simulations, add new summary
+        return [...prev, result.polyline];
+      });
 
     } catch (error) {
       console.error('Error processing learning summary:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [resources, generateLearningSummary, generatePolylines, moveAgent, setIsLoading]);
+  }, [resources, generateLearningSummary, moveAgent, setIsLoading]);
+
+  // Handle automatic Live Path (Current Learning Path)
+  useEffect(() => {
+    const visitedResources = resources.filter(r => r.visited);
+    if (visitedResources.length >= 2) {
+      const livePolylines = generatePolylines(visitedResources);
+      setPolylines(prev => {
+        // Keep everything EXCEPT the old 'learning-path-1'
+        const base = prev.filter(p => p.id !== 'learning-path-1');
+        return [...base, ...livePolylines];
+      });
+    }
+  }, [resources, generatePolylines]);
 
   const handleShowPolyline = useCallback((polylineId: string) => {
     setPolylines(prev => prev.map(p => ({
@@ -234,6 +260,7 @@ function App() {
               isPlaying={isPlaying}
               playbackPath={playbackPath}
               onPlaybackComplete={() => setIsPlaying(false)}
+              assimilationPositions={assimilationPositions}
             />
           </div>
 

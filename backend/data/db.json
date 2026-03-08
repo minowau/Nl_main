@@ -1,0 +1,1105 @@
+{
+    "users": [],
+    "learning_sessions": {
+        "default": {
+            "position": {
+                "x": 3,
+                "y": 16
+            },
+            "level": 5,
+            "totalReward": 900,
+            "visitedResources": [
+                "2",
+                "13",
+                "6",
+                "12",
+                "18",
+                "4",
+                "16",
+                "9",
+                "3",
+                "11",
+                "7",
+                "17",
+                "15",
+                "10",
+                "14",
+                "8",
+                "5",
+                "1"
+            ]
+        },
+        "test_session": {
+            "position": {
+                "x": 10,
+                "y": 10
+            },
+            "level": 1,
+            "totalReward": 0,
+            "visitedResources": []
+        }
+    },
+    "polylines": {
+        "polyline_0": {
+            "id": "polyline_0",
+            "name": "dwfa",
+            "path": [
+                {
+                    "x": 5,
+                    "y": 15
+                }
+            ],
+            "color": "rgba(96, 53, 174, 0.4)",
+            "isActive": true,
+            "confidence": 0.71,
+            "summary": "sdvdsv",
+            "keywords_found": [],
+            "module_scores": [
+                0.005246270913630724,
+                0.12492994219064713,
+                0.010073458775877953,
+                0.0,
+                0.02362773008644581,
+                0.0360322967171669,
+                0.07338331639766693,
+                0.005309913773089647,
+                0.009263106621801853,
+                0.07777418196201324,
+                0.07485794275999069,
+                0.07278469204902649,
+                0.0,
+                0.06422962993383408,
+                0.07397373020648956,
+                0.08117562532424927,
+                0.07482797652482986,
+                0.0
+            ],
+            "strengths": [
+                "Pre trained models"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "AI Insight: Tell student to improve summary about NLP. be critical.",
+            "assimilation_position": {
+                "x": 5,
+                "y": 15
+            },
+            "next_recommendation": {
+                "id": "3",
+                "title": "Tutorial: Introduction to huggingface",
+                "position": {
+                    "x": 15,
+                    "y": 2
+                },
+                "module": "Tutorial: Introduction to huggingface",
+                "reason": "dqn"
+            }
+        },
+        "polyline_1": {
+            "id": "polyline_1",
+            "name": "heyy",
+            "path": [
+                {
+                    "x": 5,
+                    "y": 15
+                },
+                {
+                    "x": 12,
+                    "y": 7
+                },
+                {
+                    "x": 8,
+                    "y": 13
+                },
+                {
+                    "x": 13,
+                    "y": 14
+                },
+                {
+                    "x": 11,
+                    "y": 11
+                },
+                {
+                    "x": 10,
+                    "y": 10
+                },
+                {
+                    "x": 13,
+                    "y": 15
+                }
+            ],
+            "color": "rgba(220, 89, 209, 0.4)",
+            "isActive": true,
+            "confidence": 0.8,
+            "summary": "heyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.13199615478515625,
+                0.11629796773195267,
+                0.19658470153808594,
+                0.03200055658817291,
+                0.15489926934242249,
+                0.03489005193114281,
+                0.10348626226186752,
+                0.008831196464598179,
+                0.0,
+                0.0008121263235807419,
+                0.1,
+                0.15107876062393188,
+                0.01544315367937088,
+                0.07961554080247879,
+                0.2120513617992401,
+                0.007900607772171497,
+                0.1693073809146881
+            ],
+            "strengths": [
+                "Pre trained models",
+                "Fine tuning LLM",
+                "Prompt based learning",
+                "Quantization",
+                "Mixture of Experts Model",
+                "Vision Language Models",
+                "RLHF"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "AI Insight: Tell student to improve summary about NLP. be critical.",
+            "assimilation_position": {
+                "x": 10,
+                "y": 12
+            },
+            "next_recommendation": {
+                "id": "3",
+                "title": "Tutorial: Introduction to huggingface",
+                "position": {
+                    "x": 15,
+                    "y": 2
+                },
+                "module": "Tutorial: Introduction to huggingface",
+                "reason": "dqn"
+            }
+        },
+        "polyline_2": {
+            "id": "polyline_2",
+            "name": "heyy",
+            "path": [
+                {
+                    "x": 5,
+                    "y": 15
+                },
+                {
+                    "x": 8,
+                    "y": 13
+                },
+                {
+                    "x": 5,
+                    "y": 14
+                },
+                {
+                    "x": 13,
+                    "y": 14
+                },
+                {
+                    "x": 11,
+                    "y": 11
+                },
+                {
+                    "x": 13,
+                    "y": 15
+                }
+            ],
+            "color": "rgba(120, 244, 179, 0.4)",
+            "isActive": true,
+            "confidence": 0.78,
+            "summary": "heyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.13199615478515625,
+                0.11629796773195267,
+                0.09658470749855042,
+                0.03200055658817291,
+                0.15489926934242249,
+                0.03489005193114281,
+                0.10348626226186752,
+                0.10883119702339172,
+                0.0,
+                0.0008121263235807419,
+                0.1,
+                0.15107876062393188,
+                0.01544315367937088,
+                0.07961554080247879,
+                0.11205136775970459,
+                0.007900607772171497,
+                0.1693073809146881
+            ],
+            "strengths": [
+                "Pre trained models",
+                "Prompt based learning",
+                "Prompting methods",
+                "Quantization",
+                "Mixture of Experts Model",
+                "RLHF"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "AI Insight: Tell student to improve summary about NLP. be critical.",
+            "assimilation_position": {
+                "x": 9,
+                "y": 14
+            },
+            "next_recommendation": {
+                "id": "3",
+                "title": "Tutorial: Introduction to huggingface",
+                "position": {
+                    "x": 15,
+                    "y": 2
+                },
+                "module": "Tutorial: Introduction to huggingface",
+                "reason": "dqn"
+            }
+        },
+        "polyline_3": {
+            "id": "polyline_3",
+            "name": "heyy",
+            "path": [
+                {
+                    "x": 5,
+                    "y": 15
+                },
+                {
+                    "x": 12,
+                    "y": 7
+                },
+                {
+                    "x": 8,
+                    "y": 13
+                },
+                {
+                    "x": 5,
+                    "y": 14
+                },
+                {
+                    "x": 13,
+                    "y": 14
+                },
+                {
+                    "x": 11,
+                    "y": 11
+                },
+                {
+                    "x": 13,
+                    "y": 15
+                }
+            ],
+            "color": "rgba(237, 103, 120, 0.4)",
+            "isActive": true,
+            "confidence": 0.8,
+            "summary": "heyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.13199615478515625,
+                0.11629796773195267,
+                0.19658470153808594,
+                0.03200055658817291,
+                0.15489926934242249,
+                0.03489005193114281,
+                0.10348626226186752,
+                0.10883119702339172,
+                0.0,
+                0.0008121263235807419,
+                0.1,
+                0.15107876062393188,
+                0.01544315367937088,
+                0.07961554080247879,
+                0.11205136775970459,
+                0.007900607772171497,
+                0.1693073809146881
+            ],
+            "strengths": [
+                "Pre trained models",
+                "Fine tuning LLM",
+                "Prompt based learning",
+                "Prompting methods",
+                "Quantization",
+                "Mixture of Experts Model",
+                "RLHF"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "AI Insight: Tell student to improve summary about NLP. be critical.",
+            "assimilation_position": {
+                "x": 10,
+                "y": 13
+            },
+            "next_recommendation": {
+                "id": "3",
+                "title": "Tutorial: Introduction to huggingface",
+                "position": {
+                    "x": 15,
+                    "y": 2
+                },
+                "module": "Tutorial: Introduction to huggingface",
+                "reason": "dqn"
+            }
+        },
+        "polyline_4": {
+            "id": "polyline_4",
+            "name": "gfwsge",
+            "path": [
+                {
+                    "x": 5,
+                    "y": 15
+                },
+                {
+                    "x": 15,
+                    "y": 2
+                },
+                {
+                    "x": 12,
+                    "y": 7
+                },
+                {
+                    "x": 8,
+                    "y": 13
+                },
+                {
+                    "x": 5,
+                    "y": 14
+                },
+                {
+                    "x": 13,
+                    "y": 14
+                },
+                {
+                    "x": 11,
+                    "y": 11
+                },
+                {
+                    "x": 13,
+                    "y": 15
+                }
+            ],
+            "color": "rgba(224, 213, 84, 0.4)",
+            "isActive": true,
+            "confidence": 0.81,
+            "summary": "sfvvbgf",
+            "keywords_found": [],
+            "module_scores": [
+                0.039087992161512375,
+                0.15825413167476654,
+                0.2105603665113449,
+                0.1532590091228485,
+                0.07833681255578995,
+                0.19383522868156433,
+                0.13858668506145477,
+                0.021031688898801804,
+                0.1497771292924881,
+                0.18749693036079407,
+                0.12116493284702301,
+                0.16741535067558289,
+                0.15015681087970734,
+                0.0,
+                0.11290216445922852,
+                0.030439965426921844,
+                0.036779288202524185,
+                0.14539097249507904
+            ],
+            "strengths": [
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM",
+                "Prompt based learning",
+                "Prompting methods",
+                "Quantization",
+                "Mixture of Experts Model",
+                "RLHF"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "AI Insight: Tell student to improve summary about NLP. be critical.",
+            "assimilation_position": {
+                "x": 10,
+                "y": 11
+            },
+            "next_recommendation": {
+                "id": "8",
+                "title": "Incontext Learning",
+                "position": {
+                    "x": 8,
+                    "y": 4
+                },
+                "module": "Incontext Learning",
+                "reason": "dqn"
+            }
+        },
+        "polyline_5": {
+            "id": "polyline_5",
+            "name": "Test Learning",
+            "path": [
+                {
+                    "x": 3,
+                    "y": 16
+                },
+                {
+                    "x": 17,
+                    "y": 13
+                }
+            ],
+            "color": "rgba(236, 61, 163, 0.4)",
+            "isActive": true,
+            "confidence": 0.73,
+            "summary": "I learned about pre-training, fine-tuning and RLHF in this complex module.",
+            "keywords_found": [
+                "Pre training objectives",
+                "Fine tuning LLM",
+                "RLHF"
+            ],
+            "module_scores": [
+                0.7125465869903564,
+                0.5027230381965637,
+                0.2796921133995056,
+                0.6494109034538269,
+                0.43912196159362793,
+                0.23711203038692474,
+                0.37475281953811646,
+                0.24457591772079468,
+                0.14746899902820587,
+                0.12050069868564606,
+                0.13646933436393738,
+                0.19988161325454712,
+                0.22344407439231873,
+                0.10792066156864166,
+                0.2443290501832962,
+                0.20176224410533905,
+                0.240655317902565,
+                0.6787886023521423
+            ],
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models"
+            ],
+            "dominant_topics": [
+                "Pre training objectives",
+                "RLHF",
+                "Fine tuning LLM"
+            ],
+            "ai_analysis": "AI Insight: Students should have a good understanding of Pre-training objectives and a good understanding of the pre-training objectives.",
+            "assimilation_position": {
+                "x": 10,
+                "y": 10
+            },
+            "next_recommendation": {
+                "id": "3",
+                "title": "Tutorial: Introduction to huggingface",
+                "position": {
+                    "x": 7,
+                    "y": 13
+                },
+                "module": "Tutorial: Introduction to huggingface",
+                "reason": "dqn"
+            }
+        },
+        "polyline_6": {
+            "id": "polyline_6",
+            "name": "heyyy",
+            "path": [
+                {
+                    "x": 12,
+                    "y": 13
+                },
+                {
+                    "x": 12,
+                    "y": 10
+                }
+            ],
+            "color": "rgba(54, 104, 92, 0.4)",
+            "isActive": true,
+            "confidence": 0.73,
+            "summary": "heyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.017389550805091858,
+                0.10327564924955368,
+                0.09360406547784805,
+                0.03690618276596069,
+                0.14519070088863373,
+                0.038354936987161636,
+                0.07477933913469315,
+                0.005562630016356707,
+                0.1,
+                0.0,
+                0.0,
+                0.05210745334625244,
+                0.002015892416238785,
+                0.07473935186862946,
+                0.0972217470407486,
+                0.0,
+                0.05581950396299362
+            ],
+            "strengths": [
+                "Prompt based learning",
+                "Retrieval Methods"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "AI Insight: Tell student to improve summary about Pre training objectives. be critical.",
+            "assimilation_position": {
+                "x": 12,
+                "y": 13
+            },
+            "next_recommendation": {
+                "id": "11",
+                "title": "Retrieval Augmented Generation",
+                "position": {
+                    "x": 3,
+                    "y": 11
+                },
+                "module": "Retrieval Augmented Generation",
+                "reason": "dqn"
+            }
+        },
+        "polyline_7": {
+            "id": "polyline_7",
+            "name": "Tutoraial",
+            "path": [
+                {
+                    "x": 7,
+                    "y": 13
+                },
+                {
+                    "x": 12,
+                    "y": 13
+                },
+                {
+                    "x": 12,
+                    "y": 10
+                }
+            ],
+            "color": "rgba(163, 51, 151, 0.4)",
+            "isActive": true,
+            "confidence": 0.74,
+            "summary": "Hugging Face is a leading AI company and open-source platform that provides tools, models, and datasets for building Natural Language Processing (NLP) and Machine Learning (ML) applications. It simplifies the development and deployment of transformer-based models for tasks such as text generation, translation, summarization, and question answering.\n\nThe platform is widely used by researchers, developers, and companies because it provides pretrained models, easy-to-use APIs, and strong community collaboration.\n\nAt the core of Hugging Face is the Transformers library, which offers thousands of pretrained models based on architectures like BERT, GPT, RoBERTa, T5, and DistilBERT. These models can be easily downloaded and fine-tuned for specific tasks.\n\nHugging Face also provides the Datasets library, which allows users to easily access and process large datasets for machine learning training and evaluation. Additionally, the Tokenizers library enables fast and efficient text tokenization, which is a crucial preprocessing step in NLP.\n\nAnother important feature is the Hugging Face Hub, a centralized repository where developers can share models, datasets, and machine learning applications. The hub promotes collaboration and allows users to reuse existing models instead of building them from scratch.\n\nHugging Face also offers Spaces, which allow developers to create and host interactive machine learning demos using frameworks like Gradio or Streamlit.\n\nOverall, Hugging Face accelerates AI development by providing open-source tools, pretrained transformer models, and a collaborative ecosystem, making advanced machine learning accessible to a broader audience.",
+            "keywords_found": [
+                "Tutorial: Introduction to huggingface"
+            ],
+            "module_scores": [
+                0.3656066358089447,
+                0.3205989599227905,
+                0.9149491786956787,
+                0.26040568947792053,
+                0.2545647621154785,
+                0.39234912395477295,
+                0.1291521191596985,
+                0.25602641701698303,
+                0.11504986137151718,
+                0.3160075545310974,
+                0.2628939747810364,
+                0.12467103451490402,
+                0.1937723159790039,
+                0.23953977227210999,
+                0.27475258708000183,
+                0.31229496002197266,
+                0.18569059669971466,
+                0.27624523639678955
+            ],
+            "strengths": [
+                "Tutorial: Introduction to huggingface",
+                "Prompt based learning",
+                "Retrieval Methods"
+            ],
+            "dominant_topics": [
+                "Tutorial: Introduction to huggingface",
+                "Prompt based learning",
+                "Pre training objectives"
+            ],
+            "ai_analysis": "AI Insight: Students are encouraged to praise the student for good summary about Pre training objectives and suggest advanced topic.",
+            "assimilation_position": {
+                "x": 15,
+                "y": 11
+            },
+            "next_recommendation": {
+                "id": "11",
+                "title": "Retrieval Augmented Generation",
+                "position": {
+                    "x": 3,
+                    "y": 11
+                },
+                "module": "Retrieval Augmented Generation",
+                "reason": "dqn"
+            }
+        },
+        "polyline_8": {
+            "id": "polyline_8",
+            "name": "heyy",
+            "path": [
+                {
+                    "x": 17,
+                    "y": 13
+                },
+                {
+                    "x": 7,
+                    "y": 13
+                },
+                {
+                    "x": 10,
+                    "y": 12
+                },
+                {
+                    "x": 12,
+                    "y": 13
+                },
+                {
+                    "x": 12,
+                    "y": 10
+                },
+                {
+                    "x": 16,
+                    "y": 8
+                },
+                {
+                    "x": 10,
+                    "y": 10
+                }
+            ],
+            "color": "rgba(99, 199, 145, 0.4)",
+            "isActive": true,
+            "confidence": 0.8,
+            "summary": "heyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.13199615478515625,
+                0.2162979692220688,
+                0.19658470153808594,
+                0.03200055658817291,
+                0.15489926934242249,
+                0.03489005193114281,
+                0.10348626226186752,
+                0.008831196464598179,
+                0.1,
+                0.0008121263235807419,
+                0.0,
+                0.051078762859106064,
+                0.115443155169487,
+                0.07961554080247879,
+                0.2120513617992401,
+                0.007900607772171497,
+                0.0693073719739914
+            ],
+            "strengths": [
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM",
+                "Prompt based learning",
+                "Retrieval Methods",
+                "Agentic AI",
+                "Vision Language Models"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "AI Insight: Tell student to improve summary about Pre training objectives. be critical.",
+            "assimilation_position": {
+                "x": 10,
+                "y": 12
+            },
+            "next_recommendation": {
+                "id": "17",
+                "title": "Policy learning using DQN",
+                "position": {
+                    "x": 3,
+                    "y": 12
+                },
+                "module": "Policy learning using DQN",
+                "reason": "dqn"
+            }
+        },
+        "polyline_9": {
+            "id": "polyline_9",
+            "name": "heyy",
+            "path": [
+                {
+                    "x": 17,
+                    "y": 13
+                },
+                {
+                    "x": 7,
+                    "y": 13
+                },
+                {
+                    "x": 10,
+                    "y": 12
+                },
+                {
+                    "x": 12,
+                    "y": 13
+                },
+                {
+                    "x": 12,
+                    "y": 10
+                },
+                {
+                    "x": 16,
+                    "y": 8
+                },
+                {
+                    "x": 10,
+                    "y": 10
+                }
+            ],
+            "color": "rgba(80, 159, 129, 0.4)",
+            "isActive": true,
+            "confidence": 0.8,
+            "summary": "heyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.11738955229520798,
+                0.2032756507396698,
+                0.19360406696796417,
+                0.03690618276596069,
+                0.14519070088863373,
+                0.038354936987161636,
+                0.07477933913469315,
+                0.005562630016356707,
+                0.1,
+                0.0,
+                0.0,
+                0.05210745334625244,
+                0.1020158976316452,
+                0.07473935186862946,
+                0.1972217559814453,
+                0.0,
+                0.05581950396299362
+            ],
+            "strengths": [
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM",
+                "Prompt based learning",
+                "Retrieval Methods",
+                "Agentic AI",
+                "Vision Language Models"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "AI Insight: Tell student to improve summary about Pre training objectives. be critical.",
+            "assimilation_position": {
+                "x": 3,
+                "y": 12
+            },
+            "next_recommendation": {
+                "id": "17",
+                "title": "Policy learning using DQN",
+                "position": {
+                    "x": 3,
+                    "y": 12
+                },
+                "module": "Policy learning using DQN",
+                "reason": "dqn"
+            }
+        }
+    },
+    "summaries": [
+        {
+            "id": "summary_default_0",
+            "title": "dwfa",
+            "summary": "sdvdsv",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Pre trained models"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
+        },
+        {
+            "id": "summary_default_1",
+            "title": "heyy",
+            "summary": "heyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 7,
+            "currentLevel": 2,
+            "strengths": [
+                "Pre trained models",
+                "Fine tuning LLM",
+                "Prompt based learning",
+                "Quantization",
+                "Mixture of Experts Model",
+                "Vision Language Models",
+                "RLHF"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 350
+        },
+        {
+            "id": "summary_default_2",
+            "title": "heyy",
+            "summary": "heyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 6,
+            "currentLevel": 2,
+            "strengths": [
+                "Pre trained models",
+                "Prompt based learning",
+                "Prompting methods",
+                "Quantization",
+                "Mixture of Experts Model",
+                "RLHF"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 300
+        },
+        {
+            "id": "summary_default_3",
+            "title": "heyy",
+            "summary": "heyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 7,
+            "currentLevel": 2,
+            "strengths": [
+                "Pre trained models",
+                "Fine tuning LLM",
+                "Prompt based learning",
+                "Prompting methods",
+                "Quantization",
+                "Mixture of Experts Model",
+                "RLHF"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 350
+        },
+        {
+            "id": "summary_default_4",
+            "title": "gfwsge",
+            "summary": "sfvvbgf",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 8,
+            "currentLevel": 3,
+            "strengths": [
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM",
+                "Prompt based learning",
+                "Prompting methods",
+                "Quantization",
+                "Mixture of Experts Model",
+                "RLHF"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 400
+        },
+        {
+            "id": "summary_default_5",
+            "title": "heyyy",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 3,
+            "currentLevel": 1,
+            "strengths": [
+                "Pre trained models",
+                "Prompting methods",
+                "RLHF"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 150
+        },
+        {
+            "id": "summary_default_5",
+            "title": "hyyyy",
+            "summary": "heyyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 6,
+            "currentLevel": 2,
+            "strengths": [
+                "Pre trained models",
+                "Prompt based learning",
+                "Prompting methods",
+                "Retrieval Augmented Generation",
+                "Vision Language Models",
+                "RLHF"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 300
+        },
+        {
+            "id": "summary_default_5",
+            "title": "heyyy",
+            "summary": "heyyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 6,
+            "currentLevel": 2,
+            "strengths": [
+                "Pre trained models",
+                "Prompt based learning",
+                "Prompting methods",
+                "Retrieval Augmented Generation",
+                "Vision Language Models",
+                "RLHF"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 300
+        },
+        {
+            "id": "summary_default_5",
+            "title": "heyy",
+            "summary": "heyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 1,
+            "currentLevel": 1,
+            "strengths": [
+                "Parameter efficient fine tuning"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 50
+        },
+        {
+            "id": "summary_default_5",
+            "title": "hwyyy",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 3,
+            "currentLevel": 1,
+            "strengths": [
+                "Pre trained models",
+                "Multimodal LLMs",
+                "Policy learning using DQN"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 150
+        },
+        {
+            "id": "summary_test_session_5",
+            "title": "Test Learning",
+            "summary": "I learned about pre-training, fine-tuning and RLHF in this complex module.",
+            "keywords_found": [
+                "Pre training objectives",
+                "Fine tuning LLM",
+                "RLHF"
+            ],
+            "totalResources": 18,
+            "visitedResources": 2,
+            "currentLevel": 1,
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 100
+        },
+        {
+            "id": "summary_test_session_5",
+            "title": "Test Learning",
+            "summary": "I learned about pre-training, fine-tuning and RLHF in this complex module.",
+            "keywords_found": [
+                "Pre training objectives",
+                "Fine tuning LLM",
+                "RLHF"
+            ],
+            "totalResources": 18,
+            "visitedResources": 2,
+            "currentLevel": 1,
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 100
+        },
+        {
+            "id": "summary_default_6",
+            "title": "heyyy",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 2,
+            "currentLevel": 1,
+            "strengths": [
+                "Prompt based learning",
+                "Retrieval Methods"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 100
+        },
+        {
+            "id": "summary_default_7",
+            "title": "Tutoraial",
+            "summary": "Hugging Face is a leading AI company and open-source platform that provides tools, models, and datasets for building Natural Language Processing (NLP) and Machine Learning (ML) applications. It simplifies the development and deployment of transformer-based models for tasks such as text generation, translation, summarization, and question answering.\n\nThe platform is widely used by researchers, developers, and companies because it provides pretrained models, easy-to-use APIs, and strong community collaboration.\n\nAt the core of Hugging Face is the Transformers library, which offers thousands of pretrained models based on architectures like BERT, GPT, RoBERTa, T5, and DistilBERT. These models can be easily downloaded and fine-tuned for specific tasks.\n\nHugging Face also provides the Datasets library, which allows users to easily access and process large datasets for machine learning training and evaluation. Additionally, the Tokenizers library enables fast and efficient text tokenization, which is a crucial preprocessing step in NLP.\n\nAnother important feature is the Hugging Face Hub, a centralized repository where developers can share models, datasets, and machine learning applications. The hub promotes collaboration and allows users to reuse existing models instead of building them from scratch.\n\nHugging Face also offers Spaces, which allow developers to create and host interactive machine learning demos using frameworks like Gradio or Streamlit.\n\nOverall, Hugging Face accelerates AI development by providing open-source tools, pretrained transformer models, and a collaborative ecosystem, making advanced machine learning accessible to a broader audience.",
+            "keywords_found": [
+                "Tutorial: Introduction to huggingface"
+            ],
+            "totalResources": 18,
+            "visitedResources": 3,
+            "currentLevel": 1,
+            "strengths": [
+                "Tutorial: Introduction to huggingface",
+                "Prompt based learning",
+                "Retrieval Methods"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 150
+        },
+        {
+            "id": "summary_default_8",
+            "title": "heyy",
+            "summary": "heyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 7,
+            "currentLevel": 2,
+            "strengths": [
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM",
+                "Prompt based learning",
+                "Retrieval Methods",
+                "Agentic AI",
+                "Vision Language Models"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 350
+        },
+        {
+            "id": "summary_default_9",
+            "title": "heyy",
+            "summary": "heyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 7,
+            "currentLevel": 2,
+            "strengths": [
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM",
+                "Prompt based learning",
+                "Retrieval Methods",
+                "Agentic AI",
+                "Vision Language Models"
+            ],
+            "recommendations": [],
+            "avgDifficulty": 2.0,
+            "totalReward": 350
+        }
+    ]
+}

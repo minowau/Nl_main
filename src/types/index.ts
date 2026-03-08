@@ -11,6 +11,7 @@ export interface Resource {
   visited: boolean;
   difficulty: number;
   reward: number;
+  youtube_url?: string;
 }
 
 export interface Agent {
@@ -33,6 +34,14 @@ export interface Polyline {
   strengths?: string[];
   dominant_topics?: string[];
   ai_analysis?: string;
+  assimilation_position?: GridPosition;
+  next_recommendation?: {
+    id: string;
+    title: string;
+    position: GridPosition;
+    module: string;
+    reason: 'dqn' | 'fallback';
+  };
 }
 
 export interface LearningActivity {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Resource, Agent, GridPosition, Polyline } from '../types';
-import { BookOpen, Play, FileText, PenTool, RefreshCw, MapPin } from 'lucide-react';
+import { BookOpen, Play, FileText, PenTool, RefreshCw, MapPin, Sparkles } from 'lucide-react';
 
 interface GridVisualizationProps {
   resources: Resource[];
@@ -14,6 +14,7 @@ interface GridVisualizationProps {
   isPlaying?: boolean;
   playbackPath?: GridPosition[];
   onPlaybackComplete?: () => void;
+  assimilationPositions?: GridPosition[];
 }
 
 const GRID_SIZE = 20;
@@ -46,13 +47,34 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   onRefreshDQNPath,
   isPlaying = false,
   playbackPath = [],
-  onPlaybackComplete
+  onPlaybackComplete,
+  assimilationPositions = []
 }) => {
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [hoveredResource, setHoveredResource] = useState<string | null>(null);
   const hoverTimeout = React.useRef<NodeJS.Timeout | null>(null);
   const [animatingAgent, setAnimatingAgent] = useState(false);
   const [pathProgress, setPathProgress] = useState(0);
+  const [videoResource, setVideoResource] = useState<Resource | null>(null);
+  const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = React.useRef<HTMLDivElement | null>(null);
+
+  // Convert YouTube URL to embed URL
+  const getYouTubeEmbedUrl = (url: string): string | null => {
+    if (!url) return null;
+    // Handle youtu.be/ID and youtube.com/watch?v=ID formats
+    let videoId = '';
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1]?.split(/[?&#]/)[0] || '';
+    } else if (url.includes('watch?v=')) {
+      videoId = url.split('watch?v=')[1]?.split(/[?&#]/)[0] || '';
+    } else if (url.includes('youtube.com/embed/')) {
+      return url; // Already embed URL
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : null;
+  };
 
   const handleMouseEnter = (id: string) => {
     if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
@@ -212,6 +234,9 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
     );
   };
 
+  const isAssimilationCell = (x: number, y: number) =>
+    assimilationPositions.some(p => p.x === x && p.y === y);
+
   const renderGrid = () => {
     const cells = [];
 
@@ -220,6 +245,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
         const resource = resources.find(r => r.position.x === x && r.position.y === y);
         const isAgent = agent.position.x === x && agent.position.y === y;
         const isPath = isPathCell(x, y);
+        const isAssimilation = isAssimilationCell(x, y);
 
         // Dynamic Tooltip Positioning
         // JS Hover: Use margin for visual gap, no padding bridge needed
@@ -334,11 +360,16 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCellClick(x, y);
+                            if (isAgent && resource.youtube_url) {
+                              setVideoResource(resource);
+                              setHoveredResource(null);
+                            } else {
+                              handleCellClick(x, y);
+                            }
                           }}
-                          className={`w-full py-2.5 ${isAgent ? 'bg-green-600 hover:bg-green-700 border-green-500/20' : 'bg-blue-600 hover:bg-blue-700 border-blue-500/20'} text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95 transform duration-100 border`}
+                          className={`w-full py-2.5 ${isAgent ? 'bg-indigo-600 hover:bg-indigo-700 border-indigo-500/20 shadow-indigo-500/20' : 'bg-blue-600 hover:bg-blue-700 border-blue-500/20 shadow-blue-500/10'} text-white text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95 transform duration-100 border`}
                         >
-                          {isAgent ? "Open Lesson" : "Travel to Lesson"}
+                          {isAgent ? '▶ Start Lesson' : 'Travel to Lesson'}
                           <span className="text-lg leading-none">→</span>
                         </button>
                       </div>
@@ -348,6 +379,17 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                     <div className={`w-4 h-4 bg-white transform rotate-45 shadow-lg z-[-1] ${arrowClass}`}></div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {isAssimilation && !isAgent && (
+              <div className="absolute inset-0 m-auto w-8 h-8 flex items-center justify-center pointer-events-none z-10">
+                <span className="relative flex h-full w-full items-center justify-center">
+                  <span className="animate-ping absolute inline-flex h-4 w-4 rounded-full bg-amber-400 opacity-40"></span>
+                  <div className="relative w-5 h-5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-lg shadow-amber-200 border-2 border-white flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                  </div>
+                </span>
               </div>
             )}
 
@@ -412,6 +454,11 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full"></div>
               <span className="text-xs font-medium text-gray-600">Done</span>
+            </div>
+            <div className="w-px h-3 bg-gray-200"></div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full ring-1 ring-amber-300"></div>
+              <span className="text-xs font-medium text-gray-600">Assimilation</span>
             </div>
           </div>
         </div>
@@ -478,6 +525,217 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
             <div className="flex flex-col items-end border-l border-gray-100 pl-4">
               <span className="text-xs text-gray-400 uppercase font-semibold">Reward</span>
               <span className="text-xl font-bold text-gray-900">+{selectedResource.reward}</span>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* YouTube Video + AI Sider Premium Split Panel */}
+      {videoResource && videoResource.youtube_url && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[200] p-4 sm:p-8"
+          onClick={() => { setVideoResource(null); setChatMessages([]); setChatInput(''); }}
+        >
+          <div
+            className="bg-gray-950 rounded-3xl shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] w-full max-w-7xl h-[90vh] overflow-hidden flex flex-col border border-gray-800 animate-in zoom-in-95 fade-in duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Glossy Top Header */}
+            <div className="bg-gray-900/50 backdrop-blur-xl px-6 py-4 flex items-center justify-between border-b border-gray-800 flex-shrink-0">
+              <div className="flex items-center gap-4 text-white min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-red-500/20">
+                  <Play size={18} className="text-white fill-current" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-base truncate text-white tracking-tight">{videoResource.title}</h3>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gray-800 text-gray-400 rounded uppercase tracking-widest border border-gray-700">Lesson {videoResource.id}</span>
+                    <span className="text-[10px] text-gray-500">•</span>
+                    <span className="text-[10px] font-medium text-indigo-400 uppercase tracking-wider">{['Beginner', 'Intermediate', 'Advanced', 'Expert', 'Master'][videoResource.difficulty - 1]}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="hidden md:flex flex-col items-end px-4 border-r border-gray-800">
+                  <span className="text-[10px] text-gray-500 uppercase font-black tracking-tighter">Reward</span>
+                  <span className="text-sm font-black text-green-400">+{videoResource.reward} PTS</span>
+                </div>
+                <button
+                  onClick={() => { setVideoResource(null); setChatMessages([]); setChatInput(''); }}
+                  className="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-all flex items-center justify-center border border-gray-700"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Split Panel: Video + AI Sider */}
+            <div className="flex flex-1 min-h-0 bg-black">
+              {/* Left: Video Canvas */}
+              <div className="flex-[65] relative bg-black group">
+                <iframe
+                  className="w-full h-full"
+                  src={getYouTubeEmbedUrl(videoResource.youtube_url) || ''}
+                  title={videoResource.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+
+              {/* Right: Premium AI Sider */}
+              <div className="flex-[35] flex flex-col bg-gray-900 border-l border-gray-800 relative overflow-hidden">
+                {/* Decorative Background */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/5 blur-[100px] pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-600/5 blur-[100px] pointer-events-none" />
+
+                {/* Sider Header */}
+                <div className="bg-gradient-to-r from-indigo-900/80 to-purple-900/80 backdrop-blur-xl px-5 py-4 flex items-center gap-3 border-b border-white/5 flex-shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <Sparkles size={16} className="text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-sm tracking-tight">Learning Assistant</h4>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-[10px] text-indigo-200/60 uppercase tracking-widest font-black">AI Sider Active</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Chat Messages */}
+                <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar" style={{ minHeight: 0 }}>
+                  {chatMessages.length === 0 && (
+                    <div className="h-full flex flex-col items-center justify-center text-center px-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                      <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-white/5 flex items-center justify-center mb-6 shadow-2xl relative">
+                        <div className="absolute inset-0 bg-indigo-500/5 blur-xl rounded-full" />
+                        <Sparkles size={32} className="text-indigo-400 relative z-10" />
+                      </div>
+                      <h5 className="text-lg font-bold text-white mb-2">How can I help you?</h5>
+                      <p className="text-xs text-gray-400 mb-8 max-w-[240px] leading-relaxed">I've analyzed the lesson transcript. Ask me for a summary, key definitions, or complex examples.</p>
+
+                      <div className="w-full space-y-2">
+                        {[
+                          { q: 'Summarize this lesson', icon: '📝' },
+                          { q: 'What are the key concepts?', icon: '💡' },
+                          { q: 'Give me a real-world example', icon: '🌍' }
+                        ].map((item, i) => (
+                          <button
+                            key={i}
+                            onClick={() => {
+                              const question = item.q;
+                              setChatInput('');
+                              setChatMessages(prev => [...prev, { role: 'user', content: question }]);
+                              setChatLoading(true);
+                              fetch('http://localhost:5000/api/chat', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ module: videoResource.title, question, history: [] })
+                              })
+                                .then(r => r.json())
+                                .then(data => {
+                                  setChatMessages(prev => [...prev, { role: 'ai', content: data.answer }]);
+                                  setChatLoading(false);
+                                })
+                                .catch(() => {
+                                  setChatMessages(prev => [...prev, { role: 'ai', content: 'Sorry, I had trouble connecting. Please try again.' }]);
+                                  setChatLoading(false);
+                                });
+                            }}
+                            className="w-full text-left px-4 py-3 bg-white/5 border border-white/5 text-gray-300 rounded-2xl hover:bg-white/10 hover:border-indigo-500/30 transition-all text-xs font-medium flex items-center gap-3 active:scale-[0.98]"
+                          >
+                            <span className="text-base">{item.icon}</span>
+                            {item.q}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {chatMessages.map((msg, i) => (
+                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+                      <div className={`max-w-[85%] px-4 py-3 rounded-[1.25rem] text-sm leading-relaxed ${msg.role === 'user'
+                        ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-tr-sm shadow-lg shadow-indigo-900/20 shadow-xl'
+                        : 'bg-gray-800/80 backdrop-blur-md border border-gray-700 text-gray-200 rounded-tl-sm shadow-sm'
+                        }`}>
+                        {msg.content}
+                      </div>
+                    </div>
+                  ))}
+
+                  {chatLoading && (
+                    <div className="flex justify-start animate-in fade-in duration-300">
+                      <div className="bg-gray-800/80 backdrop-blur-md border border-gray-700 px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                          <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                          <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div ref={chatEndRef} className="h-2" />
+                </div>
+
+                {/* AI Chat Input - Glossy Glass */}
+                <div className="p-4 bg-gray-900/80 backdrop-blur-2xl border-t border-white/5 flex-shrink-0">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!chatInput.trim() || chatLoading) return;
+                      const question = chatInput.trim();
+                      setChatMessages(prev => [...prev, { role: 'user', content: question }]);
+                      setChatInput('');
+                      setChatLoading(true);
+                      fetch('http://localhost:5000/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          module: videoResource.title,
+                          question,
+                          history: chatMessages
+                        })
+                      })
+                        .then(r => r.json())
+                        .then(data => {
+                          setChatMessages(prev => [...prev, { role: 'ai', content: data.answer }]);
+                          setChatLoading(false);
+                          setTimeout(() => {
+                            chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                          }, 100);
+                        })
+                        .catch(() => {
+                          setChatMessages(prev => [...prev, { role: 'ai', content: 'Connection lost. Please check your network and try again.' }]);
+                          setChatLoading(false);
+                        });
+                    }}
+                    className="flex gap-2"
+                  >
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      placeholder="Type a question..."
+                      className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                      disabled={chatLoading}
+                    />
+                    <button
+                      type="submit"
+                      disabled={!chatInput.trim() || chatLoading}
+                      className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 disabled:from-gray-700 disabled:to-gray-800 text-white rounded-2xl transition-all flex items-center justify-center shadow-lg shadow-indigo-500/10 active:scale-90 flex-shrink-0"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                      </svg>
+                    </button>
+                  </form>
+                  <p className="text-[9px] text-center text-gray-600 mt-2 uppercase tracking-tighter font-black">AI powered by Google flan-t5 & Groq Llama</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -71,12 +71,17 @@ export interface LearningPlannerAPI {
   visitResource(sessionId: string, resourceId: string): Promise<AgentState>;
 
   // Learning Summary
-  createLearnningSummary(
+  createLearningSummary(
     sessionId: string,
     title: string,
     summary: string,
     visitedResources: string[]
-  ): Promise<{ summary: any; polyline: Polyline }>;
+  ): Promise<{
+    summary: any;
+    polyline: Polyline;
+    assimilation_position?: { x: number; y: number };
+    next_recommendation?: { id: string; title: string; position: { x: number; y: number }; module: string; reason: string } | null;
+  }>;
 
   // Polylines
   getPolylines(): Promise<Polyline[]>;
@@ -145,12 +150,17 @@ class NLPLearningAPI implements LearningPlannerAPI {
     return response.json();
   }
 
-  async createLearnningSummary(
+  async createLearningSummary(
     sessionId: string = this.sessionId,
     title: string,
     summary: string,
     visitedResources: string[]
-  ): Promise<{ summary: any; polyline: Polyline }> {
+  ): Promise<{
+    summary: any;
+    polyline: Polyline;
+    assimilation_position?: { x: number; y: number };
+    next_recommendation?: { id: string; title: string; position: { x: number; y: number }; module: string; reason: string } | null;
+  }> {
     const response = await fetch(`${API_BASE}/summary/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

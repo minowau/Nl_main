@@ -17,11 +17,13 @@ try:
     from .database import get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines
     from .request_logger import log_request
     from .utils import utils_preprocess_text, get_cos_sim
+    from . import navigator
 except ImportError:
     from init import app
     from database import get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines
     from request_logger import log_request
     from utils import utils_preprocess_text, get_cos_sim
+    import navigator
 
 # Define stopwords
 stop_words = set(stopwords.words('english'))
@@ -93,6 +95,29 @@ def load_nlp_resources():
 
 # Cache resources
 nlp_resources = load_nlp_resources()
+
+# Load YouTube links mapping
+_youtube_links_path = os.path.join(os.path.dirname(__file__), 'data', 'youtube_links.json')
+try:
+    with open(_youtube_links_path, 'r') as f:
+        _youtube_links = json.load(f)
+    print(f"Loaded {len(_youtube_links)} YouTube links")
+    # Inject youtube_url into each resource by matching module name
+    for r in nlp_resources:
+        module = r.get('module', '')
+        r['youtube_url'] = _youtube_links.get(module, '')
+        if not r['youtube_url']:
+            # Try fuzzy match on title
+            for key, url in _youtube_links.items():
+                if key.lower() in r['title'].lower() or r['title'].lower() in key.lower():
+                    r['youtube_url'] = url
+                    break
+    yt_count = sum(1 for r in nlp_resources if r.get('youtube_url'))
+    print(f"Matched YouTube URLs for {yt_count}/{len(nlp_resources)} resources")
+except Exception as e:
+    print(f"Could not load YouTube links: {e}")
+    for r in nlp_resources:
+        r['youtube_url'] = ''
 
 # Pre-compute module embeddings
 module_embeddings = {}
@@ -211,6 +236,7 @@ def create_learning_summary():
     """
     data = request.get_json()
     session_id = data.get('session_id', 'default')
+    session = get_session(session_id)
     title = data.get('title', '')
     summary = data.get('summary', '')
     visited_ids = data.get('visited_resources', [])
@@ -494,6 +520,24 @@ def create_learning_summary():
                            f"You successfully reinforced concepts in {', '.join(strengths[:2])}. "
                            f"Consider exploring advanced topics in {recommendations[0] if recommendations else 'new areas'} next.")
 
+    # ── Assimilation Position: agent's current position when summary was submitted ──
+    agent_pos = session.get('position', {'x': 10, 'y': 10})
+    assimilation_position = {'x': agent_pos.get('x', 10), 'y': agent_pos.get('y', 10)}
+
+    # ── Next Recommendation via DQN Navigator (with debug logging) ──
+    print(f"\n[DQN DEBUG] Summary submitted: '{title}'")
+    print(f"[DQN DEBUG] Visited IDs: {visited_ids}")
+    print(f"[DQN DEBUG] Module scores ({len(module_scores)}): {[round(s, 3) for s in module_scores[:6]]}...")
+    next_rec = navigator.recommend_next(
+        visited_ids=visited_ids,
+        module_scores=module_scores,
+        nlp_resources=nlp_resources
+    )
+    print(f"[DQN DEBUG] Recommendation: resource={next_rec['resource']['title'] if next_rec['resource'] else 'None'}, "
+          f"module={next_rec['module']}, reason={next_rec['reason']}")
+    if next_rec.get('q_values'):
+        print(f"[DQN DEBUG] Q-values: {[round(q, 3) for q in next_rec['q_values']]}")
+
     # Store polyline
     polyline_id = f"polyline_{len(polylines)}"
     new_polyline = {
@@ -508,14 +552,24 @@ def create_learning_summary():
         'module_scores': module_scores,
         'strengths': strengths,
         'dominant_topics': dominant_topics,
-        'ai_analysis': ai_analysis
+        'ai_analysis': ai_analysis,
+        'assimilation_position': assimilation_position,
+        'next_recommendation': {
+            'id': next_rec['resource']['id'],
+            'title': next_rec['resource']['title'],
+            'position': next_rec['resource']['position'],
+            'module': next_rec['module'],
+            'reason': next_rec['reason']
+        } if next_rec['resource'] else None
     }
     
     save_polyline(polyline_id, new_polyline)
     
     return jsonify({
         'summary': summary_result,
-        'polyline': new_polyline
+        'polyline': new_polyline,
+        'assimilation_position': assimilation_position,
+        'next_recommendation': new_polyline['next_recommendation']
     })
 
 
@@ -564,7 +618,7 @@ def toggle_polyline(polyline_id):
 @app.route('/api/dqn-path', methods=['POST'])
 def generate_dqn_path():
     """
-    Generate DQN optimal path
+    Generate DQN optimal path using the Navigator module.
     
     Request JSON:
     {
@@ -574,47 +628,76 @@ def generate_dqn_path():
     }
     """
     data = request.get_json()
-    session_id = data.get('session_id', 'default')
     agent_pos = data.get('agent_position', {'x': 10, 'y': 10})
-    visited_ids = set(data.get('visited_resource_ids', []))
-    
-    # Get unvisited resources (preferring higher reward, lower difficulty)
-    unvisited = [r for r in nlp_resources if r['id'] not in visited_ids]
-    unvisited.sort(key=lambda r: (-r['reward'], r['difficulty']))
-    
-    # Select best resources for DQN path (up to 5)
-    selected = unvisited[:5]
-    
-    # Simple DQN path: current position -> closest unvisited -> farthest from start
+    visited_ids = list(data.get('visited_resource_ids', []))
+
+    # Get latest module scores from most recent polyline (if any)
+    polylines = get_db_polylines()
+    latest_scores = []
+    if polylines:
+        last_polyline = list(polylines.values())[-1]
+        latest_scores = last_polyline.get('module_scores', [])
+
+    # Use DQN navigator to get top recommendation
+    rec = navigator.recommend_next(
+        visited_ids=visited_ids,
+        module_scores=latest_scores,
+        nlp_resources=nlp_resources
+    )
+
+    # Build a path: agent → recommended resource, plus up to 4 more close unvisited
     path = [agent_pos]
+    visited_set = set(str(v) for v in visited_ids)
     
-    if selected:
-        # Calculate distances
-        distances = [
-            {
-                'resource': r,
-                'dist': ((r['position']['x'] - agent_pos['x'])**2 + 
-                        (r['position']['y'] - agent_pos['y'])**2)**0.5
-            }
-            for r in selected
-        ]
-        distances.sort(key=lambda x: x['dist'])
-        
-        # Build path
-        path.extend([r['resource']['position'] for r in distances])
-    
-    # Calculate total reward
-    total_reward = sum(r['reward'] for r in selected)
-    final_resource = selected[-1] if selected else None
-    
-    result = {
+    if rec['resource']:
+        path.append(rec['resource']['position'])
+        # Add up to 4 more nearest unvisited resources
+        remaining = [r for r in nlp_resources 
+                     if str(r['id']) not in visited_set and r['id'] != rec['resource']['id']]
+        remaining.sort(key=lambda r: (
+            (r['position']['x'] - rec['resource']['position']['x'])**2 +
+            (r['position']['y'] - rec['resource']['position']['y'])**2
+        ))
+        for r in remaining[:4]:
+            path.append(r['position'])
+
+    final_resource = rec['resource']
+    total_reward = sum(r['reward'] for r in nlp_resources
+                       if r['position'] in path[1:]) if path else 0
+
+    return jsonify({
         'path': path,
         'finalResource': final_resource,
         'totalReward': total_reward,
-        'pathLength': len(path)
-    }
-    
-    return jsonify(result)
+        'pathLength': len(path),
+        'navigatorReason': rec['reason']
+    })
+
+
+@app.route('/api/next-recommendation', methods=['GET'])
+def get_next_recommendation():
+    """
+    Get the DQN navigator's next resource recommendation for a session.
+    Returns: { resource, module, reason, q_values }
+    """
+    session_id = request.args.get('session_id', 'default')
+    session = get_session(session_id)
+    visited_ids = session.get('visitedResources', [])
+
+    # Get latest module scores from most recent polyline
+    polylines = get_db_polylines()
+    latest_scores = []
+    if polylines:
+        last_polyline = list(polylines.values())[-1]
+        latest_scores = last_polyline.get('module_scores', [])
+
+    rec = navigator.recommend_next(
+        visited_ids=visited_ids,
+        module_scores=latest_scores,
+        nlp_resources=nlp_resources
+    )
+
+    return jsonify(rec)
 
 
 # =============================================
@@ -644,6 +727,119 @@ def get_learning_data():
         'nextOptimalResource': unvisited[0]['position'] if unvisited else None,
         'totalReward': session.get('totalReward', 0)
     })
+
+
+# =============================================
+# AI SIDER CHAT ENDPOINT
+# =============================================
+
+# Load YouTube transcripts
+_transcripts_path = os.path.join(os.path.dirname(__file__), 'data', 'youtube_transcripts.json')
+try:
+    with open(_transcripts_path, 'r', encoding='utf-8') as f:
+        _youtube_transcripts = json.load(f)
+    print(f"Loaded transcripts for {len(_youtube_transcripts)} modules")
+except Exception as e:
+    print(f"Could not load YouTube transcripts: {e}")
+    _youtube_transcripts = {}
+
+
+from openai import OpenAI
+
+# AI Client configuration
+# Using Groq (OpenAI-compatible) for free high-quality inference
+_ai_client = None
+try:
+    _api_key = os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY") or "FIXME_YOUR_API_KEY"
+    _base_url = "https://api.groq.com/openai/v1" if "GROQ" in _api_key or _api_key == "FIXME_YOUR_API_KEY" else None
+    _ai_client = OpenAI(api_key=_api_key, base_url=_base_url)
+except Exception as e:
+    print(f"AI Client initialization warning: {e}")
+
+@app.route('/api/chat', methods=['POST'])
+def chat_with_ai():
+    """
+    AI Sider chat endpoint - upgraded to use the openai package.
+    Uses YouTube transcript context and a premium model for better answers.
+    """
+    data = request.get_json()
+    module = data.get('module', '')
+    question = data.get('question', '')
+    history = data.get('history', [])
+    
+    if not question.strip():
+        return jsonify({'answer': 'Please ask a question about this lesson.', 'source': 'none'})
+    
+    # 1. Find transcript/context
+    transcript = _youtube_transcripts.get(module, '')
+    if not transcript:
+        for key, val in _youtube_transcripts.items():
+            if key.lower() in module.lower() or module.lower() in key.lower():
+                transcript = val
+                break
+                
+    resource_desc = ''
+    for r in nlp_resources:
+        if r.get('module', '') == module:
+            resource_desc = r.get('description', '')[:500]
+            break
+            
+    context = transcript[:4000] if transcript else resource_desc[:1200]
+    
+    # 2. Try Premium Inference via OpenAI Package
+    if _ai_client and os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY"):
+        try:
+            model = "llama-3.3-70b-versatile" if "groq" in (_ai_client.base_url or "") else "gpt-3.5-turbo"
+            
+            system_prompt = f"""You are 'Sider AI', a premium learning assistant for an Advanced NLP course.
+Your goal is to help students understand the current lesson: '{module}'.
+Use the following context from the lesson's YouTube transcript/description to answer:
+---
+{context}
+---
+Be concise, professional, and encouraging. If the answer isn't in the context, use your general knowledge but mention it's supplementary."""
+
+            messages = [{"role": "system", "content": system_prompt}]
+            # Add limited history
+            for msg in history[-4:]:
+                role = "user" if msg.get("role") == "user" else "assistant"
+                messages.append({"role": role, "content": msg.get("content", "")})
+            
+            messages.append({"role": "user", "content": question})
+            
+            completion = _ai_client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=500
+            )
+            answer = completion.choices[0].message.content
+            return jsonify({'answer': answer, 'source': f'openai-{model}'})
+            
+        except Exception as e:
+            print(f"[CHAT] Premium AI error: {e}")
+            # Fall through to local model
+            
+    # 3. Fallback to Local Model (Flan-T5) or Search
+    try:
+        from transformers import pipeline
+        generator = pipeline('text2text-generation', model='google/flan-t5-small', device=-1)
+        ctx_trimmed = context[:600]
+        prompt = f"Answer the following question based on the context.\n\nContext: {ctx_trimmed}\n\nQuestion: {question}\n\nAnswer:"
+        output = generator(prompt, max_length=200)
+        answer = output[0]['generated_text'].strip()
+        
+        if len(answer) < 5:
+            raise Exception("Too short")
+        return jsonify({'answer': answer, 'source': 'flan-t5-fallback'})
+        
+    except Exception as e:
+        print(f"[CHAT] Local model error: {e}")
+        # Final fallback: transcript search
+        sentences = context.split('.')
+        relevant = [s.strip() for s in sentences if any(w.lower() in s.lower() for w in question.split() if len(w) > 3)][:3]
+        answer = "Based on the lesson: " + ". ".join(relevant) + "." if relevant else f"This lesson covers {module}. Check the video for details!"
+        return jsonify({'answer': answer, 'source': 'transcript-search'})
 
 
 if __name__ == '__main__':
