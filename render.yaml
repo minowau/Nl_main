@@ -2,7 +2,7 @@ services:
   - type: web
     name: nlp-learning-grid
     runtime: docker
-    plan: free # Can be upgraded if needed
+    plan: free
     region: oregon # Or your preferred region
     envVars:
       - key: PORT
@@ -11,7 +11,3 @@ services:
         sync: false # Set manually in Render dashboard
       - key: OPENAI_API_KEY
         sync: false # Set manually in Render dashboard
-    disk:
-      name: nlp-data
-      mountPath: /app/backend/data
-      sizeGB: 1
