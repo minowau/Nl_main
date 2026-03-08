@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: nlp-learning-grid
+    runtime: docker
+    plan: free # Can be upgraded if needed
+    region: oregon # Or your preferred region
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: GROQ_API_KEY
+        sync: false # Set manually in Render dashboard
+      - key: OPENAI_API_KEY
+        sync: false # Set manually in Render dashboard
+    disk:
+      name: nlp-data
+      mountPath: /app/backend/data
+      sizeGB: 1
