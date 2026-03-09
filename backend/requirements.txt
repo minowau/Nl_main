@@ -17,3 +17,4 @@ torch
 Werkzeug==3.0.3
 youtube-transcript-api
 lxml
+openai
