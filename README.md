@@ -1,11 +1,3 @@
----
-title: NLP Learning Grid
-emoji: 🌐
-colorFrom: indigo
-colorTo: blue
-sdk: docker
-pinned: false
----
 
 # NLP Learning Grid
 
