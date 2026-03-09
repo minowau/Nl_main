@@ -8,29 +8,37 @@ RUN npm run build
 
 # Stage 2: Setup the Python Backend
 FROM python:3.9-slim
-WORKDIR /app
 
-# Install system dependencies if needed (e.g. for numpy/pandas compilation)
+# Create a non-root user for Hugging Face (UID 1000)
+RUN useradd -m -u 1000 user
+
+# Install system dependencies first (cached layer)
+USER root
 RUN apt-get update && apt-get install -y --no-install-recommends gcc python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY backend/requirements.txt backend/
-# Add gunicorn for production server
-RUN pip install --no-cache-dir -r backend/requirements.txt && pip install gunicorn
+USER user
+ENV PATH="/home/user/.local/bin:$PATH"
+WORKDIR /home/user/app
+
+# Install PyTorch CPU-only FIRST (largest package, separate cache layer)
+# This avoids downloading the ~800MB CUDA version
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
+# Install remaining Python dependencies
+COPY --chown=user backend/requirements.txt backend/
+# Remove torch from requirements since we installed it above
+RUN grep -v '^torch' backend/requirements.txt > /tmp/req_notorch.txt && pip install --no-cache-dir --upgrade -r /tmp/req_notorch.txt && pip install --no-cache-dir gunicorn
 
 # Copy Backend Code
-COPY backend/ backend/
+COPY --chown=user backend/ backend/
 
 # Copy Frontend Build from Stage 1
-COPY --from=build-frontend /app/dist ./dist
+COPY --chown=user --from=build-frontend /app/dist ./dist
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PORT=5000
-
-# Expose port
-EXPOSE 5000
+ENV PORT=7860
 
 # Run the application
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "backend.nlp_api:app"]
+CMD gunicorn -b 0.0.0.0:$PORT backend.nlp_api:app
