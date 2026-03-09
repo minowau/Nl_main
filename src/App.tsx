@@ -33,21 +33,34 @@ function App() {
     nextOptimalResource: null
   });
 
-  // Load resources from backend on mount
+  // Load resources and history from backend on mount
   useEffect(() => {
-    const loadResources = async () => {
+    const initApp = async () => {
       try {
-        const data = await nlpApi.getResources();
-        setResources(data);
-        setLearningData(prev => ({
-          ...prev,
-          totalResources: data.length
-        }));
+        const [resourceData, polylineData, learningStats] = await Promise.all([
+          nlpApi.getResources(),
+          nlpApi.getPolylines(),
+          nlpApi.getLearningData('default')
+        ]);
+
+        setResources(resourceData);
+        setPolylines(polylineData);
+        setLearningData({
+          ...learningStats,
+          totalResources: resourceData.length
+        });
+
+        // Initialize assimilation positions from existing polylines
+        const positions = polylineData
+          .filter(p => p.assimilation_position)
+          .map(p => p.assimilation_position!);
+        setAssimilationPositions(positions);
+
       } catch (error) {
-        console.error('Failed to load resources:', error);
+        console.error('Failed to initialize app data:', error);
       }
     };
-    loadResources();
+    initApp();
   }, []);
 
   const handleResourceClick = useCallback((resource: Resource) => {

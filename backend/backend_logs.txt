@@ -3193,3 +3193,13 @@ Payload: {'session_id': 'default', 'position': {'x': 3, 'y': 16}}
 --------------------------------------------------
 [2026-03-09 06:14:22] GET http://localhost:5000/api/resources
 --------------------------------------------------
+[2026-03-09 19:23:51] OPTIONS http://localhost:5000/api/agent/move
+--------------------------------------------------
+[2026-03-09 19:23:51] OPTIONS http://localhost:5000/api/resource/visit
+--------------------------------------------------
+[2026-03-09 19:23:51] POST http://localhost:5000/api/agent/move
+Payload: {'session_id': 'default', 'position': {'x': 10, 'y': 12}}
+--------------------------------------------------
+[2026-03-09 19:23:51] POST http://localhost:5000/api/resource/visit
+Payload: {'session_id': 'default', 'resource_id': '4'}
+--------------------------------------------------

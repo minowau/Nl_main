@@ -59,24 +59,31 @@ def load_nlp_resources():
         with open(nlp_json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
             
-        df = pd.DataFrame(data)
+        if not isinstance(data, list):
+            print(f"Unexpected data format in {nlp_json_path}")
+            return []
+            
         resources = []
-        
         used_positions = set()
         
-        for idx, row in df.iterrows():
-            # Force specific position for certain key resources to be central and visible
-            name_lower = str(row.get('name', '')).lower()
+        for idx, row in enumerate(data):
+            # Extract fields with safe defaults and stripping
+            title = str(row.get('name', f'Resource {idx + 1}')).strip()
+            module = str(row.get('module', title)).strip() # Default module to title if missing
+            
+            # Force specific position for certain key resources
+            name_lower = title.lower()
             if 'vision language models' in name_lower:
                 x, y = 10, 10
             else:
-                # Get preferred position or random (with extra padding: 2-17 to avoid edges)
-                x = int(row.get('x', np.random.randint(2, 18)))
-                y = int(row.get('y', np.random.randint(2, 18)))
+                try:
+                    x = int(row.get('x', np.random.randint(2, 18)))
+                    y = int(row.get('y', np.random.randint(2, 18)))
+                except:
+                    x, y = np.random.randint(2, 18), np.random.randint(2, 18)
             
             # Resolve collisions
             while (x, y) in used_positions:
-                # Simple random re-roll (with extra padding)
                 x = np.random.randint(2, 18)
                 y = np.random.randint(2, 18)
                 
@@ -85,17 +92,18 @@ def load_nlp_resources():
             resource = {
                 'id': str(idx + 1),
                 'position': {'x': x, 'y': y},
-                'type': 'book',  # Default type since not in keyword file
-                'title': row.get('name', f'Resource {idx + 1}'),
+                'type': 'book', 
+                'title': title,
                 'visited': False,
-                'difficulty': 2, # Default difficulty
-                'reward': 50,    # Default reward
-                'url': row.get('links', ''), # Using 'links' column
-                'description': str(row.get('description', '')),
-                'module': row.get('module', 'General') # Add module/topic
+                'difficulty': int(row.get('difficulty', 2)),
+                'reward': int(row.get('reward', 50)),
+                'url': str(row.get('links', '')).strip(),
+                'description': str(row.get('description', '')).strip(),
+                'module': module
             }
             resources.append(resource)
         
+        print(f"Successfully loaded {len(resources)} resources from JSON")
         return resources
     except Exception as e:
         print(f"Error loading NLP resources: {e}")
@@ -107,25 +115,39 @@ nlp_resources = load_nlp_resources()
 # Load YouTube links mapping
 _youtube_links_path = os.path.join(os.path.dirname(__file__), 'data', 'youtube_links.json')
 try:
-    with open(_youtube_links_path, 'r') as f:
-        _youtube_links = json.load(f)
-    print(f"Loaded {len(_youtube_links)} YouTube links")
-    # Inject youtube_url into each resource by matching module name
-    for r in nlp_resources:
-        module = r.get('module', '')
-        r['youtube_url'] = _youtube_links.get(module, '')
-        if not r['youtube_url']:
-            # Try fuzzy match on title
-            for key, url in _youtube_links.items():
-                if key.lower() in r['title'].lower() or r['title'].lower() in key.lower():
-                    r['youtube_url'] = url
-                    break
-    yt_count = sum(1 for r in nlp_resources if r.get('youtube_url'))
-    print(f"Matched YouTube URLs for {yt_count}/{len(nlp_resources)} resources")
+    if os.path.exists(_youtube_links_path):
+        with open(_youtube_links_path, 'r', encoding='utf-8') as f:
+            raw_links = json.load(f)
+        
+        # Create a normalized mapping for easier lookup
+        _youtube_links = {str(k).strip().lower(): v for k, v in raw_links.items()}
+        print(f"Loaded {len(_youtube_links)} YouTube links from mapping file")
+        
+        # Inject youtube_url into each resource
+        for r in nlp_resources:
+            module_lower = r['module'].lower()
+            title_lower = r['title'].lower()
+            
+            # 1. Exact module match
+            url = _youtube_links.get(module_lower, '')
+            
+            # 2. Fuzzy match on title or module
+            if not url:
+                for key, val in _youtube_links.items():
+                    if key in title_lower or key in module_lower or title_lower in key or module_lower in key:
+                        url = val
+                        break
+            
+            r['youtube_url'] = url
+            
+        yt_count = sum(1 for r in nlp_resources if r.get('youtube_url'))
+        print(f"Matched YouTube URLs for {yt_count}/{len(nlp_resources)} resources")
+    else:
+        print(f"YouTube links file not found: {_youtube_links_path}")
+        for r in nlp_resources: r['youtube_url'] = ''
 except Exception as e:
     print(f"Could not load YouTube links: {e}")
-    for r in nlp_resources:
-        r['youtube_url'] = ''
+    for r in nlp_resources: r['youtube_url'] = ''
 
 # Pre-compute module embeddings
 module_embeddings = {}
@@ -296,97 +318,37 @@ def create_learning_summary():
     keywords_found = []
     
     for module in ordered_modules:
-        # Check exact module name
         if module.lower() in summary_lower:
             keywords_found.append(module)
             continue
-            
-        # Check aliases
         aliases = module_aliases.get(module, [])
         for alias in aliases:
             if alias.lower() in summary_lower:
                 keywords_found.append(module)
                 break
-            
-    # Also check against visited resources titles
     for r in visited_resources:
         if r['title'].lower() in summary_lower and r['title'] not in keywords_found:
             keywords_found.append(r['title'])
 
     # Calculate module scores for polyline
     module_scores = []
-    
-    # Log start of polyline generation
-    log_polyline_step("START_GENERATION", 
-                     f"Generating polyline for summary: '{summary[:100]}...'\n"
-                     f"Models available: BERT={bert_model is not None}, Preprocessing=NLTK/WordNet")
+    log_polyline_step("START_GENERATION", f"Generating polyline for summary: '{summary[:100]}...'")
 
     if bert_model and module_embeddings:
         try:
-            # Preprocess summary
             clean_summary = utils_preprocess_text(summary, flg_stemm=False, flg_lemm=True, lst_stopwords=stop_words)
-            
-            log_polyline_step("PREPROCESSING", 
-                            f"Original: {summary[:100]}...\n"
-                            f"Cleaned: {clean_summary[:100]}...\n"
-                            f"Method: utils_preprocess_text (HTML strip, punct removal, lemmatization)")
-
-            # Encode summary
             summary_embedding = bert_model.encode(clean_summary)
-            
-            log_polyline_step("EMBEDDING_GENERATION",
-                            f"Model: all-MiniLM-L6-v2 (SentenceTransformer)\n"
-                            f"Input: Cleaned summary text\n"
-                            f"Output shape: {summary_embedding.shape}")
-            
-            step_details = []
             for module in ordered_modules:
                 score = 0.0
-                sim = 0.0
-                match_type = "None"
-                
                 if module in module_embeddings:
-                    # Calculate cosine similarity
                     sim = get_cos_sim(summary_embedding, module_embeddings[module])
-                    # Use similarity as base score (clamped to 0+)
                     score = max(0.0, sim)
-                    match_type = "Cosine Similarity"
-                
-                # Hybrid approach: Boost if explicit keywords found
-                keyword_boost = 0.0
-                if module in keywords_found:
-                    keyword_boost = 0.3
-                    score += keyword_boost
-                    match_type += " + Keyword Match"
-                    
-                # Boost if any resource from this module was visited
-                visit_boost = 0.0
+                if module in keywords_found: score += 0.3
                 module_visited_count = sum(1 for r in visited_resources if r['module'] == module)
-                if module_visited_count > 0:
-                    visit_boost = 0.1 * module_visited_count
-                    score += visit_boost
-                    match_type += f" + Visits({module_visited_count})"
-                    
-                # Clamp between 0 and 1
-                final_score = float(max(0.0, min(1.0, score)))
-                module_scores.append(final_score)
-                
-                step_details.append(
-                    f"Module: {module}\n"
-                    f"  - Base Sim: {sim:.4f}\n"
-                    f"  - Keyword Boost: {keyword_boost}\n"
-                    f"  - Visit Boost: {visit_boost}\n"
-                    f"  - Final Score: {final_score:.4f}"
-                )
-            
-            log_polyline_step("SCORING_DETAILS", "\n".join(step_details))
-                
+                if module_visited_count > 0: score += 0.1 * module_visited_count
+                module_scores.append(float(max(0.0, min(1.0, score))))
         except Exception as e:
-            error_msg = f"Error computing BERT scores: {e}"
-            print(error_msg)
-            log_polyline_step("ERROR", error_msg)
-            
-            # Fallback to simple logic
+            print(f"Error computing BERT scores: {e}")
             for module in ordered_modules:
                 score = 0.5 + (np.random.random() - 0.5) * 0.1
                 if module in keywords_found: score += 0.2
@@ -394,183 +356,92 @@ def create_learning_summary():
                 if module_visited_count > 0: score += 0.1 * module_visited_count
                 module_scores.append(float(max(0.0, min(1.0, score))))
     else:
-        # Fallback if no model
         for module in ordered_modules:
-            # Base score
-            score = 0.5 
-            
-            # Add random noise for variation (simulating "organic" learning curve)
-            noise = (np.random.random() - 0.5) * 0.1
-            score += noise
-            
-            # Boost if module keyword found in summary
-            if module in keywords_found:
-                score += 0.2
-                
-            # Boost if any resource from this module was visited
+            score = 0.5 + (np.random.random() - 0.5) * 0.1
+            if module in keywords_found: score += 0.2
             module_visited_count = sum(1 for r in visited_resources if r['module'] == module)
-            if module_visited_count > 0:
-                score += 0.1 * module_visited_count
-                
-            # Clamp between 0 and 1
+            if module_visited_count > 0: score += 0.1 * module_visited_count
             module_scores.append(float(max(0.0, min(1.0, score))))
 
-    # Log final result
-    log_polyline_step("FINAL_POLYLINE", 
-                     f"Generated {len(module_scores)} scores for {len(ordered_modules)} modules.\n"
-                     f"Polyline Vector: {module_scores}")
+    # ── DQN Recommendation ──
+    rec_result = navigator.recommend_next(visited_ids, module_scores, nlp_resources)
+    next_recommendation_obj = rec_result.get('resource')
+    
+    recommendations = []
+    if next_recommendation_obj:
+        recommendations.append(next_recommendation_obj['title'])
+    
+    unvisited_remaining = [r for r in nlp_resources if r['id'] not in visited_ids and r['title'] not in recommendations]
+    unvisited_remaining.sort(key=lambda r: (-r.get('reward', 0), r.get('difficulty', 0)))
+    for r in unvisited_remaining:
+        if len(recommendations) < 3: recommendations.append(r['title'])
+        else: break
+        
+    strengths = keywords_found if keywords_found else [r['title'] for r in visited_resources if r.get('difficulty', 0) <= 2]
 
-    # Find strengths (topics with lower difficulty learned)
-    strengths = [r['title'] for r in visited_resources if r['difficulty'] <= 2]
-    
-    # Find recommendations (higher difficulty topics not yet visited)
-    unvisited_harder = [r for r in nlp_resources if r['id'] not in visited_ids and r['difficulty'] >= 3]
-    recommendations = [r['title'] for r in unvisited_harder[:3]]
-    
+    # Analysis results
     polylines = get_db_polylines()
-    
-    # Aggregate keywords from all polylines to find most frequent topics
     from collections import Counter
     all_keywords = []
     for p in polylines.values():
-        if 'keywords_found' in p:
-            all_keywords.extend(p['keywords_found'])
+        if 'keywords_found' in p: all_keywords.extend(p['keywords_found'])
     all_keywords.extend(keywords_found)
-    
     keyword_counts = Counter(all_keywords)
     most_common_keywords = [k for k, v in keyword_counts.most_common(3)]
     
-    summary_result = {
-        'id': f"summary_{session_id}_{len(polylines)}",
-        'title': title,
-        'summary': summary,
-        'keywords_found': keywords_found,
-        'totalResources': len(nlp_resources),
-        'visitedResources': len(visited_resources),
-        'currentLevel': min(5, 1 + len(visited_resources) // 4),
-        'strengths': strengths,
-        'recommendations': recommendations,
-        'avgDifficulty': round(avg_difficulty, 2),
-        'totalReward': total_reward
-    }
-    
-    save_summary(summary_result)
-    
-    # Identify dominant topics from module scores
+    # Identify dominant topics
     dominant_topics = []
     if module_scores:
-        # Pair scores with module names
-        scored_modules = list(zip(ordered_modules, module_scores))
-        # Sort by score descending
-        scored_modules.sort(key=lambda x: x[1], reverse=True)
-        # Take top 3 with score > 0.3
+        scored_modules = sorted(zip(ordered_modules, module_scores), key=lambda x: x[1], reverse=True)
         dominant_topics = [m for m, s in scored_modules[:3] if s > 0.3]
 
-    # Generate AI Analysis using Gemini Flash (if key) or Local Fallback
+    # AI Analysis
     ai_analysis = ""
     gemini_key = os.environ.get("GEMINI_API_KEY")
-    
     if gemini_key:
         try:
             import google.generativeai as genai
             genai.configure(api_key=gemini_key)
             model = genai.GenerativeModel('gemini-1.5-flash')
-            
-            prompt = (
-                f"Analyze this learning student.\n"
-                f"Current Summary: '{summary}'\n"
-                f"History of Focus: {', '.join(most_common_keywords)}\n"
-                f"Current Dominant Topics: {', '.join(dominant_topics)}\n"
-                f"Instruction: Provide VERY SHORT feedback (max 2 sentences).\n"
-                f"1. If the summary is poor/short, CRITICIZE their expression and tell them to improve.\n"
-                f"2. If good, praise briefly.\n"
-                f"3. Suggest a next topic based on their history of focus."
-            )
-            
-            response = model.generate_content(prompt)
-            ai_analysis = response.text
-        except Exception as e:
-            print(f"Gemini API Error: {e}")
-            ai_analysis = f"Gemini Error: {e}" # Fallthrough to local
-            
-    # Fallback to Local Model if no Gemini key or if execution failed (and analysis is empty/error)
-    if not ai_analysis or "Error" in ai_analysis:
-        try:
-            print("Using local model fallback...")
-            from transformers import pipeline
-            # Load small efficient model for CPU inference
-            # We lazy load this to avoid startup impact if not needed
-            generator = pipeline('text2text-generation', model='google/flan-t5-small')
-            
-            # Adaptive prompt for local model
-            focus_area = most_common_keywords[0] if most_common_keywords else "NLP"
-            
-            # Heuristic for summary quality to guide the simple T5 model
-            summary_quality = "bad" if len(summary.split()) < 10 else "good"
-            
-            prompt = ""
-            if summary_quality == "bad":
-                prompt = f"tell student to improve summary about {focus_area}. be critical."
-            else:
-                prompt = f"praise student for good summary about {focus_area} and suggest advanced topic."
-            
-            output = generator(prompt, max_length=60, do_sample=True, temperature=0.7)
-            generated_text = output[0]['generated_text']
-            
-            # Capitalize
-            generated_text = generated_text[0].upper() + generated_text[1:] if generated_text else "Keep learning!"
-            
-            ai_analysis = f"AI Insight: {generated_text}"
-                           
-        except Exception as e:
-            print(f"Local Model Error: {e}")
-            ai_analysis = (f"Based on your path, you have shown strong engagement with {', '.join(dominant_topics[:2])}. "
-                           f"You successfully reinforced concepts in {', '.join(strengths[:2])}. "
-                           f"Consider exploring advanced topics in {recommendations[0] if recommendations else 'new areas'} next.")
+            prompt = (f"Analyze student summary: '{summary}'\n"
+                      f"History: {', '.join(most_common_keywords)}\n"
+                      f"Current focus: {', '.join(dominant_topics)}\n"
+                      f"Short feedback (max 2 sentences). Suggest next topic.")
+            ai_analysis = model.generate_content(prompt).text
+        except: pass
+        
+    if not ai_analysis:
+        ai_analysis = (f"You've shown focus on {', '.join(dominant_topics[:2])}. "
+                       f"Strong mastery in {', '.join(strengths[:2])}. "
+                       f"Try {recommendations[0] if recommendations else 'next module'} next.")
 
-    # ── Assimilation Position: agent's current position when summary was submitted ──
+    summary_result = {
+        'id': f"summary_{session_id}_{len(polylines)}",
+        'title': title, 'summary': summary, 'keywords_found': keywords_found,
+        'totalResources': len(nlp_resources), 'visitedResources': len(visited_resources),
+        'currentLevel': min(5, 1 + len(visited_resources) // 4),
+        'strengths': strengths, 'recommendations': recommendations,
+        'ai_analysis': ai_analysis,
+        'avgDifficulty': round(avg_difficulty, 2), 'totalReward': total_reward
+    }
+    save_summary(summary_result)
+
+    # Final result construction
     agent_pos = session.get('position', {'x': 10, 'y': 10})
     assimilation_position = {'x': agent_pos.get('x', 10), 'y': agent_pos.get('y', 10)}
-
-    # ── Next Recommendation via DQN Navigator (with debug logging) ──
-    print(f"\n[DQN DEBUG] Summary submitted: '{title}'")
-    print(f"[DQN DEBUG] Visited IDs: {visited_ids}")
-    print(f"[DQN DEBUG] Module scores ({len(module_scores)}): {[round(s, 3) for s in module_scores[:6]]}...")
-    next_rec = navigator.recommend_next(
-        visited_ids=visited_ids,
-        module_scores=module_scores,
-        nlp_resources=nlp_resources
-    )
-    print(f"[DQN DEBUG] Recommendation: resource={next_rec['resource']['title'] if next_rec['resource'] else 'None'}, "
-          f"module={next_rec['module']}, reason={next_rec['reason']}")
-    if next_rec.get('q_values'):
-        print(f"[DQN DEBUG] Q-values: {[round(q, 3) for q in next_rec['q_values']]}")
-
-    # Store polyline
+    
     polyline_id = f"polyline_{len(polylines)}"
     new_polyline = {
-        'id': polyline_id,
-        'name': title,
-        'path': [r['position'] for r in visited_resources],
-        'color': f'rgba({np.random.randint(50, 255)}, {np.random.randint(50, 255)}, {np.random.randint(50, 255)}, 0.4)',
-        'isActive': True,
-        'confidence': round(0.7 + (len(visited_resources) / len(nlp_resources)) * 0.25, 2),
-        'summary': summary,
-        'keywords_found': keywords_found,
-        'module_scores': module_scores,
-        'strengths': strengths,
-        'dominant_topics': dominant_topics,
-        'ai_analysis': ai_analysis,
-        'assimilation_position': assimilation_position,
+        'id': polyline_id, 'name': title, 'path': [r['position'] for r in visited_resources],
+        'color': f'rgba({np.random.randint(100,200)}, {np.random.randint(100,200)}, 255, 0.4)',
+        'isActive': True, 'summary': summary, 'keywords_found': keywords_found,
+        'module_scores': module_scores, 'strengths': strengths, 'dominant_topics': dominant_topics,
+        'ai_analysis': ai_analysis, 'assimilation_position': assimilation_position,
         'next_recommendation': {
-            'id': next_rec['resource']['id'],
-            'title': next_rec['resource']['title'],
-            'position': next_rec['resource']['position'],
-            'module': next_rec['module'],
-            'reason': next_rec['reason']
-        } if next_rec['resource'] else None
+            'id': next_recommendation_obj['id'], 'title': next_recommendation_obj['title'],
+            'position': next_recommendation_obj['position'], 'module': rec_result['module'], 'reason': rec_result['reason']
+        } if next_recommendation_obj else None
     }
-    
     save_polyline(polyline_id, new_polyline)
     
     return jsonify({
@@ -714,24 +585,45 @@ def get_next_recommendation():
 
 @app.route('/api/learning-data', methods=['GET'])
 def get_learning_data():
-    """Get comprehensive learning data"""
+    """Get comprehensive learning data based on session history and latest summary"""
     session_id = request.args.get('session_id', 'default')
-    
     session = get_session(session_id)
     
-    visited_ids = session['visitedResources']
+    visited_ids = session.get('visitedResources', [])
     visited_resources = [r for r in nlp_resources if r['id'] in visited_ids]
     
-    # Calculate recommendations
+    # Defaults
+    strengths = [r['title'] for r in visited_resources if r.get('difficulty', 0) <= 2]
+    # Recommendations using rewarding modules that are unvisited
     unvisited = [r for r in nlp_resources if r['id'] not in visited_ids]
-    unvisited.sort(key=lambda r: (-r['reward'], r['difficulty']))
+    unvisited.sort(key=lambda r: (-r.get('reward', 0), r.get('difficulty', 0)))
+    recommendations = [r['title'] for r in unvisited[:3]]
+    
+    # Try to augment with results from the latest summary analysis
+    ai_analysis = ""
+    try:
+        from database import load_db
+        db = load_db()
+        # Find latest summary for this session (they contain session_id in their ID or we match title)
+        matching_summaries = [s for s in db.get('summaries', []) if f"summary_{session_id}" in s.get('id', '')]
+        if matching_summaries:
+            latest = matching_summaries[-1]
+            if latest.get('strengths'):
+                strengths = latest['strengths']
+            if latest.get('recommendations'):
+                recommendations = latest['recommendations']
+            if latest.get('ai_analysis'):
+                ai_analysis = latest['ai_analysis']
+    except Exception as e:
+        print(f"Error augmenting learning data from summaries: {e}")
     
     return jsonify({
         'totalResources': len(nlp_resources),
         'visitedResources': len(visited_resources),
         'currentLevel': session.get('level', 1),
-        'strengths': [r['title'] for r in visited_resources if r['difficulty'] <= 2],
-        'recommendations': [r['title'] for r in unvisited[:3]],
+        'strengths': strengths[:3],
+        'recommendations': recommendations[:3],
+        'ai_analysis': ai_analysis,
         'nextOptimalResource': unvisited[0]['position'] if unvisited else None,
         'totalReward': session.get('totalReward', 0)
     })
@@ -744,11 +636,17 @@ def get_learning_data():
 # Load YouTube transcripts
 _transcripts_path = os.path.join(os.path.dirname(__file__), 'data', 'youtube_transcripts.json')
 try:
-    with open(_transcripts_path, 'r', encoding='utf-8') as f:
-        _youtube_transcripts = json.load(f)
-    print(f"Loaded transcripts for {len(_youtube_transcripts)} modules")
+    if os.path.exists(_transcripts_path):
+        with open(_transcripts_path, 'r', encoding='utf-8') as f:
+            raw_transcripts = json.load(f)
+        # Normalize keys to lowercase for robust matching
+        _youtube_transcripts = {str(k).strip().lower(): v for k, v in raw_transcripts.items()}
+        print(f"Loaded and normalized transcripts for {len(_youtube_transcripts)} modules")
+    else:
+        print(f"Transcripts file not found: {_transcripts_path}")
+        _youtube_transcripts = {}
 except Exception as e:
-    print(f"Could not load YouTube transcripts: {e}")
+    print(f"Could not load transcripts: {e}")
     _youtube_transcripts = {}
 
 
@@ -778,37 +676,63 @@ def chat_with_ai():
     if not question.strip():
         return jsonify({'answer': 'Please ask a question about this lesson.', 'source': 'none'})
     
-    # 1. Find transcript/context
-    transcript = _youtube_transcripts.get(module, '')
+    # 1. Find transcript/context with better matching
+    # Normalize input module for lookup
+    module_norm = str(module).strip().lower()
+    transcript = _youtube_transcripts.get(module_norm, '')
+    
     if not transcript:
+        # Try finding the resource first to get its formal title
+        resource_match = None
+        for r in nlp_resources:
+            if r['id'] == module or r['title'].lower() == module_norm or r.get('module', '').lower() == module_norm:
+                resource_match = r
+                break
+        
+        target_name = resource_match['title'] if resource_match else module_norm
+        target_name_lower = target_name.lower()
+        
+        # Fuzzy match on transcripts keys
         for key, val in _youtube_transcripts.items():
-            if key.lower() in module.lower() or module.lower() in key.lower():
+            if key in target_name_lower or target_name_lower in key:
                 transcript = val
                 break
                 
     resource_desc = ''
     for r in nlp_resources:
-        if r.get('module', '') == module:
-            resource_desc = r.get('description', '')[:500]
+        if r.get('module', '').lower() == module_norm or r.get('title', '').lower() == module_norm:
+            resource_desc = r.get('description', '')[:1000]
             break
             
-    context = transcript[:4000] if transcript else resource_desc[:1200]
+    context = transcript[:4500] if transcript else resource_desc[:1500]
     
     # 2. Try Premium Inference via OpenAI Package
-    if _ai_client and os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY"):
+    # Check for actual keys, not just the placeholder
+    _key = os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY")
+    if _ai_client and _key and _key != "FIXME_YOUR_API_KEY":
         try:
-            model = "llama-3.3-70b-versatile" if "groq" in (_ai_client.base_url or "") else "gpt-3.5-turbo"
+            # Determine model based on provider
+            if "groq" in (_ai_client.base_url or "").lower():
+                model = "llama-3.3-70b-versatile"
+            else:
+                model = "gpt-3.5-turbo"
             
             system_prompt = f"""You are 'Sider AI', a premium learning assistant for an Advanced NLP course.
-Your goal is to help students understand the current lesson: '{module}'.
-Use the following context from the lesson's YouTube transcript/description to answer:
+Your goal is to help students understand the current lesson module: '{module}'.
+
+Use the following context from the lesson's YouTube transcript/description to answer the student's question accurately:
 ---
 {context}
 ---
-Be concise, professional, and encouraging. If the answer isn't in the context, use your general knowledge but mention it's supplementary."""
+
+INSTRUCTIONS:
+- Be concise, professional, and encouraging.
+- If the answer is in the context, prioritize that information.
+- If the answer isn't in the context, use your general LLM knowledge to explain the concept.
+- Format your response using clean Markdown."""
 
             messages = [{"role": "system", "content": system_prompt}]
-            # Add limited history
+            # Add limited history for continuity
             for msg in history[-4:]:
                 role = "user" if msg.get("role") == "user" else "assistant"
                 messages.append({"role": role, "content": msg.get("content", "")})
@@ -819,35 +743,33 @@ Be concise, professional, and encouraging. If the answer isn't in the context, u
                 model=model,
                 messages=messages,
                 temperature=0.7,
-                max_tokens=500
+                max_tokens=800
             )
             answer = completion.choices[0].message.content
             return jsonify({'answer': answer, 'source': f'openai-{model}'})
             
         except Exception as e:
             print(f"[CHAT] Premium AI error: {e}")
-            # Fall through to local model
+            # Fall through to lookup if premium fails
             
-    # 3. Fallback to Local Model (Flan-T5) or Search
-    try:
-        from transformers import pipeline
-        generator = pipeline('text2text-generation', model='google/flan-t5-small', device=-1)
-        ctx_trimmed = context[:600]
-        prompt = f"Answer the following question based on the context.\n\nContext: {ctx_trimmed}\n\nQuestion: {question}\n\nAnswer:"
-        output = generator(prompt, max_length=200)
-        answer = output[0]['generated_text'].strip()
-        
-        if len(answer) < 5:
-            raise Exception("Too short")
-        return jsonify({'answer': answer, 'source': 'flan-t5-fallback'})
-        
-    except Exception as e:
-        print(f"[CHAT] Local model error: {e}")
-        # Final fallback: transcript search
+    # 3. Fallback to Search/Lookup (Avoiding T5 to prevent worker timeouts on HF)
+    relevant_context = ""
+    if context:
         sentences = context.split('.')
-        relevant = [s.strip() for s in sentences if any(w.lower() in s.lower() for w in question.split() if len(w) > 3)][:3]
-        answer = "Based on the lesson: " + ". ".join(relevant) + "." if relevant else f"This lesson covers {module}. Check the video for details!"
-        return jsonify({'answer': answer, 'source': 'transcript-search'})
+        # Find sentences containing keywords from the question
+        keywords = [w.lower() for w in question.split() if len(w) > 3]
+        matching = []
+        for s in sentences:
+            if any(k in s.lower() for k in keywords):
+                matching.append(s.strip())
+        relevant_context = ". ".join(matching[:3])
+    
+    if relevant_context:
+        answer = f"I found some relevant information in the lesson material: {relevant_context}. For a deeper explanation, please ensure an API key is configured in the environment."
+    else:
+        answer = f"I'm here to help with the lesson on '{module}'. I couldn't find a specific answer in the local material, but you should review the module description for more details. (Tip: Configure an AI API key for better responses)."
+
+    return jsonify({'answer': answer, 'source': 'transcript-lookup'})
 
 
 if __name__ == '__main__':

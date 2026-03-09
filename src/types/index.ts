@@ -66,5 +66,6 @@ export interface LearningSummary {
   currentLevel: number;
   strengths: string[];
   recommendations: string[];
+  ai_analysis?: string;
   nextOptimalResource: GridPosition | null;
 }

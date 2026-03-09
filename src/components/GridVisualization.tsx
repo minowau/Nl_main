@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Resource, Agent, GridPosition, Polyline } from '../types';
 import { BookOpen, Play, FileText, PenTool, RefreshCw, MapPin, Sparkles } from 'lucide-react';
+import { nlpApi } from '../services/nlpApi';
 
 interface GridVisualizationProps {
   resources: Resource[];
@@ -532,38 +533,41 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
       {/* YouTube Video + AI Sider Premium Split Panel */}
       {videoResource && videoResource.youtube_url && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[200] p-4 sm:p-8"
+          className="fixed inset-0 bg-gray-950/80 backdrop-blur-3xl flex items-center justify-center z-[200] p-4 sm:p-8"
           onClick={() => { setVideoResource(null); setChatMessages([]); setChatInput(''); }}
         >
+          {/* Subtle Dynamic Ambient Light behind the Modal */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none opacity-50 mix-blend-screen" />
+
           <div
-            className="bg-gray-950 rounded-3xl shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] w-full max-w-7xl h-[90vh] overflow-hidden flex flex-col border border-gray-800 animate-in zoom-in-95 fade-in duration-300"
+            className="bg-[#0f111a]/95 backdrop-blur-md rounded-[2.5rem] shadow-[0_0_80px_-15px_rgba(79,70,229,0.25)] w-full max-w-7xl h-[90vh] overflow-hidden flex flex-col border border-white/10 animate-in zoom-in-90 fade-in duration-500 ease-out relative z-10"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Glossy Top Header */}
-            <div className="bg-gray-900/50 backdrop-blur-xl px-6 py-4 flex items-center justify-between border-b border-gray-800 flex-shrink-0">
-              <div className="flex items-center gap-4 text-white min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-red-500/20">
-                  <Play size={18} className="text-white fill-current" />
+            <div className="bg-[#131620]/80 backdrop-blur-3xl px-8 py-5 flex items-center justify-between border-b border-white/5 flex-shrink-0 relative z-20">
+              <div className="flex items-center gap-5 text-white min-w-0">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 via-rose-500 to-pink-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-red-500/30 border border-white/10">
+                  <Play size={20} className="text-white fill-current ml-0.5" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-bold text-base truncate text-white tracking-tight">{videoResource.title}</h3>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gray-800 text-gray-400 rounded uppercase tracking-widest border border-gray-700">Lesson {videoResource.id}</span>
-                    <span className="text-[10px] text-gray-500">•</span>
-                    <span className="text-[10px] font-medium text-indigo-400 uppercase tracking-wider">{['Beginner', 'Intermediate', 'Advanced', 'Expert', 'Master'][videoResource.difficulty - 1]}</span>
+                  <h3 className="font-bold text-lg truncate text-white tracking-tight drop-shadow-sm">{videoResource.title}</h3>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-[10px] font-black px-2 py-0.5 bg-white/10 text-white rounded-md uppercase tracking-widest border border-white/5 shadow-inner">Lesson {videoResource.id}</span>
+                    <span className="text-indigo-400/50">•</span>
+                    <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">{['Beginner', 'Intermediate', 'Advanced', 'Expert', 'Master'][videoResource.difficulty - 1]}</span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="hidden md:flex flex-col items-end px-4 border-r border-gray-800">
-                  <span className="text-[10px] text-gray-500 uppercase font-black tracking-tighter">Reward</span>
-                  <span className="text-sm font-black text-green-400">+{videoResource.reward} PTS</span>
+              <div className="flex items-center gap-6">
+                <div className="hidden md:flex flex-col items-end px-6 border-r border-white/10">
+                  <span className="text-[10px] text-gray-400 uppercase font-black tracking-tighter">Reward</span>
+                  <span className="text-base font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.4)]">+{videoResource.reward} PTS</span>
                 </div>
                 <button
                   onClick={() => { setVideoResource(null); setChatMessages([]); setChatInput(''); }}
-                  className="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-all flex items-center justify-center border border-gray-700"
+                  className="w-12 h-12 rounded-full bg-white/5 hover:bg-red-500/20 hover:border-red-500/30 text-gray-400 hover:text-red-400 transition-all flex items-center justify-center border border-white/5 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] group"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:rotate-90 transition-transform duration-300">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
@@ -572,9 +576,9 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
             </div>
 
             {/* Split Panel: Video + AI Sider */}
-            <div className="flex flex-1 min-h-0 bg-black">
+            <div className="flex flex-1 min-h-0 bg-[#090b10]">
               {/* Left: Video Canvas */}
-              <div className="flex-[65] relative bg-black group">
+              <div className="flex-[65] relative bg-black rounded-bl-[2.5rem] overflow-hidden shadow-[inset_0_0_50px_rgba(0,0,0,0.8)] z-10">
                 <iframe
                   className="w-full h-full"
                   src={getYouTubeEmbedUrl(videoResource.youtube_url) || ''}
@@ -586,68 +590,61 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
               </div>
 
               {/* Right: Premium AI Sider */}
-              <div className="flex-[35] flex flex-col bg-gray-900 border-l border-gray-800 relative overflow-hidden">
-                {/* Decorative Background */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/5 blur-[100px] pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-600/5 blur-[100px] pointer-events-none" />
+              <div className="flex-[35] flex flex-col bg-[#0f111a] border-l border-white/5 relative overflow-hidden z-20">
+                {/* Decorative Background Glows */}
+                <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-600/10 blur-[100px] pointer-events-none rounded-full" />
+                <div className="absolute bottom-[-100px] left-[-100px] w-80 h-80 bg-purple-600/10 blur-[120px] pointer-events-none rounded-full" />
 
                 {/* Sider Header */}
-                <div className="bg-gradient-to-r from-indigo-900/80 to-purple-900/80 backdrop-blur-xl px-5 py-4 flex items-center gap-3 border-b border-white/5 flex-shrink-0">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                    <Sparkles size={16} className="text-white" />
+                <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 backdrop-blur-2xl px-6 py-5 flex items-center gap-4 border-b border-white/5 flex-shrink-0 relative z-30">
+                  <div className="w-10 h-10 rounded-[14px] bg-gradient-to-tr from-indigo-500 via-purple-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 border border-white/10 ring-2 ring-white/5">
+                    <Sparkles size={18} className="text-white drop-shadow-md" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-white text-sm tracking-tight">Learning Assistant</h4>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                      <span className="text-[10px] text-indigo-200/60 uppercase tracking-widest font-black">AI Sider Active</span>
+                    <h4 className="font-extrabold text-white text-[15px] tracking-tight">Learning Assistant</h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      </div>
+                      <span className="text-[10px] text-emerald-400 uppercase tracking-widest font-black">AI Active</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Chat Messages */}
-                <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar" style={{ minHeight: 0 }}>
+                <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar relative z-20" style={{ minHeight: 0 }}>
                   {chatMessages.length === 0 && (
                     <div className="h-full flex flex-col items-center justify-center text-center px-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                      <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-white/5 flex items-center justify-center mb-6 shadow-2xl relative">
-                        <div className="absolute inset-0 bg-indigo-500/5 blur-xl rounded-full" />
-                        <Sparkles size={32} className="text-indigo-400 relative z-10" />
+                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center mb-6 shadow-[0_0_50px_rgba(99,102,241,0.15)] relative">
+                        <div className="absolute inset-0 bg-indigo-500/10 blur-2xl rounded-full" />
+                        <Sparkles size={36} className="text-indigo-400 relative z-10" />
                       </div>
-                      <h5 className="text-lg font-bold text-white mb-2">How can I help you?</h5>
-                      <p className="text-xs text-gray-400 mb-8 max-w-[240px] leading-relaxed">I've analyzed the lesson transcript. Ask me for a summary, key definitions, or complex examples.</p>
+                      <h5 className="text-xl font-extrabold text-white mb-2 tracking-tight">Ready to assist</h5>
+                      <p className="text-sm text-gray-400 mb-8 max-w-[260px] leading-relaxed">I'm connected to the lesson transcript. Ask me for a summary, definitions, or code examples.</p>
 
-                      <div className="w-full space-y-2">
-                        {[
-                          { q: 'Summarize this lesson', icon: '📝' },
-                          { q: 'What are the key concepts?', icon: '💡' },
-                          { q: 'Give me a real-world example', icon: '🌍' }
-                        ].map((item, i) => (
+                      <div className="w-full space-y-3">
+                        <div className="text-[10px] uppercase tracking-widest font-black text-gray-600 mb-4">Suggested Hooks</div>
+                        {['Summarize this lesson', 'What are the key concepts?', 'Give me a real-world example'].map((question, i) => (
                           <button
                             key={i}
                             onClick={() => {
-                              const question = item.q;
                               setChatInput('');
                               setChatMessages(prev => [...prev, { role: 'user', content: question }]);
                               setChatLoading(true);
-                              fetch('http://localhost:5000/api/chat', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ module: videoResource.title, question, history: [] })
-                              })
-                                .then(r => r.json())
-                                .then(data => {
+                              nlpApi.chat(videoResource.title, question, [])
+                                .then((data: { answer: string; source: string }) => {
                                   setChatMessages(prev => [...prev, { role: 'ai', content: data.answer }]);
                                   setChatLoading(false);
                                 })
                                 .catch(() => {
-                                  setChatMessages(prev => [...prev, { role: 'ai', content: 'Sorry, I had trouble connecting. Please try again.' }]);
+                                  setChatMessages(prev => [...prev, { role: 'ai', content: 'Connection lost. Please check your network and try again.' }]);
                                   setChatLoading(false);
                                 });
                             }}
-                            className="w-full text-left px-4 py-3 bg-white/5 border border-white/5 text-gray-300 rounded-2xl hover:bg-white/10 hover:border-indigo-500/30 transition-all text-xs font-medium flex items-center gap-3 active:scale-[0.98]"
+                            className="w-full text-center px-5 py-4 bg-white/[0.03] border border-white/[0.05] text-gray-300 rounded-2xl hover:bg-white/[0.08] hover:border-indigo-500/30 hover:shadow-[0_4px_20px_rgba(99,102,241,0.1)] hover:-translate-y-0.5 transition-all text-sm font-medium active:scale-[0.98]"
                           >
-                            <span className="text-base">{item.icon}</span>
-                            {item.q}
+                            {question}
                           </button>
                         ))}
                       </div>
@@ -656,9 +653,9 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
 
                   {chatMessages.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-                      <div className={`max-w-[85%] px-4 py-3 rounded-[1.25rem] text-sm leading-relaxed ${msg.role === 'user'
-                        ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-tr-sm shadow-lg shadow-indigo-900/20 shadow-xl'
-                        : 'bg-gray-800/80 backdrop-blur-md border border-gray-700 text-gray-200 rounded-tl-sm shadow-sm'
+                      <div className={`max-w-[85%] px-5 py-3.5 rounded-2xl text-[15px] leading-relaxed relative ${msg.role === 'user'
+                        ? 'bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-600 text-white rounded-br-sm shadow-[0_4px_20px_rgba(99,102,241,0.25)] border border-white/10'
+                        : 'bg-white/5 backdrop-blur-3xl border border-white/10 text-gray-200 rounded-bl-sm shadow-xl'
                         }`}>
                         {msg.content}
                       </div>
@@ -667,11 +664,11 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
 
                   {chatLoading && (
                     <div className="flex justify-start animate-in fade-in duration-300">
-                      <div className="bg-gray-800/80 backdrop-blur-md border border-gray-700 px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm">
+                      <div className="bg-white/5 backdrop-blur-3xl border border-white/10 px-6 py-4 rounded-2xl rounded-bl-sm shadow-xl">
                         <div className="flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                          <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                          <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" />
+                          <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                          <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                          <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" />
                         </div>
                       </div>
                     </div>
@@ -681,7 +678,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                 </div>
 
                 {/* AI Chat Input - Glossy Glass */}
-                <div className="p-4 bg-gray-900/80 backdrop-blur-2xl border-t border-white/5 flex-shrink-0">
+                <div className="p-5 bg-[#0f111a]/95 backdrop-blur-3xl border-t border-white/5 flex-shrink-0 relative z-30">
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
@@ -690,17 +687,8 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                       setChatMessages(prev => [...prev, { role: 'user', content: question }]);
                       setChatInput('');
                       setChatLoading(true);
-                      fetch('http://localhost:5000/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          module: videoResource.title,
-                          question,
-                          history: chatMessages
-                        })
-                      })
-                        .then(r => r.json())
-                        .then(data => {
+                      nlpApi.chat(videoResource.title, question, chatMessages)
+                        .then((data: { answer: string; source: string }) => {
                           setChatMessages(prev => [...prev, { role: 'ai', content: data.answer }]);
                           setChatLoading(false);
                           setTimeout(() => {
@@ -712,28 +700,28 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                           setChatLoading(false);
                         });
                     }}
-                    className="flex gap-2"
+                    className="flex gap-3 relative"
                   >
                     <input
                       type="text"
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
-                      placeholder="Type a question..."
-                      className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                      placeholder="Message the assistant..."
+                      className="flex-1 px-5 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-[15px] text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500/80 focus:ring-4 focus:ring-indigo-500/20 hover:border-white/20 transition-all font-medium shadow-inner"
                       disabled={chatLoading}
                     />
                     <button
                       type="submit"
                       disabled={!chatInput.trim() || chatLoading}
-                      className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 disabled:from-gray-700 disabled:to-gray-800 text-white rounded-2xl transition-all flex items-center justify-center shadow-lg shadow-indigo-500/10 active:scale-90 flex-shrink-0"
+                      className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 disabled:from-white/5 disabled:to-white/5 disabled:text-gray-600 text-white rounded-2xl transition-all flex items-center justify-center shadow-[0_4px_20px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_25px_rgba(99,102,241,0.5)] active:scale-90 flex-shrink-0 border border-white/10 disabled:border-white/5"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`${!chatInput.trim() || chatLoading ? '' : 'translate-x-0.5 -translate-y-0.5'} transition-transform`}>
                         <line x1="22" y1="2" x2="11" y2="13"></line>
                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                       </svg>
                     </button>
                   </form>
-                  <p className="text-[9px] text-center text-gray-600 mt-2 uppercase tracking-tighter font-black">AI powered by Google flan-t5 & Groq Llama</p>
+                  <p className="text-[10px] text-center text-gray-500 mt-3 uppercase tracking-widest font-black">AI powered by Groq & Llama</p>
                 </div>
               </div>
             </div>

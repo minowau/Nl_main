@@ -97,6 +97,13 @@ export interface LearningPlannerAPI {
     visitedIds: string[]
   ): Promise<DQNPath>;
 
+  // ChatGPT
+  chat(
+    module: string,
+    question: string,
+    history: { role: string; content: string }[]
+  ): Promise<{ answer: string; source: string }>;
+
   // Learning Data
   getLearningData(sessionId: string): Promise<LearningData>;
 }
@@ -220,6 +227,20 @@ class NLPLearningAPI implements LearningPlannerAPI {
   async getLearningData(sessionId: string = this.sessionId): Promise<LearningData> {
     const response = await fetch(`${API_BASE}/learning-data?session_id=${sessionId}`);
     if (!response.ok) throw new Error('Failed to fetch learning data');
+    return response.json();
+  }
+
+  async chat(
+    module: string,
+    question: string,
+    history: { role: string; content: string }[]
+  ): Promise<{ answer: string; source: string }> {
+    const response = await fetch(`${API_BASE}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module, question, history })
+    });
+    if (!response.ok) throw new Error('Failed to chat with AI');
     return response.json();
   }
 }

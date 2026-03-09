@@ -143,9 +143,21 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
 
         {/* Learning Stats */}
-        {(learningData.strengths.length > 0 || learningData.recommendations.length > 0) && (
+        {(learningData.strengths.length > 0 || learningData.recommendations.length > 0 || learningData.ai_analysis) && (
           <div className="px-6 py-4 bg-white border-b border-gray-100">
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Insights</h3>
+
+            {learningData.ai_analysis && (
+              <div className="mb-4 p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl">
+                <div className="flex items-center gap-2 mb-1.5 text-indigo-600">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">AI feedback</span>
+                </div>
+                <p className="text-xs text-indigo-900 leading-relaxed font-medium italic">
+                  "{learningData.ai_analysis}"
+                </p>
+              </div>
+            )}
 
             {learningData.strengths.length > 0 && (
               <div className="mb-3">
