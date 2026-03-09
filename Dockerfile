@@ -32,6 +32,7 @@ RUN grep -v '^torch' backend/requirements.txt > /tmp/req_notorch.txt && pip inst
 
 # Copy Backend Code
 COPY --chown=user backend/ backend/
+COPY --chown=user Navigators/ Navigators/
 
 # Copy Frontend Build from Stage 1
 COPY --chown=user --from=build-frontend /app/dist ./dist

@@ -3,7 +3,9 @@
  * Handles all backend communication
  */
 
-const API_BASE = 'http://localhost:5000/api';
+// Use relative URL in production (since frontend is served by the backend)
+// but keep localhost:5000 for local Vite development
+const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:5000/api';
 
 export interface Position {
   x: number;

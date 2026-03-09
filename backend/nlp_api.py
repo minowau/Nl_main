@@ -45,13 +45,21 @@ except Exception as e:
     print(f"Error loading BERT model: {e}")
     bert_model = None
 
-# Load NLP data from Excel
-nlp_excel_path = os.path.join(os.path.dirname(__file__), 'nlp', 'NLP_Resource_Keywords_from_Embeddings.xlsx')
+# Load NLP data from JSON (Excel was rejected by HF)
+nlp_json_path = os.path.join(os.path.dirname(__file__), 'nlp', 'nlp_resources.json')
 
 def load_nlp_resources():
-    """Load NLP resources from Excel file"""
+    """Load NLP resources from JSON file"""
     try:
-        df = pd.read_excel(nlp_excel_path)
+        # Check if the JSON file exists
+        if not os.path.exists(nlp_json_path):
+            print(f"File not found: {nlp_json_path}")
+            return []
+            
+        with open(nlp_json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            
+        df = pd.DataFrame(data)
         resources = []
         
         used_positions = set()

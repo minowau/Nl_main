@@ -1,4 +1,4 @@
-﻿beautifulsoup4==4.12.3
+beautifulsoup4==4.12.3
 bs4==0.0.2
 Flask==3.0.3
 Flask-Cors==4.0.1
@@ -7,7 +7,6 @@ Jinja2==3.1.4
 keybert==0.8.5
 nltk==3.8.1
 numpy
-openpyxl>=3.1.5
 pandas
 pdfplumber==0.11.5
 requests==2.32.3
