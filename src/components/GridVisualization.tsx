@@ -54,13 +54,27 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [hoveredResource, setHoveredResource] = useState<string | null>(null);
   const hoverTimeout = React.useRef<NodeJS.Timeout | null>(null);
-  const [animatingAgent, setAnimatingAgent] = useState(false);
   const [pathProgress, setPathProgress] = useState(0);
   const [videoResource, setVideoResource] = useState<Resource | null>(null);
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
+
+  // Tracking agent movement for animation
+  const [prevPosition, setPrevPosition] = useState<GridPosition>(agent.position);
+  const [showTravelArrow, setShowTravelArrow] = useState(false);
+
+  React.useEffect(() => {
+    if (agent.position.x !== prevPosition.x || agent.position.y !== prevPosition.y) {
+      setShowTravelArrow(true);
+      const timer = setTimeout(() => {
+        setShowTravelArrow(false);
+        setPrevPosition(agent.position);
+      }, 1500); // Duration of arrow visibility
+      return () => clearTimeout(timer);
+    }
+  }, [agent.position]);
 
   // Convert YouTube URL to embed URL
   const getYouTubeEmbedUrl = (url: string): string | null => {
@@ -116,12 +130,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
       setSelectedResource(resource);
       onResourceClick(resource);
     } else {
-      // Move agent to clicked position
-      setAnimatingAgent(true);
-      setTimeout(() => {
-        onAgentMove({ x, y });
-        setAnimatingAgent(false);
-      }, 200);
+      onAgentMove({ x, y });
     }
   };
 
@@ -383,9 +392,9 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
               </div>
             )}
 
-            {isAssimilation && !isAgent && (
-              <div className="absolute inset-0 m-auto w-8 h-8 flex items-center justify-center pointer-events-none z-10">
-                <span className="relative flex h-full w-full items-center justify-center">
+            {isAssimilation && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <span className="relative flex h-8 w-8 items-center justify-center">
                   <span className="animate-ping absolute inline-flex h-4 w-4 rounded-full bg-amber-400 opacity-40"></span>
                   <div className="relative w-5 h-5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-lg shadow-amber-200 border-2 border-white flex items-center justify-center">
                     <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
@@ -395,18 +404,8 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
             )}
 
             {isAgent && (
-              <div className={`
-                absolute inset-0 m-auto w-8 h-8 flex items-center justify-center
-                ${animatingAgent ? 'scale-110' : 'scale-100'}
-                transition-all duration-300
-                pointer-events-none
-              `}>
-                <span className="relative flex h-full w-full items-center justify-center">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-20"></span>
-                  <div className="relative w-6 h-6 bg-gradient-to-br from-red-500 to-pink-600 rounded-full shadow-lg shadow-red-200 border-2 border-white flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                  </div>
-                </span>
+              <div className="absolute inset-0 opacity-0 pointer-events-none">
+                {/* Fixed agent marker is handled by the Absolute Agent Overlay below */}
               </div>
             )}
           </div>
@@ -498,6 +497,53 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
           >
             {renderGrid()}
             {renderPlaybackOverlay()}
+
+            {/* Absolute Agent Overlay (Animated via Grid Position) */}
+            <div
+              className="pointer-events-none transition-all duration-1000 ease-in-out z-40 relative flex items-center justify-center"
+              style={{
+                gridColumn: agent.position.x + 1,
+                gridRow: agent.position.y + 1,
+              }}
+            >
+              <div className="w-full h-full flex items-center justify-center">
+                <span className="relative flex h-10 w-10 items-center justify-center">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-30"></span>
+                  <div className="relative w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-full shadow-[0_0_20px_rgba(239,68,68,0.5)] border-2 border-white flex items-center justify-center scale-110">
+                    <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+                  </div>
+                </span>
+              </div>
+            </div>
+
+            {/* Travel Arrow Animation (Enhanced) */}
+            {showTravelArrow && (
+              <svg className="absolute inset-0 w-full h-full pointer-events-none z-30">
+                <defs>
+                  <linearGradient id="travelGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="#ec4899" stopOpacity="0.8" />
+                  </linearGradient>
+                  <marker id="travel-arrowhead" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+                    <path d="M0,0 L12,4 L0,8 Z" fill="#ef4444" />
+                  </marker>
+                </defs>
+                <line
+                  x1={`${(prevPosition.x + 0.5) * (100 / GRID_SIZE)}%`}
+                  y1={`${(prevPosition.y + 0.5) * (100 / GRID_SIZE)}%`}
+                  x2={`${(agent.position.x + 0.5) * (100 / GRID_SIZE)}%`}
+                  y2={`${(agent.position.y + 0.5) * (100 / GRID_SIZE)}%`}
+                  stroke="url(#travelGradient)"
+                  strokeWidth="4"
+                  strokeDasharray="12 6"
+                  className="animate-pulse"
+                  markerEnd="url(#travel-arrowhead)"
+                  opacity="0.8"
+                >
+                  <animate attributeName="stroke-dashoffset" from="100" to="0" dur="2s" repeatCount="indefinite" />
+                </line>
+              </svg>
+            )}
           </div>
         </div>
       </div>

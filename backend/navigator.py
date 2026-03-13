@@ -91,8 +91,8 @@ def recommend_next(visited_ids: list, module_scores: list, nlp_resources: list) 
       - 70% weight on sequential progression (next module by S.No)
       - 30% weight on DQN Q-value ranking
     """
-    visited_set = set(str(v) for v in visited_ids)
-    unvisited = [r for r in nlp_resources if str(r['id']) not in visited_set]
+    visited_set = set(str(v).strip() for v in visited_ids)
+    unvisited = [r for r in nlp_resources if str(r['id']).strip() not in visited_set]
 
     print(f"\n[NAV DEBUG] --- recommend_next called ---")
     print(f"[NAV DEBUG] Total resources: {len(nlp_resources)}, Visited: {len(visited_ids)}, Unvisited: {len(unvisited)}")
@@ -125,7 +125,7 @@ def recommend_next(visited_ids: list, module_scores: list, nlp_resources: list) 
     # Find the highest visited module index to determine progression
     visited_module_indices = set()
     for r in nlp_resources:
-        if str(r['id']) in visited_set:
+        if str(r['id']).strip() in visited_set:
             m = r.get('module', '')
             if m in ORDERED_MODULES:
                 visited_module_indices.add(ORDERED_MODULES.index(m))
@@ -141,7 +141,8 @@ def recommend_next(visited_ids: list, module_scores: list, nlp_resources: list) 
             # Distance from next expected module (max_visited_idx + 1)
             distance = abs(idx - (max_visited_idx + 1))
             # Score: closer to next = higher score (normalize to 0-1)
-            sequential_scores[module_name] = 1.0 / (1.0 + distance)
+            # Use asinh to soften the penalty for distance so DQN can override more easily
+            sequential_scores[module_name] = 1.0 / (1.0 + distance * 0.5)
 
     # ── DQN scores (normalized to 0-1 range) ──
     dqn_scores = {}
@@ -179,9 +180,9 @@ def recommend_next(visited_ids: list, module_scores: list, nlp_resources: list) 
             print(f"[NAV DEBUG] DQN inference error: {e}")
             reason = "fallback"
 
-    # ── Combined scoring ──
-    WEIGHT_SEQUENTIAL = 0.7
-    WEIGHT_DQN = 0.3
+    # ── Combined scoring (DQN-forward approach) ──
+    WEIGHT_SEQUENTIAL = 0.4
+    WEIGHT_DQN = 0.6
 
     best_module = None
     best_score = float('-inf')

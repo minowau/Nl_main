@@ -53,7 +53,7 @@ export const useDQNSimulation = () => {
   // Generate polylines from visited resources
   const generatePolylines = useCallback((visitedResources: Resource[]): Polyline[] => {
     const polylines: Polyline[] = [];
-    
+
     if (visitedResources.length >= 2) {
       polylines.push({
         id: 'learning-path-1',
@@ -73,7 +73,7 @@ export const useDQNSimulation = () => {
       ...prev,
       position: newPosition
     }));
-    
+
     // Sync with backend
     nlpApi.moveAgent('default', newPosition).catch(err => console.error('Error moving agent:', err));
   }, []);
@@ -85,7 +85,7 @@ export const useDQNSimulation = () => {
       totalReward: prev.totalReward + resource.reward,
       level: Math.min(5, 1 + Math.floor((prev.totalReward + resource.reward) / 100))
     }));
-    
+
     // Sync with backend
     nlpApi.visitResource('default', resource.id).catch(err => console.error('Error visiting resource:', err));
   }, []);

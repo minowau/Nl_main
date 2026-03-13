@@ -68,4 +68,6 @@ export interface LearningSummary {
   recommendations: string[];
   ai_analysis?: string;
   nextOptimalResource: GridPosition | null;
+  mostVisitedModule?: string;
+  totalReward?: number;
 }

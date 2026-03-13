@@ -248,9 +248,15 @@ def visit_resource():
     # Update session
     if resource_id not in session['visitedResources']:
         session['visitedResources'].append(resource_id)
-        session['totalReward'] += resource['reward']
-        session['level'] = min(5, 1 + len(session['visitedResources']) // 4)
-        update_session(session_id, session)
+    
+    # Recalculate reward and level from all visited resources for consistency
+    visited_set = set(str(v).strip() for v in session['visitedResources'])
+    visited_resources = [r for r in nlp_resources if str(r['id']).strip() in visited_set]
+    
+    session['totalReward'] = sum(r.get('reward', 0) for r in visited_resources)
+    session['level'] = min(5, 1 + len(visited_resources) // 4)
+    
+    update_session(session_id, session)
     
     return jsonify(session)
 
@@ -274,8 +280,11 @@ def create_learning_summary():
     if not title or not summary:
         return jsonify({'error': 'Title and summary required'}), 400
     
-    # Get visited resources
-    visited_resources = [r for r in nlp_resources if r['id'] in visited_ids]
+    # Get visited resources using robust ID matching
+    visited_set = set(str(v).strip() for v in visited_ids)
+    visited_resources = [r for r in nlp_resources if str(r['id']).strip() in visited_set]
+    
+    print(f"[DEBUG] create_learning_summary: incoming visited_ids={visited_ids}, matched count={len(visited_resources)}")
     
     # Calculate learning metrics
     total_difficulty = sum(r['difficulty'] for r in visited_resources)
@@ -526,13 +535,13 @@ def generate_dqn_path():
 
     # Build a path: agent → recommended resource, plus up to 4 more close unvisited
     path = [agent_pos]
-    visited_set = set(str(v) for v in visited_ids)
+    visited_set = set(str(v).strip() for v in visited_ids)
     
     if rec['resource']:
         path.append(rec['resource']['position'])
         # Add up to 4 more nearest unvisited resources
         remaining = [r for r in nlp_resources 
-                     if str(r['id']) not in visited_set and r['id'] != rec['resource']['id']]
+                     if str(r['id']).strip() not in visited_set and r['id'] != rec['resource']['id']]
         remaining.sort(key=lambda r: (
             (r['position']['x'] - rec['resource']['position']['x'])**2 +
             (r['position']['y'] - rec['resource']['position']['y'])**2
@@ -561,7 +570,7 @@ def get_next_recommendation():
     """
     session_id = request.args.get('session_id', 'default')
     session = get_session(session_id)
-    visited_ids = session.get('visitedResources', [])
+    visited_ids = [str(v).strip() for v in session.get('visitedResources', [])]
 
     # Get latest module scores from most recent polyline
     polylines = get_db_polylines()
@@ -589,13 +598,13 @@ def get_learning_data():
     session_id = request.args.get('session_id', 'default')
     session = get_session(session_id)
     
-    visited_ids = session.get('visitedResources', [])
-    visited_resources = [r for r in nlp_resources if r['id'] in visited_ids]
+    visited_ids = set(str(v).strip() for v in session.get('visitedResources', []))
+    visited_resources = [r for r in nlp_resources if str(r['id']).strip() in visited_ids]
     
     # Defaults
     strengths = [r['title'] for r in visited_resources if r.get('difficulty', 0) <= 2]
     # Recommendations using rewarding modules that are unvisited
-    unvisited = [r for r in nlp_resources if r['id'] not in visited_ids]
+    unvisited = [r for r in nlp_resources if str(r['id']).strip() not in visited_ids]
     unvisited.sort(key=lambda r: (-r.get('reward', 0), r.get('difficulty', 0)))
     recommendations = [r['title'] for r in unvisited[:3]]
     
@@ -617,6 +626,11 @@ def get_learning_data():
     except Exception as e:
         print(f"Error augmenting learning data from summaries: {e}")
     
+    # Find most visited module
+    from collections import Counter
+    module_counts = Counter(r['module'] for r in visited_resources)
+    most_visited_module = module_counts.most_common(1)[0][0] if module_counts else "None"
+
     return jsonify({
         'totalResources': len(nlp_resources),
         'visitedResources': len(visited_resources),
@@ -625,7 +639,8 @@ def get_learning_data():
         'recommendations': recommendations[:3],
         'ai_analysis': ai_analysis,
         'nextOptimalResource': unvisited[0]['position'] if unvisited else None,
-        'totalReward': session.get('totalReward', 0)
+        'totalReward': session.get('totalReward', 0),
+        'mostVisitedModule': most_visited_module
     })
 
 

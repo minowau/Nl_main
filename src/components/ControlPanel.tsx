@@ -173,7 +173,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             )}
 
             {learningData.recommendations.length > 0 && (
-              <div>
+              <div className="mb-3">
                 <span className="text-xs font-semibold text-blue-600 mb-1 block">Recommended</span>
                 <div className="flex flex-wrap gap-1.5">
                   {learningData.recommendations.slice(0, 2).map((rec, i) => (
@@ -182,6 +182,24 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     </span>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {learningData.mostVisitedModule && (
+              <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl">
+                <div className="flex items-center gap-2 mb-1 text-amber-600">
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Top Module</span>
+                </div>
+                <p className="text-xs text-amber-900 font-semibold truncate">
+                  {learningData.mostVisitedModule}
+                </p>
+                {learningData.totalReward !== undefined && (
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-[10px] text-amber-600 font-medium tracking-tight">Total Mastery Points</span>
+                    <span className="text-sm font-bold text-amber-700">{learningData.totalReward}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
