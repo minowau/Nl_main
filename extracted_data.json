@@ -1,0 +1,74 @@
+{
+    "Pre training objectives": {
+        "x_coordinate": "0.4862954103464032",
+        "y_coordinate": "0.49787153156619324"
+    },
+    "Pre trained models": {
+        "x_coordinate": "0.48429538189323884",
+        "y_coordinate": "0.4993041040569235"
+    },
+    "Tutorial: Introduction to huggingface": {
+        "x_coordinate": "0.5024064321787484",
+        "y_coordinate": "0.5106210120368269"
+    },
+    "Fine tuning LLM": {
+        "x_coordinate": "0.5042982250776025",
+        "y_coordinate": "0.5115213783170383"
+    },
+    "Instruction tuning": {
+        "x_coordinate": "0.4792404121191096",
+        "y_coordinate": "0.4867641070735197"
+    },
+    "Prompt based learning": {
+        "x_coordinate": "0.4722207755912915",
+        "y_coordinate": "0.4783453373425788"
+    },
+    "Parameter efficient fine tuning": {
+        "x_coordinate": "0.47786308494621166",
+        "y_coordinate": "0.4806988137391913"
+    },
+    "Incontext Learning": {
+        "x_coordinate": "0.47602131779882284",
+        "y_coordinate": "0.47852402612316214"
+    },
+    "Prompting methods": {
+        "x_coordinate": "0.47602131779882284",
+        "y_coordinate": "0.47852402612316214"
+    },
+    "Retrieval Methods": {
+        "x_coordinate": "0.49062728582488646",
+        "y_coordinate": "0.4860916804860428"
+    },
+    "Retrieval Augmented Generation": {
+        "x_coordinate": "0.4736561172492999",
+        "y_coordinate": "0.4720369300624434"
+    },
+    "Quantization": {
+        "x_coordinate": "0.5311205842944364",
+        "y_coordinate": "0.5285926654832978"
+    },
+    "Mixture of Experts Model": {
+        "x_coordinate": "0.5086697420960135",
+        "y_coordinate": "0.5102847445191707"
+    },
+    "Agentic AI": {
+        "x_coordinate": "0.4850265095912456",
+        "y_coordinate": "0.4849493476190232"
+    },
+    "Multimodal LLMs": {
+        "x_coordinate": "0.49136304438818046",
+        "y_coordinate": "0.4892019617746457"
+    },
+    "Vision Language Models": {
+        "x_coordinate": "0.5020476558818721",
+        "y_coordinate": "0.49609876040124545"
+    },
+    "Policy learning using DQN": {
+        "x_coordinate": "0.5078705892582778",
+        "y_coordinate": "0.5014379122768156"
+    },
+    "RLHF": {
+        "x_coordinate": "0.546024227958915",
+        "y_coordinate": "0.5441248780763337"
+    }
+}

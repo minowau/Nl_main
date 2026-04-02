@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Gooru Learning - Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700&family=Mulish:wght@400;700&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <div class="container">
+    <!-- Left Panel -->
+    <div class="left-panel">
+      <div class="illustration">
+        <img src="Assets/Left_banner_image.svg" alt="E-learning illustration">
+      </div>
+
+      <div class="branding">
+        <h1><span class="my">MY</span> <span class="gooru">GOORU LEARNING</span></h1>
+        <p>learn something new anywhere &amp; anytime</p>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+      <!-- Login Form -->
+      <div class="login-form" id="loginForm">
+        <h2>Login</h2>
+        <p class="subtitle">Welcome back! Please<br>login to your account.</p>
+
+        <!-- Google Sign In Button -->
+        <button class="google-btn" id="googleLoginBtn" onclick="handleGoogleLogin()">
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <span>Login with Google</span>
+        </button>
+
+        <div class="divider">OR</div>
+
+        <div class="input-group">
+          <input type="email" id="emailInput" placeholder="Email ID" oninput="validateForm()">
+          <label class="floating-label" for="emailInput">Email ID</label>
+        </div>
+
+        <div class="input-group">
+          <input type="password" id="passwordInput" placeholder="Password" oninput="validateForm(); checkPasswordRequirements();" onfocus="showPasswordReqs()" onblur="hidePasswordReqs()">
+          <label class="floating-label" for="passwordInput">Password</label>
+          <button class="password-toggle" onclick="togglePassword()" type="button" aria-label="Toggle password visibility">
+            <svg id="eyeIcon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-3-3-3z"/>
+            </svg>
+          </button>
+          <!-- Password Requirements Tooltip -->
+          <div class="password-requirements" id="passwordReqs">
+            <div class="req-title">Password requirements:</div>
+            <div class="req-list">
+              <div class="req-item" id="reqLowercase">
+                <span class="req-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                </span>
+                <span class="req-text">One lowercase character</span>
+              </div>
+              <div class="req-item" id="reqUppercase">
+                <span class="req-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                </span>
+                <span class="req-text">One uppercase character</span>
+              </div>
+              <div class="req-item" id="reqSpecial">
+                <span class="req-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                </span>
+                <span class="req-text">One special character</span>
+              </div>
+              <div class="req-item" id="reqNumber">
+                <span class="req-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                </span>
+                <span class="req-text">One number</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="forgot-password">
+          <a href="forgot-password.html">Forgot Password?</a>
+        </div>
+
+        <button class="login-btn" id="loginBtn" disabled onclick="handleEmailLogin()">Login</button>
+
+        <div class="signup-text">
+          <span>Don't have an account?</span>
+          <a href="signup.html">Sign up</a>
+        </div>
+      </div>
+
+      <!-- User Info (shown after successful login) -->
+      <div class="user-info" id="userInfo">
+        <img id="userAvatar" src="" alt="User avatar">
+        <h3 id="userName"></h3>
+        <p id="userEmail"></p>
+        <button class="logout-btn" onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

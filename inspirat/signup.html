@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Gooru Learning - Sign Up</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700&family=Mulish:wght@400;700&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <div class="container">
+    <!-- Left Panel -->
+    <div class="left-panel">
+      <div class="illustration">
+        <img src="Assets/Left_banner_image.svg" alt="E-learning illustration">
+      </div>
+
+      <div class="branding">
+        <h1><span class="my">MY</span> <span class="gooru">GOORU LEARNING</span></h1>
+        <p>learn something new anywhere &amp; anytime</p>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+      <div class="signup-form" id="signupForm">
+        <h2>Sign up</h2>
+        <p class="subtitle">Create a new account.</p>
+
+        <div class="already-account">
+          <span>Already have an account?</span>
+          <a href="index.html">Login</a>
+        </div>
+
+        <div class="input-group">
+          <input type="text" id="fullNameInput" placeholder="Full name" oninput="validateSignupForm()">
+          <label class="floating-label" for="fullNameInput">Full name</label>
+        </div>
+
+        <div class="input-group">
+          <input type="email" id="signupEmailInput" placeholder="Email ID" oninput="validateSignupForm()">
+          <label class="floating-label" for="signupEmailInput">Email ID</label>
+        </div>
+
+        <div class="input-group">
+          <input type="password" id="signupPasswordInput" placeholder="Enter password" oninput="validateSignupForm(); checkSignupPasswordReqs();" onfocus="showSignupPasswordReqs()" onblur="hideSignupPasswordReqs()">
+          <label class="floating-label" for="signupPasswordInput">Enter password</label>
+          <!-- Password Requirements Tooltip -->
+          <div class="password-requirements" id="signupPasswordReqs">
+            <div class="req-title">Password requirements:</div>
+            <div class="req-list">
+              <div class="req-item" id="signupReqLowercase">
+                <span class="req-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                </span>
+                <span class="req-text">One lowercase character</span>
+              </div>
+              <div class="req-item" id="signupReqUppercase">
+                <span class="req-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                </span>
+                <span class="req-text">One uppercase character</span>
+              </div>
+              <div class="req-item" id="signupReqSpecial">
+                <span class="req-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                </span>
+                <span class="req-text">One special character</span>
+              </div>
+              <div class="req-item" id="signupReqNumber">
+                <span class="req-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                </span>
+                <span class="req-text">One number</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <input type="password" id="reenterPasswordInput" placeholder="Re-enter password" oninput="validateSignupForm()">
+          <label class="floating-label" for="reenterPasswordInput">Re-enter password</label>
+        </div>
+
+        <button class="login-btn" id="signupBtn" disabled onclick="handleSignup()">Sign up</button>
+
+        <p class="terms-text">
+          By registering, I agree to <a href="#">terms of use</a> and <a href="#">privacy policy</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="signup.js"></script>
+</body>
+</html>
