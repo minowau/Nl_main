@@ -1,0 +1,512 @@
+{
+    "users": [],
+    "learning_sessions": {
+        "default": {
+            "position": {
+                "x": 3,
+                "y": 13
+            },
+            "level": 2,
+            "totalReward": 200,
+            "visitedResources": [
+                "4",
+                "3",
+                "2",
+                "1"
+            ],
+            "notifications": [
+                {
+                    "id": "notif_1775177177",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 2",
+                    "timestamp": 1775177177230,
+                    "read": false
+                },
+                {
+                    "id": "notif_1775174735",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 2",
+                    "timestamp": 1775174735824,
+                    "read": true
+                },
+                {
+                    "id": "notif_1775174142",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 2",
+                    "timestamp": 1775174142894,
+                    "read": true
+                },
+                {
+                    "id": "notif_1775173994",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 2",
+                    "timestamp": 1775173994762,
+                    "read": true
+                },
+                {
+                    "id": "notif_1775173639",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 2",
+                    "timestamp": 1775173639779,
+                    "read": true
+                },
+                {
+                    "id": "notif_1775172872",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 2",
+                    "timestamp": 1775172872637,
+                    "read": true
+                },
+                {
+                    "id": "notif_1775172411",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 2",
+                    "timestamp": 1775172411178,
+                    "read": true
+                }
+            ]
+        }
+    },
+    "polylines": {
+        "polyline_20260403_032235": {
+            "id": "polyline_20260403_032235",
+            "name": "hye3dg",
+            "path": [
+                {
+                    "x": 2,
+                    "y": 17
+                },
+                {
+                    "x": 0,
+                    "y": 17
+                }
+            ],
+            "color": "rgba(121, 114, 255, 0.4)",
+            "isActive": true,
+            "summary": "hcioasuhioc",
+            "keywords_found": [],
+            "module_scores": [
+                0.036593932658433914,
+                0.051530614495277405,
+                0.1929866373538971,
+                0.1,
+                0.045435961335897446,
+                0.05906526371836662,
+                0.00729989493265748,
+                0.08250045776367188,
+                0.027184199541807175,
+                0.061868976801633835,
+                0.05629986152052879,
+                0.06286735832691193,
+                0.019927512854337692,
+                0.06329352408647537,
+                0.07700204849243164,
+                0.06306321918964386,
+                0.03309740498661995,
+                0.0
+            ],
+            "strengths": [
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Level 1 achieved with 100 points.",
+            "assimilation_position": {
+                "x": 2,
+                "y": 17
+            },
+            "next_recommendation": {
+                "id": "8",
+                "title": "Incontext Learning",
+                "position": {
+                    "x": 3,
+                    "y": 13
+                },
+                "module": "Incontext Learning",
+                "reason": "dqn"
+            }
+        },
+        "polyline_20260403_032347": {
+            "id": "polyline_20260403_032347",
+            "name": "xas",
+            "path": [
+                {
+                    "x": 2,
+                    "y": 17
+                },
+                {
+                    "x": 0,
+                    "y": 17
+                }
+            ],
+            "color": "rgba(153, 107, 255, 0.4)",
+            "isActive": true,
+            "summary": "xss",
+            "keywords_found": [],
+            "module_scores": [
+                0.0,
+                0.0,
+                0.15388113260269165,
+                0.1306712031364441,
+                0.0,
+                0.0,
+                0.015578164719045162,
+                0.006550716236233711,
+                0.03091040439903736,
+                0.0,
+                0.017347849905490875,
+                0.06170199066400528,
+                0.009152302518486977,
+                0.024282503873109818,
+                0.022633565589785576,
+                0.05440949276089668,
+                0.047033052891492844,
+                0.0
+            ],
+            "strengths": [
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Level 1 achieved with 100 points.",
+            "assimilation_position": {
+                "x": 3,
+                "y": 13
+            },
+            "next_recommendation": {
+                "id": "8",
+                "title": "Incontext Learning",
+                "position": {
+                    "x": 3,
+                    "y": 13
+                },
+                "module": "Incontext Learning",
+                "reason": "dqn"
+            }
+        },
+        "polyline_20260403_033404": {
+            "id": "polyline_20260403_033404",
+            "name": "heyyy",
+            "path": [
+                {
+                    "x": 3,
+                    "y": 18
+                },
+                {
+                    "x": 3,
+                    "y": 17
+                },
+                {
+                    "x": 2,
+                    "y": 17
+                },
+                {
+                    "x": 0,
+                    "y": 17
+                }
+            ],
+            "color": "rgba(180, 160, 255, 0.4)",
+            "isActive": true,
+            "summary": "heyyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.10115420073270798,
+                0.1,
+                0.18399392068386078,
+                0.19090811908245087,
+                0.040012165904045105,
+                0.03171403333544731,
+                0.004172520712018013,
+                0.0,
+                0.0,
+                0.0,
+                0.013521099463105202,
+                0.0,
+                0.06345637887716293,
+                0.02790343202650547,
+                0.057048387825489044,
+                0.09004955738782883,
+                0.0,
+                0.0
+            ],
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Level 2 achieved with 200 points.",
+            "assimilation_position": {
+                "x": 3,
+                "y": 15
+            },
+            "next_recommendation": {
+                "id": "8",
+                "title": "Incontext Learning",
+                "position": {
+                    "x": 3,
+                    "y": 13
+                },
+                "module": "Incontext Learning",
+                "reason": "dqn"
+            }
+        },
+        "polyline_20260403_042600": {
+            "id": "polyline_20260403_042600",
+            "name": "heyyy",
+            "path": [
+                {
+                    "x": 3,
+                    "y": 18
+                },
+                {
+                    "x": 3,
+                    "y": 17
+                },
+                {
+                    "x": 2,
+                    "y": 17
+                },
+                {
+                    "x": 0,
+                    "y": 17
+                }
+            ],
+            "color": "rgba(154, 164, 255, 0.4)",
+            "isActive": true,
+            "summary": "heyyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.10115420073270798,
+                0.1,
+                0.18399392068386078,
+                0.19090811908245087,
+                0.040012165904045105,
+                0.03171403333544731,
+                0.004172520712018013,
+                0.0,
+                0.0,
+                0.0,
+                0.013521099463105202,
+                0.0,
+                0.06345637887716293,
+                0.02790343202650547,
+                0.057048387825489044,
+                0.09004955738782883,
+                0.0,
+                0.0
+            ],
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Stage 2 achieved with 200 points.",
+            "assimilation_position": {
+                "x": 3,
+                "y": 13
+            },
+            "next_recommendation": {
+                "id": "8",
+                "title": "Incontext Learning",
+                "position": {
+                    "x": 3,
+                    "y": 13
+                },
+                "module": "Incontext Learning",
+                "reason": "dqn"
+            }
+        },
+        "polyline_20260403_051831": {
+            "id": "polyline_20260403_051831",
+            "name": "HBOIDCUHGDOHQWE",
+            "path": [
+                {
+                    "x": 3,
+                    "y": 18
+                },
+                {
+                    "x": 3,
+                    "y": 17
+                },
+                {
+                    "x": 2,
+                    "y": 17
+                },
+                {
+                    "x": 0,
+                    "y": 17
+                }
+            ],
+            "color": "rgba(173, 194, 255, 0.4)",
+            "isActive": true,
+            "summary": "BGOAIUXDASHGXCIOAHXIO",
+            "keywords_found": [],
+            "module_scores": [
+                0.12643486261367798,
+                0.1,
+                0.12446118891239166,
+                0.1,
+                0.0,
+                0.010079984553158283,
+                0.0,
+                0.06248624622821808,
+                0.0,
+                0.02448994107544422,
+                0.0,
+                0.0,
+                0.0,
+                0.038079071789979935,
+                0.05198737978935242,
+                0.06710068136453629,
+                0.05336645245552063,
+                0.0
+            ],
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Stage 2 achieved with 200 points.",
+            "assimilation_position": {
+                "x": 3,
+                "y": 13
+            },
+            "next_recommendation": {
+                "id": "8",
+                "title": "Incontext Learning",
+                "position": {
+                    "x": 3,
+                    "y": 13
+                },
+                "module": "Incontext Learning",
+                "reason": "dqn"
+            }
+        }
+    },
+    "notes": {},
+    "bookmarks": {},
+    "summaries": [
+        {
+            "id": "summary_default_20260403_032235",
+            "title": "hye3dg",
+            "summary": "hcioasuhioc",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 2,
+            "currentLevel": 1,
+            "strengths": [
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "recommendations": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Instruction tuning"
+            ],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Level 1 achieved with 100 points.",
+            "avgDifficulty": 2.0,
+            "totalReward": 100,
+            "xp_earned": 0
+        },
+        {
+            "id": "summary_default_20260403_032347",
+            "title": "xas",
+            "summary": "xss",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 2,
+            "currentLevel": 1,
+            "strengths": [
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "recommendations": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Instruction tuning"
+            ],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Level 1 achieved with 100 points.",
+            "avgDifficulty": 2.0,
+            "totalReward": 100,
+            "xp_earned": 0
+        },
+        {
+            "id": "summary_default_20260403_033404",
+            "title": "heyyy",
+            "summary": "heyyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 4,
+            "currentLevel": 1,
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "recommendations": [
+                "Instruction tuning",
+                "Prompt based learning",
+                "Parameter efficient fine tuning"
+            ],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Level 2 achieved with 200 points.",
+            "avgDifficulty": 2.0,
+            "totalReward": 200,
+            "xp_earned": 0
+        },
+        {
+            "id": "summary_default_20260403_042600",
+            "title": "heyyy",
+            "summary": "heyyyy",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 4,
+            "currentLevel": 2,
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "recommendations": [
+                "Instruction tuning",
+                "Prompt based learning",
+                "Parameter efficient fine tuning"
+            ],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Stage 2 achieved with 200 points.",
+            "avgDifficulty": 2.0,
+            "totalReward": 200,
+            "xp_earned": 0
+        },
+        {
+            "id": "summary_default_20260403_051831",
+            "title": "HBOIDCUHGDOHQWE",
+            "summary": "BGOAIUXDASHGXCIOAHXIO",
+            "keywords_found": [],
+            "totalResources": 18,
+            "visitedResources": 4,
+            "currentLevel": 2,
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "recommendations": [
+                "Instruction tuning",
+                "Prompt based learning",
+                "Parameter efficient fine tuning"
+            ],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Stage 2 achieved with 200 points.",
+            "avgDifficulty": 2.0,
+            "totalReward": 200,
+            "xp_earned": 0
+        }
+    ]
+}

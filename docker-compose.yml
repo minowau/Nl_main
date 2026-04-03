@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  nlp-learning-grid:
+    build: .
+    image: nlp-learning-grid:latest
+    container_name: nlp-learning-grid
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./backend/data:/app/backend/data
+    restart: unless-stopped
