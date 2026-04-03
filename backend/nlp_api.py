@@ -255,7 +255,7 @@ def reset_database():
 def get_resources():
     """Get all NLP learning resources with their grid positions and correct visited state"""
     session_id = request.args.get('session_id', 'default')
-    from database import get_session
+    from .database import get_session
     session = get_session(session_id)
     visited_ids = set(str(v).strip() for v in session.get('visitedResources', []))
     
@@ -311,7 +311,7 @@ def move_agent():
 def get_notifications():
     """Get all notifications for a session"""
     session_id = request.args.get('session_id', 'default')
-    from database import get_session
+    from .database import get_session
     session = get_session(session_id)
     return jsonify(session.get('notifications', []))
 
@@ -327,7 +327,7 @@ def add_notification():
     if not message:
         return jsonify({'error': 'Message required'}), 400
         
-    from database import get_session, update_session
+    from .database import get_session, update_session
     session = get_session(session_id)
     if 'notifications' not in session:
         session['notifications'] = []
@@ -351,7 +351,7 @@ def mark_notifications_read():
     data = request.get_json()
     session_id = data.get('session_id', 'default')
     
-    from database import get_session, update_session
+    from .database import get_session, update_session
     session = get_session(session_id)
     if 'notifications' in session:
         for n in session['notifications']:
@@ -863,7 +863,7 @@ def get_learning_data():
     ai_analysis = ""
     xp_earned = 0
     try:
-        from database import load_db
+        from .database import load_db
         db = load_db()
         # Find latest summary for this session (they contain session_id in their ID or we match title)
         matching_summaries = [s for s in db.get('summaries', []) if f"summary_{session_id}" in s.get('id', '')]
@@ -883,7 +883,7 @@ def get_learning_data():
     activity_heatmap = {}
     activity_log = []
     try:
-        from database import load_db
+        from .database import load_db
         db = load_db()
         all_summaries = db.get('summaries', [])
         
@@ -961,7 +961,7 @@ def get_learning_data():
 def get_bookmarks():
     """Get all bookmarked resources for a session"""
     session_id = request.args.get('session_id', 'default')
-    from database import get_bookmarks as get_db_bookmarks
+    from .database import get_bookmarks as get_db_bookmarks
     return jsonify(get_db_bookmarks(session_id))
 
 
@@ -975,7 +975,7 @@ def add_bookmark():
     if not resource_id:
         return jsonify({'error': 'Resource ID required'}), 400
         
-    from database import add_bookmark as add_db_bookmark
+    from .database import add_bookmark as add_db_bookmark
     add_db_bookmark(session_id, resource_id)
     return jsonify({'status': 'success', 'resource_id': resource_id})
 
@@ -990,7 +990,7 @@ def remove_bookmark():
     if not resource_id:
         return jsonify({'error': 'Resource ID required'}), 400
         
-    from database import remove_bookmark as remove_db_bookmark
+    from .database import remove_bookmark as remove_db_bookmark
     remove_db_bookmark(session_id, resource_id)
     return jsonify({'status': 'success', 'resource_id': resource_id})
 

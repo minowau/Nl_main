@@ -19,6 +19,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends gcc python3-dev
 
 USER user
 ENV PATH="/home/user/.local/bin:$PATH"
+USER root
+RUN mkdir -p /data/db && chown -R user:user /data
+USER user
+
 WORKDIR /home/user/app
 
 # Install PyTorch CPU-only FIRST (largest package, separate cache layer)

@@ -3,15 +3,31 @@ import os
 from datetime import datetime
 
 # HF Native Persistence: Check if /data volume is mounted
-IF_HF_PERSISTENT = os.path.exists('/data')
-if IF_HF_PERSISTENT:
-    DB_FILE = '/data/db.json'
-    print(f"📡 HF Native Persistence: Active. Storing data in {DB_FILE}")
-else:
-    DB_FILE = os.path.join(os.path.dirname(__file__), 'data', 'db.json')
-    print(f"💻 Local Persistence: Active. Storing data in {DB_FILE}")
+def get_db_file_path():
+    # Primary choice: HF Persistent Storage Mount
+    if os.path.exists('/data'):
+        # Use a subdirectory to avoid permission issues at the root mount point
+        test_path = '/data/db/db.json'
+        try:
+            os.makedirs(os.path.dirname(test_path), exist_ok=True)
+            # Verify write access
+            with open(os.path.join(os.path.dirname(test_path), '.write_test'), 'w') as f:
+                f.write('test')
+            os.remove(os.path.join(os.path.dirname(test_path), '.write_test'))
+            print(f"📡 HF Native Persistence: Verified. Storing data in {test_path}")
+            return test_path
+        except Exception as e:
+            print(f"⚠️ HF Native Persistence: (/data) exists but is not writable: {e}")
+    
+    # Fallback: Local Storage
+    local_path = os.path.join(os.path.dirname(__file__), 'data', 'db.json')
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+    print(f"💻 Local Persistence: Active. Storing data in {local_path}")
+    return local_path
 
-# Ensure data directory exists
+DB_FILE = get_db_file_path()
+
+# Ensure final data directory exists
 os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
 
 def init_db():

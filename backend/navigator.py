@@ -23,7 +23,7 @@ import numpy as np
 # ──────────────────────────────────────────────
 # Model Definition — must match training architecture
 # ──────────────────────────────────────────────
-_MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'Navigators', 'dqn_model.pth')
+_MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'navigators', 'dqn_model.pth')
 
 _dqn_net = None
 _dqn_mode = "unavailable"
