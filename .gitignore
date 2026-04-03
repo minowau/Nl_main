@@ -22,6 +22,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+scripts
 
 # Temporary and local files
 __pycache__/
@@ -44,3 +45,4 @@ backend/data/*.json
 !backend/nlp/nlp_resources.json
 !backend/data/db.json
 !extracted_data.json
+!navigators/dqn_model.pth
