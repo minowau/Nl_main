@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Resource, Agent, GridPosition, Polyline } from '../types';
-import { BookOpen, Play, FileText, PenTool, RefreshCw, MapPin, Sparkles, Search, X, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
-import { nlpApi } from '../services/nlpApi';
+import { BookOpen, Play, FileText, PenTool, RefreshCw, MapPin, Search, X, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 const avatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=f1f5f9";
 
 interface GridVisualizationProps {
   resources: Resource[];
   agent: Agent;
   polylines: Polyline[];
-  onResourceClick: (resource: Resource) => void;
+  onResourceClick: (resource: Resource, skipMove?: boolean) => void;
   onAgentMove: (position: GridPosition) => void;
   isSimulationRunning: boolean;
   dqnPathInfo: { resource: Resource | null, reward: number } | null;
@@ -104,9 +103,6 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
     }
   }, [agent.position.x, agent.position.y, zoomLevel]);
   const [videoResource, setVideoResource] = useState<Resource | null>(null);
-  const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([]);
-  const [chatInput, setChatInput] = useState('');
-  const [chatLoading, setChatLoading] = useState(false);
   // @ts-ignore
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -127,17 +123,19 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
 
   // Convert YouTube URL to embed URL
   const getYouTubeEmbedUrl = (url: string): string | null => {
+    const videoId = getYouTubeVideoId(url);
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : null;
+  };
+
+  const getYouTubeVideoId = (url: string): string | null => {
     if (!url) return null;
-    // Handle youtu.be/ID and youtube.com/watch?v=ID formats
     let videoId = '';
     if (url.includes('youtu.be/')) {
       videoId = url.split('youtu.be/')[1]?.split(/[?&#]/)[0] || '';
     } else if (url.includes('watch?v=')) {
       videoId = url.split('watch?v=')[1]?.split(/[?&#]/)[0] || '';
-    } else if (url.includes('youtube.com/embed/')) {
-      return url; // Already embed URL
     }
-    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : null;
+    return videoId || null;
   };
 
   const handleMouseEnter = (id: string) => {
@@ -177,8 +175,15 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
     const resource = resources.find(r => r.position.x === x && r.position.y === y);
     if (resource) {
       setSelectedResource(resource);
-      onResourceClick(resource);
+      
+      // Always show video directly without moving the agent on manual click
+      if (resource.youtube_url) {
+        setVideoResource(resource);
+        setHoveredResource(null);
+      }
+      onResourceClick(resource, true); // Always skipMove = true for manual clicks
     } else {
+      // Clicks on empty cells no longer move the agent (logic moved to GridMatrixPage to ignore)
       onAgentMove({ x, y });
     }
   };
@@ -387,11 +392,24 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                     onMouseLeave={handleMouseLeave}
                   >
                     <div className="bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden cursor-default" onClick={(e) => e.stopPropagation()}>
-                      <div className={`h-32 w-full relative ${resource.visited ? 'bg-gradient-to-tr from-emerald-500 to-teal-400' : 'bg-gradient-to-tr from-blue-600 to-indigo-500'}`}>
-                        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }}></div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <ResourceIcon type={resource.type} />
-                          <div className="absolute transform scale-[5] opacity-10"><ResourceIcon type={resource.type} /></div>
+                      <div className={`h-32 w-full relative overflow-hidden ${resource.visited ? 'bg-gradient-to-tr from-emerald-500 to-teal-400' : 'bg-gradient-to-tr from-blue-600 to-indigo-500'}`}>
+                        {resource.youtube_url ? (
+                          <img 
+                            src={`https://img.youtube.com/vi/${getYouTubeVideoId(resource.youtube_url)}/hqdefault.jpg`} 
+                            alt="Preview"
+                            className="w-full h-full object-cover opacity-90 transition-opacity hover:opacity-100"
+                          />
+                        ) : (
+                          <>
+                            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }}></div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <ResourceIcon type={resource.type} />
+                              <div className="absolute transform scale-[5] opacity-10"><ResourceIcon type={resource.type} /></div>
+                            </div>
+                          </>
+                        )}
+                        <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                           <Play size={32} className="text-white fill-current" />
                         </div>
                       </div>
 
@@ -411,20 +429,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                           <span>{['Beginner', 'Intermediate', 'Advanced', 'Expert', 'Master'][resource.difficulty - 1] || 'Intermediate'}</span>
                         </div>
 
-                        <div className="flex items-center gap-4 text-xs text-gray-500 font-medium mb-4">
-                          <div className="flex items-center gap-1">
-                            <span className="text-gray-400">⏱</span>
-                            <span>{10 + (resource.title.length % 20)} mins</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-emerald-400">🎯</span>
-                            <span>Target: {(resource.high_line ? resource.high_line * 100 : 80).toFixed(0)}%</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-amber-400">★</span>
-                            <span>{resource.base_points ?? 50} pts</span>
-                          </div>
-                        </div>
+                        {/* Removed mins, Target, and pts per user request */}
 
                         <button
                           onClick={(e) => {
@@ -438,7 +443,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                           }}
                           className={`w-full py-2.5 ${isAgent ? 'bg-indigo-600 hover:bg-indigo-700 border-indigo-500/20 shadow-indigo-500/20' : 'bg-blue-600 hover:bg-blue-700 border-blue-500/20 shadow-blue-500/10'} text-white text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95 transform duration-100 border`}
                         >
-                          {isAgent ? '▶ Start Lesson' : 'Travel to Lesson'}
+                          {isAgent ? '▶ Start Lesson' : '▶ View Lesson'}
                           <span className="text-lg leading-none">→</span>
                         </button>
                       </div>
@@ -455,26 +460,6 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
       }
     }
     return cells;
-  };
-
-  const handleChatSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim() || !videoResource || chatLoading) return;
-
-    const userMessage = chatInput;
-    setChatInput('');
-    setChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-    setChatLoading(true);
-
-    try {
-      const data = await nlpApi.chat(videoResource.title, userMessage, chatMessages);
-      setChatMessages(prev => [...prev, { role: 'ai', content: data.answer }]);
-    } catch (error) {
-      console.error('Chat error:', error);
-      setChatMessages(prev => [...prev, { role: 'ai', content: 'Sorry, I failed to process your request.' }]);
-    } finally {
-      setChatLoading(false);
-    }
   };
 
   return (
@@ -647,6 +632,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
             </div>
 
 
+            {/* {renderNeuralRoad()} */}
             {renderGrid()}
             {renderPlaybackOverlay()}
 
@@ -717,12 +703,16 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
             <div className="flex-1">
               <h3 className="font-semibold text-gray-900">{selectedResource.title}</h3>
               <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-                <span className="px-2 py-0.5 bg-gray-100 rounded text-xs font-medium uppercase tracking-wide">{selectedResource.type}</span>
+                <span className="px-3 py-1 bg-gray-100 rounded-lg text-xs font-bold uppercase tracking-wider text-gray-600">{selectedResource.type}</span>
               </div>
             </div>
-            <div className="flex flex-col items-end border-l border-gray-100 pl-4">
-              <span className="text-xs text-gray-400 uppercase font-semibold">Reward</span>
-              <span className="text-xl font-bold text-gray-900">+{selectedResource.reward}</span>
+            
+            <div className="flex flex-col items-end border-l border-gray-100 pl-8 ml-auto">
+              <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-1">Potential Reward</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-blue-600 tracking-tighter">+{selectedResource.reward}</span>
+                <span className="text-sm font-black text-blue-500/60 uppercase tracking-widest">pts</span>
+              </div>
             </div>
           </div>
         </div>
@@ -793,7 +783,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
       {videoResource && videoResource.youtube_url && (
         <div
           className="fixed inset-0 bg-gray-950/80 backdrop-blur-3xl flex items-center justify-center z-[200] p-4 sm:p-8"
-          onClick={() => { setVideoResource(null); setChatMessages([]); setChatInput(''); }}
+          onClick={() => { setVideoResource(null); }}
         >
           <div
             className="bg-[#0f111a]/95 backdrop-blur-md rounded-[2.5rem] shadow-[0_0_80px_-15px_rgba(79,70,229,0.25)] w-full max-w-7xl h-[90vh] overflow-hidden flex flex-col border border-white/10 animate-in zoom-in-90 fade-in duration-500 ease-out relative z-10"
@@ -809,7 +799,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                 </div>
               </div>
               <button
-                onClick={() => { setVideoResource(null); setChatMessages([]); setChatInput(''); }}
+                onClick={() => { setVideoResource(null); }}
                 className="w-12 h-12 rounded-full bg-white/5 hover:bg-red-500/20 hover:border-red-500/30 text-gray-400 hover:text-red-400 transition-all flex items-center justify-center border border-white/5 group"
               >
                 <X size={22} className="group-hover:rotate-90 transition-transform duration-300" />
@@ -817,7 +807,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
             </div>
 
             <div className="flex flex-1 min-h-0 bg-[#090b10]">
-              <div className="flex-[65] relative bg-black overflow-hidden z-10">
+              <div className="flex-1 relative bg-black overflow-hidden z-10">
                 <iframe
                   className="w-full h-full"
                   src={getYouTubeEmbedUrl(videoResource.youtube_url) || ''}
@@ -826,46 +816,6 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
-              </div>
-
-              <div className="flex-[35] flex flex-col bg-[#0f111a] border-l border-white/5 relative overflow-hidden z-20">
-                <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 backdrop-blur-2xl px-6 py-5 flex items-center gap-4 border-b border-white/5 flex-shrink-0 relative z-30">
-                  <div className="w-10 h-10 rounded-[14px] bg-gradient-to-tr from-indigo-500 via-purple-500 to-fuchsia-500 flex items-center justify-center shadow-lg border border-white/10 ring-2 ring-white/5">
-                    <Sparkles size={18} className="text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-white text-[15px] tracking-tight">Learning Assistant</h4>
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-6 space-y-5 relative z-20">
-                  {chatMessages.map((msg, i) => (
-                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[85%] px-5 py-3.5 rounded-2xl text-[15px] leading-relaxed relative ${msg.role === 'user'
-                        ? 'bg-indigo-600 text-white rounded-br-sm'
-                        : 'bg-white/5 border border-white/10 text-gray-200 rounded-bl-sm'
-                        }`}>
-                        {msg.content}
-                      </div>
-                    </div>
-                  ))}
-                  {chatLoading && <div className="text-gray-500 text-xs animate-pulse">Thinking...</div>}
-                </div>
-
-                <form onSubmit={handleChatSubmit} className="p-4 border-t border-white/5 relative z-30">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      placeholder="Ask Sider AI..."
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-indigo-500/50 transition-all"
-                    />
-                    <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-indigo-400 hover:text-indigo-300">
-                      <ChevronRight size={18} />
-                    </button>
-                  </div>
-                </form>
               </div>
             </div>
           </div>

@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useRef, useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, LayoutDashboard, Sparkles, Database, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../../components/Layout/DashboardLayout';
@@ -24,8 +24,9 @@ export const ResourcesDashboard: React.FC = () => {
   };
 
   const completionScore = agent.totalReward % 100; // Study Points modulo 100
-  const completionPercentage = Math.min(100, Math.floor((agent.visitedResources.length / 18) * 100)); // Total 18 Nodes in Advances in NLP
+  const completionPercentage = Math.min(100, Math.floor((agent.visitedResources.length / 19) * 100)); // Total 19 Nodes in Advances in NLP
   const [showTutorial, setShowTutorial] = React.useState(false);
+  const [showPersonaTooltip, setShowPersonaTooltip] = useState(false);
   const heatmapRef = useRef<HTMLDivElement>(null);
   
   // Auto-scroll heatmap to the right (most recent activity)
@@ -58,15 +59,65 @@ export const ResourcesDashboard: React.FC = () => {
             <div className="max-w-2xl text-center lg:text-left flex flex-col gap-8">
               {/* Refined Status Indicators */}
               <div className="flex items-center gap-2 justify-center lg:justify-start">
-                  <div className="flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-full shadow-sm">
-                      <div className="w-2 h-2 bg-brand rounded-full animate-pulse shadow-[0_0_8px_rgba(108,99,255,0.5)]" />
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em]">System: Active</span>
-                  </div>
-                  <div className="w-px h-4 bg-slate-200 mx-1" />
-                  <div className="flex items-center gap-2.5 px-3 py-1.5 bg-emerald-50/50 border border-emerald-100/50 rounded-full shadow-sm">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                      <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.25em]">Neural Sync: Operational</span>
-                  </div>
+                  {/* Educational Persona Tag */}
+                  {learningData?.persona && (
+                    <div className="relative">
+                      <motion.div 
+                        onMouseEnter={() => setShowPersonaTooltip(true)}
+                        onMouseLeave={() => setShowPersonaTooltip(false)}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex items-center gap-2.5 px-3 py-1.5 rounded-full shadow-sm border cursor-help transition-all hover:shadow-md"
+                        style={{ 
+                          backgroundColor: `${learningData.persona.color}10`, 
+                          borderColor: `${learningData.persona.color}30` 
+                        }}
+                      >
+                        <div 
+                          className="w-2 h-2 rounded-full" 
+                          style={{ 
+                            backgroundColor: learningData.persona.color,
+                            boxShadow: `0 0 8px ${learningData.persona.color}80`
+                          }}
+                        />
+                        <span 
+                          className="text-[10px] font-black uppercase tracking-[0.25em]"
+                          style={{ color: learningData.persona.color }}
+                        >
+                          Persona: {learningData.persona.name}
+                        </span>
+                      </motion.div>
+
+                      <AnimatePresence>
+                        {showPersonaTooltip && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                            className="absolute bottom-full left-0 mb-3 w-72 p-4 rounded-2xl bg-white/90 backdrop-blur-xl border border-slate-200 shadow-2xl z-[100] text-left"
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <div 
+                                className="w-1.5 h-4 rounded-full" 
+                                style={{ backgroundColor: learningData.persona.color }} 
+                              />
+                              <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">
+                                {learningData.persona.name}
+                              </h4>
+                            </div>
+                            <p className="text-[11px] font-medium text-slate-600 leading-relaxed">
+                              {learningData.persona.description}
+                            </p>
+                            <div className="mt-3 pt-2 border-t border-slate-100">
+                               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                 Cluster Classification: Active
+                               </p>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
               </div>
 
               <h1 id="hero-title" className="text-4xl lg:text-5xl font-black text-slate-900 leading-[1.1] tracking-tight uppercase">
@@ -160,18 +211,19 @@ export const ResourcesDashboard: React.FC = () => {
               {(() => {
                 // Dynamic window: today is ALWAYS the last cell
                 const today = new Date();
+                today.setHours(0, 0, 0, 0); // Normalize today to start of day
                 
-                // End of the grid is today. Start of the grid is the Sunday of that week, 51 weeks ago.
-                // Calculate: how many days back to fill exactly 52 full weeks ending on today's weekday
-                const totalDays = 52 * 7; // 364 cells
+                // End of the grid is today. Start of the grid is 51 weeks ago starting from the same day of week.
+                // We want exactly 52 weeks (364 days total)
+                const totalDays = 52 * 7;
                 const startDate = new Date(today);
-                startDate.setDate(today.getDate() - totalDays + 1); // +1 so last cell = today
+                startDate.setDate(today.getDate() - totalDays + 1);
                 startDate.setHours(0, 0, 0, 0);
 
                 const weeks = 52;
                 const data: number[][] = [];
                 const activityHeatmap = learningData?.activityHeatmap || {};
-                const totalSummaries = Object.values(activityHeatmap).reduce((sum, count) => sum + count, 0);
+                const totalSummaries = Object.values(activityHeatmap).reduce((sum, count) => Number(sum) + Number(count), 0);
 
                 for (let w = 0; w < weeks; w++) {
                   const week: number[] = [];
@@ -181,6 +233,7 @@ export const ResourcesDashboard: React.FC = () => {
                     
                     const endOfToday = new Date(today);
                     endOfToday.setHours(23, 59, 59, 999);
+                    
                     if (date > endOfToday) { 
                       week.push(0); 
                       continue; 
@@ -191,7 +244,7 @@ export const ResourcesDashboard: React.FC = () => {
                     const day = String(date.getDate()).padStart(2, '0');
                     const dateKey = `${year}-${month}-${day}`;
                     
-                    const count = activityHeatmap[dateKey] || 0;
+                    const count = Number(activityHeatmap[dateKey] || 0);
                     
                     let level = 0;
                     if (count >= 1) level = 1;
@@ -215,6 +268,7 @@ export const ResourcesDashboard: React.FC = () => {
                 const monthLabels: { label: string; col: number }[] = [];
                 let lastMonth = -1;
                 for (let w = 0; w < weeks; w++) {
+                  // Check the 1st day of each week
                   const date = new Date(startDate);
                   date.setDate(startDate.getDate() + w * 7);
                   if (date.getMonth() !== lastMonth) {
@@ -224,10 +278,14 @@ export const ResourcesDashboard: React.FC = () => {
                 }
 
                 const flat = data.flat();
+                // Streak logic: check backwards from today (last cell)
                 let streak = 0;
-                for (let i = flat.length - 1; i >= 0; i--) {
+                // Today's index is the last index in the flattened array
+                // The grid is weeks * 7. Today is the last cell.
+                const todayIndex = flat.length - 1;
+                for (let i = todayIndex; i >= 0; i--) {
                   if (flat[i] > 0) streak++;
-                  else break;
+                  else if (i < todayIndex) break; // Allow today to be 0 for a moment, but if 0 in past, break
                 }
                 let longest = 0, cur = 0;
                 for (const v of flat) {
@@ -522,7 +580,7 @@ export const ResourcesDashboard: React.FC = () => {
                             </motion.div>
                         </div>
                         <p className="text-[10px] font-bold text-slate-400 mt-2 tracking-wide uppercase text-right w-full">
-                           {agent.visitedResources.length} of 18 Nodes Unlocked
+                           {agent.visitedResources.length} of 19 Nodes Unlocked
                         </p>
                     </div>
                 </div>

@@ -68,4 +68,10 @@ export interface LearningSummary {
   totalReward?: number;
   activityLog?: ActivityLogEntry[];
   xp_earned?: number;
+  persona?: {
+    id: number;
+    name: string;
+    description: string;
+    color: string;
+  } | null;
 }

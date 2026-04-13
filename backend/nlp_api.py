@@ -24,16 +24,18 @@ except Exception as e:
 # Import backend modules (support both script and package execution)
 try:
     from .init import app
-    from .database import get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines, get_notes, add_note, get_lectures, reset_db
+    from .database import get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines, get_notes, add_note, get_lectures, reset_db, get_bookmarks, add_bookmark, remove_bookmark, reset_session_data
     from .request_logger import log_request
     from .utils import utils_preprocess_text, get_cos_sim
     from . import navigator
+    from . import persona_service
 except ImportError:
     from init import app
-    from database import get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines, get_notes, add_note, get_lectures, reset_db
+    from database import get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines, get_notes, add_note, get_lectures, reset_db, get_bookmarks, add_bookmark, remove_bookmark, reset_session_data
     from request_logger import log_request
     from utils import utils_preprocess_text, get_cos_sim
     import navigator
+    import persona_service
 
 # Define stopwords
 stop_words = set(stopwords.words('english'))
@@ -85,11 +87,11 @@ def load_nlp_resources():
         # Origin: bottom-LEFT of 20×20 grid
         cx, cy = 0.0, 19.5
 
-        # Sequential split: 7 / 5 / 4 / 2 = 18
-        ordered_data = data[:18] if len(data) >= 18 else data
+        # Sequential split: now 19 modules
+        ordered_data = data[:19] if len(data) >= 19 else data
 
         tier_configs = [
-            {'label': 'Fundamentals', 'count': 4, 'radius':  3, 'difficulty': 2},
+            {'label': 'Fundamentals', 'count': 5, 'radius':  3, 'difficulty': 2},
             {'label': 'Intermediate', 'count': 5, 'radius':  7, 'difficulty': 4},
             {'label': 'Advance',      'count': 5, 'radius': 11, 'difficulty': 6},
             {'label': 'Mastery',      'count': 4, 'radius': 15, 'difficulty': 8},
@@ -255,7 +257,6 @@ def reset_database():
 def get_resources():
     """Get all NLP learning resources with their grid positions and correct visited state"""
     session_id = request.args.get('session_id', 'default')
-    from .database import get_session
     session = get_session(session_id)
     visited_ids = set(str(v).strip() for v in session.get('visitedResources', []))
     
@@ -311,7 +312,6 @@ def move_agent():
 def get_notifications():
     """Get all notifications for a session"""
     session_id = request.args.get('session_id', 'default')
-    from .database import get_session
     session = get_session(session_id)
     return jsonify(session.get('notifications', []))
 
@@ -327,7 +327,6 @@ def add_notification():
     if not message:
         return jsonify({'error': 'Message required'}), 400
         
-    from .database import get_session, update_session
     session = get_session(session_id)
     if 'notifications' not in session:
         session['notifications'] = []
@@ -351,7 +350,6 @@ def mark_notifications_read():
     data = request.get_json()
     session_id = data.get('session_id', 'default')
     
-    from .database import get_session, update_session
     session = get_session(session_id)
     if 'notifications' in session:
         for n in session['notifications']:
@@ -587,7 +585,8 @@ def create_learning_summary():
         'strengths': strengths, 'recommendations': recommendations,
         'ai_analysis': ai_analysis,
         'avgDifficulty': round(avg_difficulty, 2), 'totalReward': session['totalReward'],
-        'xp_earned': xp_earned
+        'xp_earned': xp_earned,
+        'timestamp': int(datetime.now().timestamp() * 1000)
     }
     save_summary(summary_result)
 
@@ -599,7 +598,7 @@ def create_learning_summary():
     new_polyline = {
         'id': polyline_id, 'name': title, 'path': [r['position'] for r in visited_resources],
         'color': f'rgba({np.random.randint(100,200)}, {np.random.randint(100,200)}, 255, 0.4)',
-        'isActive': True, 'summary': summary, 'keywords_found': keywords_found,
+        'isActive': False, 'summary': summary, 'keywords_found': keywords_found,
         'module_scores': module_scores, 'strengths': strengths, 'dominant_topics': dominant_topics,
         'ai_analysis': ai_analysis, 'assimilation_position': assimilation_position,
         'next_recommendation': {
@@ -609,11 +608,28 @@ def create_learning_summary():
     }
     save_polyline(polyline_id, new_polyline)
     
+    # Calculate updated average polyline
+    all_polylines = get_db_polylines()
+    history_scores = [p.get('module_scores', []) for p in all_polylines.values() if p.get('module_scores')]
+    num_histories = len(history_scores)
+    avg_scores = [0.0] * 19
+    if num_histories > 0:
+        for scores in history_scores:
+            for i, s in enumerate(scores):
+                if i < 19: avg_scores[i] += s
+        avg_scores = [s / num_histories for s in avg_scores]
+
     return jsonify({
-        'summary': summary_result,
         'polyline': new_polyline,
-        'assimilation_position': assimilation_position,
-        'next_recommendation': new_polyline['next_recommendation']
+        'average_polyline': {
+            'id': 'current_average',
+            'name': 'Current Average Knowledge',
+            'module_scores': avg_scores,
+            'isActive': True,
+            'color': 'rgba(59, 130, 246, 0.8)'
+        },
+        'next_recommendation': new_polyline['next_recommendation'],
+        'keywords_found': keywords_found
     })
 
 
@@ -644,10 +660,14 @@ def get_polylines_route():
     avg_module_scores = [0.0] * len(ordered_modules)
     if num_histories > 0:
         for scores in history_scores:
+            # Ensure we only average up to the length of ordered_modules
             for i, s in enumerate(scores):
                 if i < len(avg_module_scores):
                     avg_module_scores[i] += s
         avg_module_scores = [s / num_histories for s in avg_module_scores]
+    else:
+        # Default to some base value if no histories exist
+        avg_module_scores = [0.1] * len(ordered_modules)
         
     # Sort resources by angle (origin is 0, 19)
     def compute_angle(r):
@@ -691,8 +711,9 @@ def get_polylines_route():
 
     hl_polyline = {
         'id': 'high_line',
-        'name': 'High Line Target',
+        'name': 'Peak Potential',
         'path': high_line_path,
+        'module_scores': [0.8] * len(ordered_modules),
         'color': 'rgba(239, 68, 68, 0.8)', # Red
         'isActive': True,
         'confidence': 1.0,
@@ -701,8 +722,9 @@ def get_polylines_route():
     
     cur_polyline = {
         'id': 'current_average',
-        'name': 'Current Knowledge Base',
+        'name': 'Current Average Knowledge',
         'path': current_path,
+        'module_scores': avg_module_scores,
         'color': 'rgba(59, 130, 246, 0.8)', # Blue
         'isActive': True,
         'confidence': 1.0,
@@ -713,9 +735,12 @@ def get_polylines_route():
     # User said "everywhere it should be shown like a high polyline... and current should be average of all histories"
     # We will return the historical ones but set them to inactive, and these two to strictly active.
     
-    result = list(polylines.values())
-    for p in result:
-        p['isActive'] = False # Disable historical polylines by default
+    # Format result: Return ONLY the virtual polylines as active
+    result = []
+    for p in polylines.values():
+        p_copy = p.copy()
+        p_copy['isActive'] = False # Strictly disable historical polylines
+        result.append(p_copy)
         
     result.append(hl_polyline)
     result.append(cur_polyline)
@@ -879,23 +904,55 @@ def get_learning_data():
     except Exception as e:
         print(f"Error augmenting learning data from summaries: {e}")
 
+    # Calculate Student's Highline Persona
+    persona_data = None
+    try:
+        # Use existing top-level import get_db_polylines
+        all_polylines = get_db_polylines()
+        history_scores = [p.get('module_scores', []) for p in all_polylines.values() if p.get('module_scores')]
+        
+        if history_scores:
+            print(f"[PERSONA] Calculating from {len(history_scores)} historical vectors")
+            # Calculate component-wise maximum (The Student's Highline)
+            # Ensure vectors are padded to 19, then persona_service will slice to 18 for the model
+            arrays = [np.array(s + [0.0]*(19-len(s)))[:19] for s in history_scores]
+            highline_vector = np.maximum.reduce(arrays)
+            persona_data = persona_service.classify_persona(highline_vector.tolist())
+        else:
+            print("[PERSONA] No historical scores found, using default vector")
+            # Initial persona for new students
+            persona_data = persona_service.classify_persona([0.0]*19)
+            
+        print(f"[PERSONA] Assigned: {persona_data.get('name') if persona_data else 'None'}")
+    except Exception as e:
+        print(f"Error calculating persona: {e}")
+
     # Calculate activity log and heatmap from all summaries for this session
     activity_heatmap = {}
     activity_log = []
     try:
-        from .database import load_db
+        # 1. Add Summary Activity
+        # Filter summaries by session_id to isolate user data
+        try:
+            from .database import load_db
+        except (ImportError, ValueError):
+            from database import load_db
         db = load_db()
         all_summaries = db.get('summaries', [])
+        matching_summaries = [s for s in all_summaries if f"summary_{session_id}" in s.get('id', '')]
         
-        # 1. Add Summary Activity
-        for s in all_summaries:
+        for s in matching_summaries:
             s_id = s.get('id', '')
-            # Robust parsing for summary_{session_id}_{YYYYMMDD}_{HHMMSS}
-            # We look for the YYYYMMDD part after the first two underscores
-            if f"summary_" in s_id:
+            ts = s.get('timestamp')
+            
+            # Use timestamp if available, otherwise parse from ID
+            if ts:
+                dt = datetime.fromtimestamp(ts / 1000.0)
+                formatted_date = dt.strftime('%Y-%m-%d')
+                activity_heatmap[formatted_date] = activity_heatmap.get(formatted_date, 0) + 2
+                final_ts = ts
+            elif f"summary_" in s_id:
                 parts = s_id.split('_')
-                # For summary_default_20260403_032235, parts are: ['summary', 'default', '20260403', '032235']
-                # Search for the part that is exactly 8 digits (YYYYMMDD) and >= 2024
                 date_str = None
                 for p in parts[2:]:
                     if len(p) == 8 and p.isdigit() and p.startswith('20'):
@@ -904,16 +961,23 @@ def get_learning_data():
                 
                 if date_str:
                     formatted_date = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"
-                    # Weighted count: Summaries (deep learning) count as 2, visits/notifs as 1
                     activity_heatmap[formatted_date] = activity_heatmap.get(formatted_date, 0) + 2
+                    # Approximate timestamp from date string if missing
+                    try:
+                        final_ts = int(datetime.strptime(date_str, "%Y%m%d").timestamp() * 1000)
+                    except:
+                        final_ts = int(datetime.now().timestamp() * 1000)
+                else:
+                    final_ts = int(datetime.now().timestamp() * 1000)
+            else:
+                final_ts = int(datetime.now().timestamp() * 1000)
                 
-                # Add to activity log (list of recent events)
-                activity_log.append({
-                    'id': s_id,
-                    'type': 'summary',
-                    'title': s.get('title', 'Summary Written'),
-                    'timestamp': s.get('timestamp', int(datetime.now().timestamp() * 1000))
-                })
+            activity_log.append({
+                'id': s_id,
+                'type': 'summary',
+                'title': s.get('title', 'Summary Written'),
+                'timestamp': final_ts
+            })
 
         # 2. Add Notification/Visit Activity
         notifs = session.get('notifications', [])
@@ -949,7 +1013,8 @@ def get_learning_data():
         'nextOptimalResource': unvisited[0]['position'] if unvisited else None,
         'totalReward': session.get('totalReward', 0),
         'mostVisitedModule': most_visited_module,
-        'xp_earned': xp_earned
+        'xp_earned': xp_earned,
+        'persona': persona_data
     })
 
 
@@ -961,7 +1026,7 @@ def get_learning_data():
 def get_bookmarks():
     """Get all bookmarked resources for a session"""
     session_id = request.args.get('session_id', 'default')
-    from .database import get_bookmarks as get_db_bookmarks
+    from database import get_bookmarks as get_db_bookmarks
     return jsonify(get_db_bookmarks(session_id))
 
 
@@ -975,7 +1040,7 @@ def add_bookmark():
     if not resource_id:
         return jsonify({'error': 'Resource ID required'}), 400
         
-    from .database import add_bookmark as add_db_bookmark
+    from database import add_bookmark as add_db_bookmark
     add_db_bookmark(session_id, resource_id)
     return jsonify({'status': 'success', 'resource_id': resource_id})
 
@@ -990,7 +1055,7 @@ def remove_bookmark():
     if not resource_id:
         return jsonify({'error': 'Resource ID required'}), 400
         
-    from .database import remove_bookmark as remove_db_bookmark
+    from database import remove_bookmark as remove_db_bookmark
     remove_db_bookmark(session_id, resource_id)
     return jsonify({'status': 'success', 'resource_id': resource_id})
 
@@ -1172,6 +1237,24 @@ INSTRUCTIONS:
         answer = f"I'm here to help with the lesson on '{module}'. I couldn't find a specific answer in the local material, but you should review the module description for more details. (Tip: Configure an AI API key for better responses)."
 
     return jsonify({'answer': answer, 'source': 'transcript-lookup'})
+
+@app.route('/api/reset_session', methods=['POST'])
+def reset_session_route():
+    data = request.get_json()
+    session_id = data.get('session_id', 'default')
+    
+    try:
+        new_session = reset_session_data(session_id)
+        return jsonify({
+            'status': 'success',
+            'message': 'Journey reset successfully',
+            'session': new_session
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
 
 
 if __name__ == '__main__':

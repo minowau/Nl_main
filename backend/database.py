@@ -164,3 +164,46 @@ def add_note(session_id, note_data):
 def get_lectures():
     db = load_db()
     return db.get("lectures", [])
+
+def reset_session_data(session_id):
+    """Resets all progress, rewards, polylines and summaries for a specific session."""
+    db = load_db()
+    
+    # 1. Reset session state
+    db["learning_sessions"][session_id] = {
+        'position': {'x': 10, 'y': 10},
+        'level': 0,
+        'totalReward': 0,
+        'visitedResources': [],
+        'notifications': [
+            { 
+              'id': f'reset_{int(datetime.now().timestamp())}', 
+              'type': 'info', 
+              'message': 'Intelligence Journey restarted. System recalibrated.', 
+              'timestamp': int(datetime.now().timestamp() * 1000), 
+              'read': False 
+            }
+        ]
+    }
+    
+    # 2. Clear polylines related to this session (including current_average)
+    # We remove the average polyline and any session-specific polylines
+    keys_to_remove = ['current_average']
+    for k in list(db["polylines"].keys()):
+        if f"_{session_id}_" in k or k.startswith(f"polyline_{session_id}"):
+            keys_to_remove.append(k)
+    
+    for k in keys_to_remove:
+        if k in db["polylines"]:
+            del db["polylines"][k]
+            
+    # 3. Clear summaries for this session
+    if "summaries" in db:
+        db["summaries"] = [s for s in db["summaries"] if session_id not in s.get("id", "")]
+        
+    # 4. Clear bookmarks for this session
+    if "bookmarks" in db and session_id in db["bookmarks"]:
+        db["bookmarks"][session_id] = []
+        
+    save_db(db)
+    return db["learning_sessions"][session_id]

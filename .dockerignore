@@ -19,3 +19,6 @@ backend/db_backup.json
 .env
 *.pem
 *.local
+scripts
+.vscode
+tests

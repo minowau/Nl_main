@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { LearningSummary, Polyline, Resource } from '../types';
-import { X, BookOpen, Activity, Map, PlayCircle, HelpCircle, Sparkles, CheckCircle, TrendingUp, Search, Award, Bookmark } from 'lucide-react';
+import { X, BookOpen, Activity, Map, PlayCircle, HelpCircle, Sparkles, CheckCircle, TrendingUp, Search, Bookmark, Mic, MicOff } from 'lucide-react';
 
 interface ControlPanelProps {
   onSummarizeLearning: (title: string, summary: string) => void;
@@ -19,6 +19,7 @@ interface ControlPanelProps {
   onResourceClick: (resource: Resource) => void;
   onStartTutorial: () => void;
   agent: any;
+  onRestartJourney: () => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -36,7 +37,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   resources,
   onResourceClick,
   onStartTutorial,
-  agent
+  agent,
+  onRestartJourney
 }) => {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [showPolylineModal, setShowPolylineModal] = useState(false);
@@ -44,6 +46,64 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [selectedPolyline, setSelectedPolyline] = useState<Polyline | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const [showPersonaTooltip, setShowPersonaTooltip] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      setIsListening(false);
+    };
+
+    recognition.onresult = (event: any) => {
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        }
+      }
+      if (finalTranscript) {
+        setSummary(prev => prev + (prev.length > 0 && !prev.endsWith(' ') ? ' ' : '') + finalTranscript);
+      }
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
 
   const handleSummarySubmit = () => {
     if (title.trim() && summary.trim()) {
@@ -55,7 +115,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   };
 
   const handleShowPolyline = () => {
-    const activePolyline = polylines.find(p => p.isActive);
+    // Prioritize the average polyline
+    const avgPolyline = polylines.find(p => p.id === 'current_average');
+    const activePolyline = avgPolyline || polylines.find(p => p.isActive);
+    
     if (activePolyline) {
       setSelectedPolyline(activePolyline);
       setShowPolylineModal(true);
@@ -71,14 +134,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       }));
     }
 
-    const data = [];
-    for (let i = 1; i <= 18; i++) {
-      data.push({
-        x: i,
-        y: 0.5 + (Math.random() - 0.5) * 0.1 + Math.sin(i * 0.5) * 0.05
-      });
-    }
-    return data;
+    // Default to zero if no data exists, don't show mock random data
+    return Array.from({ length: 18 }, (_, i) => ({
+      x: i + 1,
+      y: 0
+    }));
   };
 
   const topicLegendItems = [
@@ -90,8 +150,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     "Vision Language Models", "Policy learning using DQN", "RLHF"
   ];
 
-  const activePolyline = polylines.find(p => p.isActive);
-  
   const generateHighLineData = () => {
     return topicLegendItems.map((topic, i) => {
         const res = resources.find(r => r.module === topic);
@@ -139,8 +197,65 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 />
             </div>
         </div>
-        <div className="flex flex-col">
-            <h4 className="text-[10px] font-black text-brand tracking-[0.2em] mb-1">STUDENT</h4>
+        <div className="flex flex-col flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1">
+                <h4 className="text-[10px] font-black text-brand tracking-[0.2em]">STUDENT</h4>
+                
+                {/* Educational Persona Tag */}
+                {learningData?.persona && (
+                    <div className="relative">
+                        <motion.div 
+                            onMouseEnter={() => setShowPersonaTooltip(true)}
+                            onMouseLeave={() => setShowPersonaTooltip(false)}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border cursor-help transition-all hover:shadow-md"
+                            style={{ 
+                                backgroundColor: `${learningData.persona.color}10`, 
+                                borderColor: `${learningData.persona.color}20` 
+                            }}
+                        >
+                            <div 
+                                className="w-1.5 h-1.5 rounded-full" 
+                                style={{ 
+                                    backgroundColor: learningData.persona.color,
+                                    boxShadow: `0 0 6px ${learningData.persona.color}60`
+                                }}
+                            />
+                            <span 
+                                className="text-[9px] font-black uppercase tracking-wider"
+                                style={{ color: learningData.persona.color }}
+                            >
+                                {learningData.persona.name}
+                            </span>
+                        </motion.div>
+
+                        <AnimatePresence>
+                            {showPersonaTooltip && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                                    className="absolute bottom-full right-0 mb-3 w-56 p-3 rounded-xl bg-white border border-slate-200 shadow-2xl z-[100] text-left"
+                                >
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                        <div 
+                                            className="w-1 h-3 rounded-full" 
+                                            style={{ backgroundColor: learningData.persona.color }} 
+                                        />
+                                        <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">
+                                            {learningData.persona.name}
+                                        </h4>
+                                    </div>
+                                    <p className="text-[10px] font-medium text-slate-600 leading-relaxed">
+                                        {learningData.persona.description}
+                                    </p>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                )}
+            </div>
             <div className="flex items-center gap-3">
                 <motion.div 
                     animate={{ scale: [1, 1.05, 1], filter: ["drop-shadow(0 0 0px rgba(99,102,241,0))", "drop-shadow(0 0 8px rgba(99,102,241,0.5))", "drop-shadow(0 0 0px rgba(99,102,241,0))"] }}
@@ -196,7 +311,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
             <button
               onClick={onPlayPath}
-              disabled={learningPath.length < 2}
+              disabled={learningPath.length < 2 || isLoading}
               className="col-span-2 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-gray-200 hover:bg-gray-50 disabled:bg-gray-50 disabled:text-gray-400 text-gray-700 text-sm rounded-xl font-medium transition-all"
             >
               <PlayCircle className="w-4 h-4 text-green-500" />
@@ -206,6 +321,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
           <button
             onClick={onToggleSimulation}
+            disabled={isLoading}
             className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 border text-sm rounded-xl font-medium transition-all ${isSimulationRunning
               ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
               : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'
@@ -214,6 +330,27 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <PlayCircle className="w-4 h-4" />
             {isSimulationRunning ? 'Stop DQN Simulation' : 'Start DQN Simulation'}
           </button>
+
+          <div className="pt-2 border-t border-gray-200/60">
+            <button
+              onClick={onRestartJourney}
+              disabled={isLoading || learningData.visitedResources < (learningData.totalResources || 19)}
+              className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 text-sm rounded-xl font-medium transition-all shadow-sm ${
+                learningData.visitedResources >= (learningData.totalResources || 19)
+                  ? "bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 shadow-rose-100 hover:shadow-md"
+                  : "bg-gray-50 border border-gray-100 text-gray-400 cursor-not-allowed"
+              }`}
+              title={learningData.visitedResources < (learningData.totalResources || 19) ? `Visit all ${learningData.totalResources || 19} resources to unlock reset` : "Restart your intelligence journey"}
+            >
+              <TrendingUp size={16} className={learningData.visitedResources < (learningData.totalResources || 19) ? "opacity-30" : "animate-bounce"} />
+              <span className="uppercase tracking-[0.2em] text-[9px] font-black underline-offset-4">Restart Journey</span>
+            </button>
+            {learningData.visitedResources < (learningData.totalResources || 19) && (
+              <p className="text-[8px] text-center text-gray-400 mt-2 font-bold uppercase tracking-widest">
+                Locked: {learningData.visitedResources}/{learningData.totalResources || 19} Modules Visited
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Learning Stats / Insights */}
@@ -371,13 +508,43 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Key Takeaways</label>
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5 flex justify-between items-center">
+                  Key Takeaways
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold uppercase transition-all duration-300 ${isListening ? 'text-blue-500 opacity-100' : 'text-slate-400 opacity-0'}`}>
+                      {isListening ? 'Listening...' : ''}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={toggleListening}
+                      className={`p-1.5 rounded-lg transition-all duration-300 ${
+                        isListening 
+                          ? 'bg-blue-100 text-blue-600 ring-4 ring-blue-50 scale-110 active:scale-95' 
+                          : 'bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95'
+                      }`}
+                      title={isListening ? "Stop Voice Input" : "Start Voice Input"}
+                    >
+                      {isListening ? (
+                        <motion.div
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ repeat: Infinity, duration: 1.5 }}
+                        >
+                          <MicOff className="w-4 h-4" />
+                        </motion.div>
+                      ) : (
+                        <Mic className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </label>
                 <textarea
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
                   placeholder="Describe what you learned..."
-                  className="w-full h-32 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400"
+                  className={`w-full h-32 px-4 py-3 bg-gray-50 border rounded-xl resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 ${
+                    isListening ? 'border-blue-400 ring-2 ring-blue-500/10' : 'border-gray-200'
+                  }`}
                 />
               </div>
             </div>

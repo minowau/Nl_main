@@ -3,24 +3,173 @@
     "learning_sessions": {
         "default": {
             "position": {
-                "x": 3,
-                "y": 13
+                "x": 2,
+                "y": 5
             },
-            "level": 2,
-            "totalReward": 200,
+            "level": 17,
+            "totalReward": 1664,
             "visitedResources": [
                 "4",
                 "3",
                 "2",
-                "1"
+                "1",
+                "8",
+                "9",
+                "18",
+                "17",
+                "12",
+                "16",
+                "13",
+                "7",
+                "11"
             ],
             "notifications": [
+                {
+                    "id": "notif_1776039486",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 17",
+                    "timestamp": 1776039486783,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776038120",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 17",
+                    "timestamp": 1776038120966,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776037236",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 16",
+                    "timestamp": 1776037236366,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776037226",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 15",
+                    "timestamp": 1776037226370,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776036302",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 14",
+                    "timestamp": 1776036302250,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776035879",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 12",
+                    "timestamp": 1776035879838,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776035860",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 10",
+                    "timestamp": 1776035860545,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776035424",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 9",
+                    "timestamp": 1776035424736,
+                    "read": false
+                },
+                {
+                    "id": "notif_1775653246",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 9",
+                    "timestamp": 1775653246524,
+                    "read": false
+                },
+                {
+                    "id": "notif_1775651726",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 9",
+                    "timestamp": 1775651726253,
+                    "read": false
+                },
+                {
+                    "id": "notif_1775651298",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 7",
+                    "timestamp": 1775651298938,
+                    "read": false
+                },
+                {
+                    "id": "notif_1775650306",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 7",
+                    "timestamp": 1775650306232,
+                    "read": false
+                },
+                {
+                    "id": "notif_1775650249",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 5",
+                    "timestamp": 1775650249955,
+                    "read": false
+                },
+                {
+                    "id": "notif_1775649192",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 4",
+                    "timestamp": 1775649192647,
+                    "read": false
+                },
+                {
+                    "id": "notif_1775648946",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 4",
+                    "timestamp": 1775648946879,
+                    "read": false
+                },
+                {
+                    "id": "notif_1775648486",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 4",
+                    "timestamp": 1775648486799,
+                    "read": false
+                },
+                {
+                    "id": "notif_1775642667",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 2",
+                    "timestamp": 1775642667713,
+                    "read": false
+                },
+                {
+                    "id": "notif_1775641789",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 2",
+                    "timestamp": 1775641789421,
+                    "read": false
+                },
+                {
+                    "id": "notif_1775574429",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 2",
+                    "timestamp": 1775574429406,
+                    "read": true
+                },
+                {
+                    "id": "notif_1775574390",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 2",
+                    "timestamp": 1775574390747,
+                    "read": true
+                },
                 {
                     "id": "notif_1775177177",
                     "type": "success",
                     "message": "Level up! You are now Stage 2",
                     "timestamp": 1775177177230,
-                    "read": false
+                    "read": true
                 },
                 {
                     "id": "notif_1775174735",
@@ -387,6 +536,313 @@
                 "module": "Incontext Learning",
                 "reason": "dqn"
             }
+        },
+        "polyline_20260413_045449": {
+            "id": "polyline_20260413_045449",
+            "name": "heyyy",
+            "path": [
+                {
+                    "x": 3,
+                    "y": 18
+                },
+                {
+                    "x": 3,
+                    "y": 17
+                },
+                {
+                    "x": 2,
+                    "y": 17
+                },
+                {
+                    "x": 1,
+                    "y": 17
+                },
+                {
+                    "x": 5,
+                    "y": 15
+                },
+                {
+                    "x": 3,
+                    "y": 13
+                },
+                {
+                    "x": 10,
+                    "y": 15
+                },
+                {
+                    "x": 15,
+                    "y": 17
+                },
+                {
+                    "x": 13,
+                    "y": 11
+                },
+                {
+                    "x": 8,
+                    "y": 7
+                }
+            ],
+            "color": "rgba(182, 130, 255, 0.4)",
+            "isActive": true,
+            "summary": "heyyyy",
+            "keywords_found": [],
+            "module_scores": [
+                0.10115420073270798,
+                0.1,
+                0.18399392068386078,
+                0.14720548689365387,
+                0.028323985636234283,
+                0.0064192404970526695,
+                0.0,
+                0.1,
+                0.1040271520614624,
+                0.008722614496946335,
+                0.0,
+                0.10856286436319351,
+                0.038952987641096115,
+                0.0,
+                0.0,
+                0.1,
+                0.1,
+                0.12341722100973129,
+                0.025726480409502983
+            ],
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Stage 12 achieved with 1150 points.",
+            "assimilation_position": {
+                "x": 10,
+                "y": 15
+            },
+            "next_recommendation": {
+                "id": "19",
+                "title": "Multimodal LLMs",
+                "position": {
+                    "x": 2,
+                    "y": 5
+                },
+                "module": "Multimodal LLMs",
+                "reason": "fallback"
+            }
+        },
+        "polyline_20260413_052311": {
+            "id": "polyline_20260413_052311",
+            "name": "heyyy",
+            "path": [
+                {
+                    "x": 3,
+                    "y": 18
+                },
+                {
+                    "x": 3,
+                    "y": 17
+                },
+                {
+                    "x": 2,
+                    "y": 17
+                },
+                {
+                    "x": 1,
+                    "y": 17
+                },
+                {
+                    "x": 6,
+                    "y": 16
+                },
+                {
+                    "x": 5,
+                    "y": 15
+                },
+                {
+                    "x": 3,
+                    "y": 13
+                },
+                {
+                    "x": 11,
+                    "y": 18
+                },
+                {
+                    "x": 10,
+                    "y": 15
+                },
+                {
+                    "x": 8,
+                    "y": 12
+                },
+                {
+                    "x": 15,
+                    "y": 17
+                },
+                {
+                    "x": 13,
+                    "y": 11
+                },
+                {
+                    "x": 8,
+                    "y": 7
+                }
+            ],
+            "color": "rgba(176, 182, 255, 0.4)",
+            "isActive": false,
+            "summary": "I'll have you been doing I love you",
+            "keywords_found": [],
+            "module_scores": [
+                0.1,
+                0.1,
+                0.15875685214996338,
+                0.1,
+                0.0,
+                0.0,
+                0.1,
+                0.10133437812328339,
+                0.1,
+                0.0634441077709198,
+                0.1,
+                0.1,
+                0.1,
+                0.0,
+                0.027825888246297836,
+                0.10117514431476593,
+                0.1,
+                0.10588239878416061,
+                0.0
+            ],
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "dominant_topics": [],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Stage 16 achieved with 1550 points.",
+            "assimilation_position": {
+                "x": 2,
+                "y": 5
+            },
+            "next_recommendation": {
+                "id": "19",
+                "title": "Multimodal LLMs",
+                "position": {
+                    "x": 2,
+                    "y": 5
+                },
+                "module": "Multimodal LLMs",
+                "reason": "fallback"
+            }
+        },
+        "polyline_20260413_052519": {
+            "id": "polyline_20260413_052519",
+            "name": "agentic",
+            "path": [
+                {
+                    "x": 3,
+                    "y": 18
+                },
+                {
+                    "x": 3,
+                    "y": 17
+                },
+                {
+                    "x": 2,
+                    "y": 17
+                },
+                {
+                    "x": 1,
+                    "y": 17
+                },
+                {
+                    "x": 6,
+                    "y": 16
+                },
+                {
+                    "x": 5,
+                    "y": 15
+                },
+                {
+                    "x": 3,
+                    "y": 13
+                },
+                {
+                    "x": 11,
+                    "y": 18
+                },
+                {
+                    "x": 10,
+                    "y": 15
+                },
+                {
+                    "x": 8,
+                    "y": 12
+                },
+                {
+                    "x": 15,
+                    "y": 17
+                },
+                {
+                    "x": 13,
+                    "y": 11
+                },
+                {
+                    "x": 8,
+                    "y": 7
+                }
+            ],
+            "color": "rgba(128, 124, 255, 0.4)",
+            "isActive": false,
+            "summary": "Agentic AI refers to AI systems that act as autonomous agents\u2014they don\u2019t just respond to prompts, but plan, decide, and execute tasks independently to achieve goals.\n\n\ud83e\udde0 Core Idea\n\nTraditional AI = reactive (you ask \u2192 it answers)\nAgentic AI = proactive (it decides \u2192 acts \u2192 adapts)\n\n\u2699\ufe0f Key Components\nGoal Understanding\nInterprets high-level objectives (e.g., \u201cplan a trip\u201d)\nPlanning\nBreaks goals into smaller steps (task decomposition)\nReasoning\nChooses best actions using logic or learned patterns\nMemory\nStores past interactions (short-term + long-term)\nTool Use\nCalls APIs, runs code, browses, etc.\nAutonomy Loop\nObserve \u2192 Think \u2192 Act \u2192 Repeat\n\ud83d\udd01 How It Works (Agent Loop)\nReceive goal\nAnalyze & plan steps\nExecute actions (e.g., search, compute)\nEvaluate results\nAdjust strategy until goal is achieved\n\ud83d\ude80 Examples\nAI coding assistants that debug and run code end-to-end\nAutonomous research agents gathering and summarizing info\nPersonal assistants that schedule, email, and book services\nMulti-agent systems collaborating on tasks\n\ud83e\udde9 Types of Agentic AI\nSingle-Agent Systems \u2013 one AI handles everything\nMulti-Agent Systems \u2013 multiple AIs collaborate or compete\nHuman-in-the-Loop Agents \u2013 AI acts but humans approve key steps",
+            "keywords_found": [
+                "Pre training objectives",
+                "Agentic AI"
+            ],
+            "module_scores": [
+                0.707211971282959,
+                0.4879891872406006,
+                0.533668041229248,
+                0.4508524537086487,
+                0.41294997930526733,
+                0.4055269956588745,
+                0.5379796624183655,
+                0.48441633582115173,
+                0.5093045830726624,
+                0.09664438664913177,
+                0.31202876567840576,
+                0.5990123152732849,
+                0.5259677767753601,
+                0.31405308842658997,
+                0.0,
+                0.12969684600830078,
+                0.42057937383651733,
+                1.0,
+                0.42107972502708435
+            ],
+            "strengths": [
+                "Pre training objectives",
+                "Agentic AI"
+            ],
+            "dominant_topics": [
+                "Pre training objectives",
+                "Agentic AI"
+            ],
+            "ai_analysis": "Learning profile enriched by modules like Pre training objectives, Agentic AI. Stage 17 achieved with 1664 points.",
+            "assimilation_position": {
+                "x": 2,
+                "y": 5
+            },
+            "next_recommendation": {
+                "id": "19",
+                "title": "Multimodal LLMs",
+                "position": {
+                    "x": 2,
+                    "y": 5
+                },
+                "module": "Multimodal LLMs",
+                "reason": "fallback"
+            }
         }
     },
     "notes": {},
@@ -412,7 +868,8 @@
             "ai_analysis": "Learning profile enriched by modules like Basics. Level 1 achieved with 100 points.",
             "avgDifficulty": 2.0,
             "totalReward": 100,
-            "xp_earned": 0
+            "xp_earned": 0,
+            "timestamp": 1775176955000
         },
         {
             "id": "summary_default_20260403_032347",
@@ -434,7 +891,8 @@
             "ai_analysis": "Learning profile enriched by modules like Basics. Level 1 achieved with 100 points.",
             "avgDifficulty": 2.0,
             "totalReward": 100,
-            "xp_earned": 0
+            "xp_earned": 0,
+            "timestamp": 1775177027000
         },
         {
             "id": "summary_default_20260403_033404",
@@ -458,7 +916,8 @@
             "ai_analysis": "Learning profile enriched by modules like Basics. Level 2 achieved with 200 points.",
             "avgDifficulty": 2.0,
             "totalReward": 200,
-            "xp_earned": 0
+            "xp_earned": 0,
+            "timestamp": 1775177644000
         },
         {
             "id": "summary_default_20260403_042600",
@@ -482,7 +941,8 @@
             "ai_analysis": "Learning profile enriched by modules like Basics. Stage 2 achieved with 200 points.",
             "avgDifficulty": 2.0,
             "totalReward": 200,
-            "xp_earned": 0
+            "xp_earned": 0,
+            "timestamp": 1775180760000
         },
         {
             "id": "summary_default_20260403_051831",
@@ -506,7 +966,84 @@
             "ai_analysis": "Learning profile enriched by modules like Basics. Stage 2 achieved with 200 points.",
             "avgDifficulty": 2.0,
             "totalReward": 200,
-            "xp_earned": 0
+            "xp_earned": 0,
+            "timestamp": 1775183911000
+        },
+        {
+            "id": "summary_default_20260413_045449",
+            "title": "heyyy",
+            "summary": "heyyyy",
+            "keywords_found": [],
+            "totalResources": 19,
+            "visitedResources": 10,
+            "currentLevel": 12,
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "recommendations": [
+                "Instruction tuning",
+                "Prompt based learning",
+                "Parameter efficient fine tuning"
+            ],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Stage 12 achieved with 1150 points.",
+            "avgDifficulty": 4.6,
+            "totalReward": 1150,
+            "xp_earned": 0,
+            "timestamp": 1776036289940
+        },
+        {
+            "id": "summary_default_20260413_052311",
+            "title": "heyyy",
+            "summary": "I'll have you been doing I love you",
+            "keywords_found": [],
+            "totalResources": 19,
+            "visitedResources": 13,
+            "currentLevel": 16,
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Tutorial: Introduction to huggingface",
+                "Fine tuning LLM"
+            ],
+            "recommendations": [
+                "Instruction tuning",
+                "Prompt based learning",
+                "Multiprompt Learning"
+            ],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Stage 16 achieved with 1550 points.",
+            "avgDifficulty": 4.77,
+            "totalReward": 1550,
+            "xp_earned": 0,
+            "timestamp": 1776037991890
+        },
+        {
+            "id": "summary_default_20260413_052519",
+            "title": "agentic",
+            "summary": "Agentic AI refers to AI systems that act as autonomous agents\u2014they don\u2019t just respond to prompts, but plan, decide, and execute tasks independently to achieve goals.\n\n\ud83e\udde0 Core Idea\n\nTraditional AI = reactive (you ask \u2192 it answers)\nAgentic AI = proactive (it decides \u2192 acts \u2192 adapts)\n\n\u2699\ufe0f Key Components\nGoal Understanding\nInterprets high-level objectives (e.g., \u201cplan a trip\u201d)\nPlanning\nBreaks goals into smaller steps (task decomposition)\nReasoning\nChooses best actions using logic or learned patterns\nMemory\nStores past interactions (short-term + long-term)\nTool Use\nCalls APIs, runs code, browses, etc.\nAutonomy Loop\nObserve \u2192 Think \u2192 Act \u2192 Repeat\n\ud83d\udd01 How It Works (Agent Loop)\nReceive goal\nAnalyze & plan steps\nExecute actions (e.g., search, compute)\nEvaluate results\nAdjust strategy until goal is achieved\n\ud83d\ude80 Examples\nAI coding assistants that debug and run code end-to-end\nAutonomous research agents gathering and summarizing info\nPersonal assistants that schedule, email, and book services\nMulti-agent systems collaborating on tasks\n\ud83e\udde9 Types of Agentic AI\nSingle-Agent Systems \u2013 one AI handles everything\nMulti-Agent Systems \u2013 multiple AIs collaborate or compete\nHuman-in-the-Loop Agents \u2013 AI acts but humans approve key steps",
+            "keywords_found": [
+                "Pre training objectives",
+                "Agentic AI"
+            ],
+            "totalResources": 19,
+            "visitedResources": 13,
+            "currentLevel": 17,
+            "strengths": [
+                "Pre training objectives",
+                "Agentic AI"
+            ],
+            "recommendations": [
+                "Instruction tuning",
+                "Prompt based learning",
+                "Multiprompt Learning"
+            ],
+            "ai_analysis": "Learning profile enriched by modules like Pre training objectives, Agentic AI. Stage 17 achieved with 1664 points.",
+            "avgDifficulty": 4.77,
+            "totalReward": 1664,
+            "xp_earned": 114,
+            "timestamp": 1776038119584
         }
     ]
 }

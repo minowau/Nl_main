@@ -70,15 +70,16 @@ ORDERED_MODULES = [
     "Parameter efficient fine tuning",
     "Incontext Learning",
     "Prompting methods",
+    "Multiprompt Learning",
+    "Prompt aware training methods",
     "Retrieval Methods",
     "Retrieval Augmented Generation",
-    "Quantization",
+    "Model Distillation",
+    "Model Quantization",
+    "Model Pruning",
     "Mixture of Experts Model",
     "Agentic AI",
     "Multimodal LLMs",
-    "Vision Language Models",
-    "Policy learning using DQN",
-    "RLHF",
 ]
 
 

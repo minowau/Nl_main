@@ -76,9 +76,14 @@ export interface LearningData {
   totalReward: number;
   activityLog?: any[];
   activityHeatmap?: Record<string, number>;
-  ai_analysis?: string;
   xp_earned?: number;
   mostVisitedModule?: string;
+  persona?: {
+    id: number;
+    name: string;
+    description: string;
+    color: string;
+  } | null;
 }
 
 export interface Note {
@@ -126,6 +131,7 @@ export interface LearningPlannerAPI {
   ): Promise<{
     summary: any;
     polyline: Polyline;
+    average_polyline?: Polyline;
     assimilation_position?: { x: number; y: number };
     next_recommendation?: { id: string; title: string; position: { x: number; y: number }; module: string; reason: string } | null;
   }>;
@@ -168,6 +174,7 @@ export interface LearningPlannerAPI {
   getNotifications(sessionId: string): Promise<Notification[]>;
   addNotification(sessionId: string, message: string, type?: string): Promise<Notification>;
   markNotificationsRead(sessionId: string): Promise<any>;
+  resetSession(sessionId: string): Promise<any>;
 }
 
 class NLPLearningAPI implements LearningPlannerAPI {
@@ -229,6 +236,7 @@ class NLPLearningAPI implements LearningPlannerAPI {
   ): Promise<{
     summary: any;
     polyline: Polyline;
+    average_polyline?: Polyline;
     assimilation_position?: { x: number; y: number };
     next_recommendation?: { id: string; title: string; position: { x: number; y: number }; module: string; reason: string } | null;
   }> {
@@ -378,6 +386,16 @@ class NLPLearningAPI implements LearningPlannerAPI {
       body: JSON.stringify({ session_id: sessionId })
     });
     if (!response.ok) throw new Error('Failed to mark notifications read');
+    return response.json();
+  }
+
+  async resetSession(sessionId: string = this.sessionId): Promise<any> {
+    const response = await fetch(`${API_BASE}/reset_session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId })
+    });
+    if (!response.ok) throw new Error('Failed to reset session');
     return response.json();
   }
 }

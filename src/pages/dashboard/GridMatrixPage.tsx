@@ -6,11 +6,11 @@ import { Resource, Polyline, LearningSummary, GridPosition } from '../../types';
 import { nlpApi } from '../../services/nlpApi';
 import { useAppContext } from '../../context/AppContext';
 import { ChevronLeft } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import DashboardTutorial from '../../components/Dashboard/DashboardTutorial';
 
 const GridMatrixPage: React.FC = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { search } = useLocation();
   const queryResourceId = new URLSearchParams(search).get('resource');
   
@@ -62,7 +62,7 @@ const GridMatrixPage: React.FC = () => {
       if (targetResource) {
         // Use timeout to ensure grid is ready for movement animation
         const timer = setTimeout(() => {
-          handleResourceClick(targetResource);
+          handleResourceClick(targetResource, true);
         }, 800);
         return () => clearTimeout(timer);
       }
@@ -98,13 +98,16 @@ const GridMatrixPage: React.FC = () => {
     initApp();
   }, [setIsLoading]);
 
-  const handleResourceClick = useCallback(async (resource: Resource) => {
-    // Always move agent to the resource position
-    moveAgent(resource.position);
-    await updateAgentPosition(resource.position);
+  const handleResourceClick = useCallback(async (resource: Resource, skipMove: boolean = false) => {
+    // If skipMove is true, we don't displace the agent icon
+    if (!skipMove) {
+      moveAgent(resource.position);
+      await updateAgentPosition(resource.position);
+    }
     
-    // Update URL to match current resource for deep-linking/persistence
-    navigate(`/navigator?resource=${resource.id}`, { replace: true });
+    // Reset the summary flag (removed logic)
+    
+    // navigate(`/navigator?resource=${resource.id}`, { replace: true });
 
     if (!resource.visited) {
       setResources(prev => prev.map(r =>
@@ -153,7 +156,6 @@ const GridMatrixPage: React.FC = () => {
 
       // Move agent to DQN-recommended resource or fallback to nearest unvisited
 
-      // Move agent to DQN-recommended resource or fallback to nearest unvisited
       const nextRecPos = result.next_recommendation?.position;
       if (nextRecPos) {
         moveAgent(nextRecPos);
@@ -187,11 +189,14 @@ const GridMatrixPage: React.FC = () => {
         ]
       }));
 
-      // ONLY add the backend summary polyline to the state (don't add redundant 'Current Learning Path')
+      // Update polylines with both the new summary and the updated average
       setPolylines(prev => {
-        // Keep existing summaries and only remove temporary paths
-        const base = prev.filter(p => p.id !== 'learning-path-1' && p.id !== 'dqn-simulation');
-        return [...base, result.polyline];
+        const base = prev.filter(p => !['learning-path-1', 'dqn-simulation', 'current_average'].includes(p.id));
+        const updates = [result.polyline];
+        if (result.average_polyline) {
+          updates.push(result.average_polyline);
+        }
+        return [...base, ...updates];
       });
 
     } catch (error) {
@@ -262,9 +267,9 @@ const GridMatrixPage: React.FC = () => {
     }
   }, [isSimulationRunning, generateDQNPath, agent.position, resources]);
 
-  const handleAgentMove = useCallback(async (position: GridPosition, title?: string) => {
-    moveAgent(position);
-    await updateAgentPosition(position);
+  const handleAgentMove = useCallback(async (_position: GridPosition, title?: string) => {
+    // moveAgent(_position);
+    // await updateAgentPosition(_position);
     
     if (title) {
         setLearningData(prev => ({
@@ -302,6 +307,40 @@ const GridMatrixPage: React.FC = () => {
     }
   }, [learningPath, resources]);
 
+  const handleRestartJourney = useCallback(async () => {
+    if (!window.confirm("Are you sure you want to restart your Intelligence Journey? This will clear all learning progress and summaries.")) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await nlpApi.resetSession('default');
+      
+      // Update local state based on reset
+      setAgent(response.session);
+      
+      // Re-fetch everything to ensure synchronization
+      const [resourceData, polylineData, learningStats] = await Promise.all([
+        nlpApi.getResources(),
+        nlpApi.getPolylines(),
+        nlpApi.getLearningData('default')
+      ]);
+
+      setResources(resourceData);
+      setPolylines(polylineData);
+      setLearningData({
+        ...learningStats,
+        totalResources: resourceData.length
+      });
+      setLearningPath([]);
+
+    } catch (error) {
+      console.error('Failed to reset journey:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setIsLoading, setAgent]);
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900 relative">
       {showTutorial && <DashboardTutorial onComplete={() => setShowTutorial(false)} page="navigator" />}
@@ -327,7 +366,7 @@ const GridMatrixPage: React.FC = () => {
               resources={resources}
               agent={agent}
               polylines={polylines}
-              onResourceClick={handleResourceClick}
+              onResourceClick={(res, skip) => handleResourceClick(res, skip)}
               onAgentMove={handleAgentMove}
               isSimulationRunning={isSimulationRunning}
               dqnPathInfo={dqnPathInfo}
@@ -353,9 +392,10 @@ const GridMatrixPage: React.FC = () => {
               bookmarks={bookmarks}
               toggleBookmark={toggleBookmark}
               resources={resources}
-              onResourceClick={handleResourceClick}
+              onResourceClick={(res) => handleResourceClick(res, true)}
               onStartTutorial={() => setShowTutorial(true)}
               agent={agent}
+              onRestartJourney={handleRestartJourney}
             />
           </div>
         </div>

@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { PlayCircle, BookOpen, Clock, ChevronRight, Map, Cpu, Zap, Library, Layers } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PlayCircle, BookOpen, Clock, ChevronRight, Map, Cpu, Zap, Library, Layers, Trophy, Sparkles, Database } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../../components/Layout/DashboardLayout';
 import { nlpApi } from '../../services/nlpApi';
 import { Resource } from '../../types';
+import { useAppContext } from '../../context/AppContext';
 
 export const NavigatorDashboard: React.FC = () => {
+  const { agent, learningData } = useAppContext();
   const navigate = useNavigate();
   const [fundamentalsResources, setFundamentalsResources] = useState<Resource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPersonaTooltip, setShowPersonaTooltip] = useState(false);
 
   // Load the resources mapping to show videos in the Advances in NLP enrolled course
   useEffect(() => {
@@ -68,9 +71,80 @@ export const NavigatorDashboard: React.FC = () => {
               
               <div className="flex-1 space-y-6">
                 <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="px-3 py-1 bg-brand/10 text-brand text-[10px] font-bold uppercase tracking-widest rounded-lg border border-brand/20">Active Map</span>
-                    <span className="text-xs font-semibold text-slate-400">18 Modules</span>
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <span className="px-3 py-1 bg-brand text-white text-[10px] font-bold uppercase tracking-widest rounded-lg border border-brand/20 shadow-sm">Active Map</span>
+                    <span className="text-xs font-semibold text-slate-400">19 Modules</span>
+                    
+                    <div className="w-px h-4 bg-slate-200 mx-1" />
+                    
+                    {/* Level & Points Tags */}
+                    <div className="flex items-center gap-2">
+                       <div className="flex items-center gap-2 px-2.5 py-1 bg-slate-50 border border-slate-100 rounded-lg shadow-sm">
+                          <Trophy size={12} className="text-brand" />
+                          <span className="text-[10px] font-black text-slate-900 uppercase tracking-wider">S{agent.level}</span>
+                       </div>
+                       <div className="flex items-center gap-2 px-2.5 py-1 bg-slate-50 border border-slate-100 rounded-lg shadow-sm">
+                          <Database size={12} className="text-emerald-500" />
+                          <span className="text-[10px] font-black text-slate-900 uppercase tracking-wider">{agent.totalReward} XP</span>
+                       </div>
+                    </div>
+
+                    <div className="w-px h-4 bg-slate-200 mx-1" />
+
+                    {/* Educational Persona Tag */}
+                    {learningData?.persona && (
+                      <div className="relative">
+                        <motion.div 
+                          onMouseEnter={() => setShowPersonaTooltip(true)}
+                          onMouseLeave={() => setShowPersonaTooltip(false)}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="flex items-center gap-2.5 px-3 py-1 bg-white rounded-lg shadow-sm border cursor-help transition-all hover:shadow-md"
+                          style={{ 
+                            backgroundColor: `${learningData.persona.color}10`, 
+                            borderColor: `${learningData.persona.color}30` 
+                          }}
+                        >
+                          <div 
+                            className="w-2 h-2 rounded-full" 
+                            style={{ 
+                              backgroundColor: learningData.persona.color,
+                              boxShadow: `0 0 8px ${learningData.persona.color}80`
+                            }}
+                          />
+                          <span 
+                            className="text-[10px] font-black uppercase tracking-[0.25em]"
+                            style={{ color: learningData.persona.color }}
+                          >
+                            {learningData.persona.name}
+                          </span>
+                        </motion.div>
+
+                        <AnimatePresence>
+                          {showPersonaTooltip && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                              className="absolute bottom-full left-0 mb-3 w-72 p-4 rounded-2xl bg-white border border-slate-200 shadow-2xl z-[100] text-left"
+                            >
+                              <div className="flex items-center gap-2 mb-2">
+                                <div 
+                                  className="w-1.5 h-4 rounded-full" 
+                                  style={{ backgroundColor: learningData.persona.color }} 
+                                />
+                                <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">
+                                  {learningData.persona.name}
+                                </h4>
+                              </div>
+                              <p className="text-[11px] font-medium text-slate-600 leading-relaxed">
+                                {learningData.persona.description}
+                              </p>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
                   </div>
                   <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">Advances in NLP</h3>
                   <p className="text-slate-600 leading-relaxed max-w-xl">
