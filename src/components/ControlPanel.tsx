@@ -314,14 +314,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               History
             </button>
 
-            <button
-              onClick={onPlayPath}
-              disabled={learningPath.length < 2 || isLoading}
-              className="col-span-2 flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-gray-200 hover:bg-gray-50 disabled:bg-gray-50 disabled:text-gray-400 text-gray-700 text-sm rounded-xl font-medium transition-all"
-            >
-              <PlayCircle className="w-4 h-4 text-green-500" />
-              Play Path Animation
-            </button>
+
           </div>
 
           <button

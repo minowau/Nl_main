@@ -19,6 +19,7 @@ dimension, then A's 2D point will have x_A ≥ x_B and y_A ≥ y_B.
 """
 
 import math
+from typing import Optional
 
 
 def _axis_length(b: int, theta: float, x_len: float, y_len: float) -> float:
@@ -62,7 +63,7 @@ def _axis_length(b: int, theta: float, x_len: float, y_len: float) -> float:
 
 def polyline_to_2d(
     module_scores: list,
-    num_topics: int | None = None,
+    num_topics: Optional[int] = None,
     x_len: float = 19.0,
     y_len: float = 19.0,
 ) -> tuple:
@@ -162,7 +163,7 @@ def map_to_grid(
 
 def polyline_to_grid(
     module_scores: list,
-    num_topics: int | None = None,
+    num_topics: Optional[int] = None,
     x_len: float = 19.0,
     y_len: float = 19.0,
     grid_size: int = 20,
