@@ -6,8 +6,8 @@
                 "x": 2,
                 "y": 5
             },
-            "level": 17,
-            "totalReward": 1664,
+            "level": 20,
+            "totalReward": 1914,
             "visitedResources": [
                 "4",
                 "3",
@@ -21,9 +21,46 @@
                 "16",
                 "13",
                 "7",
-                "11"
+                "11",
+                "6",
+                "14"
             ],
             "notifications": [
+                {
+                    "id": "notif_1776223284",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1776223284605,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776223132",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 18",
+                    "timestamp": 1776223132220,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776222687",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 17",
+                    "timestamp": 1776222687686,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776222037",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 17",
+                    "timestamp": 1776222037016,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776085496",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 17",
+                    "timestamp": 1776085496550,
+                    "read": false
+                },
                 {
                     "id": "notif_1776039486",
                     "type": "success",

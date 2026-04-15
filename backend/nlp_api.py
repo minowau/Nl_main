@@ -29,6 +29,7 @@ try:
     from .utils import utils_preprocess_text, get_cos_sim
     from . import navigator
     from . import persona_service
+    from . import radial_mapper
 except ImportError:
     from init import app
     from database import get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines, get_notes, add_note, get_lectures, reset_db, get_bookmarks, add_bookmark, remove_bookmark, reset_session_data
@@ -36,6 +37,7 @@ except ImportError:
     from utils import utils_preprocess_text, get_cos_sim
     import navigator
     import persona_service
+    import radial_mapper
 
 # Define stopwords
 stop_words = set(stopwords.words('english'))
@@ -590,9 +592,12 @@ def create_learning_summary():
     }
     save_summary(summary_result)
 
-    # Final result construction
-    agent_pos = session.get('position', {'x': 10, 'y': 10})
-    assimilation_position = {'x': agent_pos.get('x', 10), 'y': agent_pos.get('y', 10)}
+    # Final result construction — compute true 2D assimilation position
+    # using the radial-axis dimensionality reduction (Equations 6-12)
+    assimilation_position = radial_mapper.polyline_to_grid(
+        module_scores, num_topics=len(ordered_modules)
+    )
+    log_polyline_step("ASSIMILATION_2D", f"module_scores={[round(s,3) for s in module_scores]} -> grid=({assimilation_position['x']}, {assimilation_position['y']})")
     
     polyline_id = f"polyline_{timestamp_id}"
     new_polyline = {
@@ -709,15 +714,31 @@ def get_polylines_route():
     if current_path:
         current_path.append(current_path[0])
 
+    # Compute assimilation positions for virtual polylines via radial mapper
+    hl_scores = [float(r.get('high_line', 0.8)) for r in resources_sorted]
+    # Ensure we use per-module high_line scores (one per ordered module)
+    hl_module_scores = []
+    for m in ordered_modules:
+        res = next((r for r in nlp_resources if r['module'] == m), None)
+        hl_module_scores.append(float(res.get('high_line', 0.8)) if res else 0.8)
+
+    hl_assimilation = radial_mapper.polyline_to_grid(
+        hl_module_scores, num_topics=len(ordered_modules)
+    )
+    cur_assimilation = radial_mapper.polyline_to_grid(
+        avg_module_scores, num_topics=len(ordered_modules)
+    )
+
     hl_polyline = {
         'id': 'high_line',
         'name': 'Peak Potential',
         'path': high_line_path,
-        'module_scores': [0.8] * len(ordered_modules),
+        'module_scores': hl_module_scores,
         'color': 'rgba(239, 68, 68, 0.8)', # Red
         'isActive': True,
         'confidence': 1.0,
-        'summary': 'Target threshold for each module'
+        'summary': 'Target threshold for each module',
+        'assimilation_position': hl_assimilation
     }
     
     cur_polyline = {
@@ -728,7 +749,8 @@ def get_polylines_route():
         'color': 'rgba(59, 130, 246, 0.8)', # Blue
         'isActive': True,
         'confidence': 1.0,
-        'summary': 'Your overall average knowledge across all summaries'
+        'summary': 'Your overall average knowledge across all summaries',
+        'assimilation_position': cur_assimilation
     }
 
     # Format result: Return ONLY the virtual polylines, or include histories?
@@ -888,7 +910,10 @@ def get_learning_data():
     ai_analysis = ""
     xp_earned = 0
     try:
-        from .database import load_db
+        try:
+            from .database import load_db
+        except (ImportError, ValueError):
+            from database import load_db
         db = load_db()
         # Find latest summary for this session (they contain session_id in their ID or we match title)
         matching_summaries = [s for s in db.get('summaries', []) if f"summary_{session_id}" in s.get('id', '')]
@@ -914,7 +939,7 @@ def get_learning_data():
         if history_scores:
             print(f"[PERSONA] Calculating from {len(history_scores)} historical vectors")
             # Calculate component-wise maximum (The Student's Highline)
-            # Ensure vectors are padded to 19, then persona_service will slice to 18 for the model
+            # Ensure vectors are padded to 19 to match the current GMM model
             arrays = [np.array(s + [0.0]*(19-len(s)))[:19] for s in history_scores]
             highline_vector = np.maximum.reduce(arrays)
             persona_data = persona_service.classify_persona(highline_vector.tolist())

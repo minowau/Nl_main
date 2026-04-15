@@ -264,3 +264,25 @@ def is_valid_id(id):
         return True
     except:
         return False
+
+
+# ===========================
+# polyline_covers
+# ===========================
+def polyline_covers(a, b):
+    """
+    Check if polyline A covers polyline B.
+
+    A covers B if and only if every dimension of A is greater than
+    or equal to the corresponding dimension of B.
+
+    Parameters:
+        a (list): Polyline vector A.
+        b (list): Polyline vector B (same length as A).
+
+    Returns:
+        bool: True if A covers B in all dimensions.
+    """
+    if len(a) != len(b):
+        raise ValueError("Polylines must have the same number of dimensions")
+    return all(a_i >= b_i for a_i, b_i in zip(a, b))

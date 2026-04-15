@@ -135,20 +135,25 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     }
 
     // Default to zero if no data exists, don't show mock random data
-    return Array.from({ length: 18 }, (_, i) => ({
+    return Array.from({ length: 19 }, (_, i) => ({
       x: i + 1,
       y: 0
     }));
   };
 
+  // 19 topics matching backend ORDERED_MODULES
   const topicLegendItems = [
     "Pre training objectives", "Pre trained models", "Tutorial: Introduction to huggingface",
     "Fine tuning LLM", "Instruction tuning", "Prompt based learning",
     "Parameter efficient fine tuning", "Incontext Learning", "Prompting methods",
-    "Retrieval Methods", "Retrieval Augmented Generation", "Quantization",
-    "Mixture of Experts Model", "Agentic AI", "Multimodal LLMs",
-    "Vision Language Models", "Policy learning using DQN", "RLHF"
+    "Multiprompt Learning", "Prompt aware training methods",
+    "Retrieval Methods", "Retrieval Augmented Generation",
+    "Model Distillation", "Model Quantization", "Model Pruning",
+    "Mixture of Experts Model", "Agentic AI", "Multimodal LLMs"
   ];
+
+  // Chart X-axis step: 600px / 19 topics
+  const xStep = 600 / 19;
 
   const generateHighLineData = () => {
     return topicLegendItems.map((topic, i) => {
@@ -656,14 +661,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     </g>
 
                     {/* X-axis labels */}
-                    {Array.from({ length: 18 }, (_, i) => i + 1).map(i => (
-                      <text key={i} x={33.33 * i - 16} y="315" fontSize="10" fill="#9ca3af" textAnchor="middle">{i}</text>
+                    {Array.from({ length: 19 }, (_, i) => i + 1).map(i => (
+                      <text key={i} x={xStep * i - xStep / 2} y="315" fontSize="10" fill="#9ca3af" textAnchor="middle">{i}</text>
                     ))}
 
                     {/* Chart area */}
                     <path
                       d={`M 0 300 ${generateChartData(selectedPolyline).map((point, i) =>
-                        `L ${33.33 * (i + 1)} ${280 - point.y * 250}`
+                        `L ${xStep * (i + 1)} ${280 - point.y * 250}`
                       ).join(' ')} L 600 300 Z`}
                       fill="url(#gradient)"
                       opacity="0.1"
@@ -682,7 +687,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       points={generateChartData(selectedPolyline).map((point, i) =>
-                        `${33.33 * (i + 1)},${280 - point.y * 250}`
+                        `${xStep * (i + 1)},${280 - point.y * 250}`
                       ).join(' ')}
                       className="drop-shadow-sm"
                     />
@@ -696,7 +701,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       strokeLinejoin="round"
                       strokeDasharray="4 4"
                       points={highLineChartData.map((point, i) =>
-                        `${33.33 * (i + 1)},${280 - point.y * 250}`
+                        `${xStep * (i + 1)},${280 - point.y * 250}`
                       ).join(' ')}
                       className="opacity-70"
                     />
@@ -705,7 +710,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     {generateChartData(selectedPolyline).map((point, i) => (
                       <circle
                         key={i}
-                        cx={33.33 * (i + 1)}
+                        cx={xStep * (i + 1)}
                         cy={280 - point.y * 250}
                         r="4"
                         className="fill-white stroke-blue-600 stroke-2 hover:r-6 hover:stroke-4 transition-all cursor-pointer"
@@ -716,7 +721,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     {highLineChartData.map((point, i) => (
                       <circle
                         key={`hl-${i}`}
-                        cx={33.33 * (i + 1)}
+                        cx={xStep * (i + 1)}
                         cy={280 - point.y * 250}
                         r="3"
                         className="fill-white stroke-red-500 stroke-2 opacity-80"
@@ -772,7 +777,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             {/* Timeline Body */}
             <div className="flex-1 overflow-y-auto px-6 py-6">
               {(() => {
-                const filteredPolylines = polylines.filter(p => !['learning-path-1', 'dqn-simulation', 'high_line', 'current_average'].includes(p.id));
+                const filteredPolylines = polylines.filter(p => ['high_line', 'current_average'].includes(p.id));
 
                 if (filteredPolylines.length === 0) {
                   return (
@@ -892,7 +897,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                                         </linearGradient>
                                       </defs>
                                       <path
-                                        d={`M 0 50 ${chartData.map((p, i) => `L ${(280 / 18) * (i + 1)} ${46 - p.y * 40}`).join(' ')} L 280 50 Z`}
+                                        d={`M 0 50 ${chartData.map((p, i) => `L ${(280 / 19) * (i + 1)} ${46 - p.y * 40}`).join(' ')} L 280 50 Z`}
                                         fill={`url(#sg-${polyline.id})`}
                                       />
                                       <polyline
@@ -902,7 +907,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
                                         points={chartData.map((p, i) =>
-                                          `${(280 / 18) * (i + 1)},${46 - p.y * 40}`
+                                          `${(280 / 19) * (i + 1)},${46 - p.y * 40}`
                                         ).join(' ')}
                                       />
                                       <polyline
@@ -913,7 +918,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                                         strokeLinejoin="round"
                                         strokeDasharray="2 3"
                                         points={highLineChartData.map((p, i) =>
-                                          `${(280 / 18) * (i + 1)},${46 - p.y * 40}`
+                                          `${(280 / 19) * (i + 1)},${46 - p.y * 40}`
                                         ).join(' ')}
                                         className="opacity-70"
                                       />

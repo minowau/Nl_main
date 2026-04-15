@@ -14,15 +14,15 @@ def get_db_file_path():
             with open(os.path.join(os.path.dirname(test_path), '.write_test'), 'w') as f:
                 f.write('test')
             os.remove(os.path.join(os.path.dirname(test_path), '.write_test'))
-            print(f"📡 HF Native Persistence: Verified. Storing data in {test_path}")
+            print(f"[HF] Native Persistence: Verified. Storing data in {test_path}")
             return test_path
         except Exception as e:
-            print(f"⚠️ HF Native Persistence: (/data) exists but is not writable: {e}")
+            print(f"[WARN] HF Native Persistence: (/data) exists but is not writable: {e}")
     
     # Fallback: Local Storage
     local_path = os.path.join(os.path.dirname(__file__), 'data', 'db.json')
     os.makedirs(os.path.dirname(local_path), exist_ok=True)
-    print(f"💻 Local Persistence: Active. Storing data in {local_path}")
+    print(f"[LOCAL] Persistence: Active. Storing data in {local_path}")
     return local_path
 
 DB_FILE = get_db_file_path()

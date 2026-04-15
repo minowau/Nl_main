@@ -85,12 +85,12 @@ def classify_persona(module_scores: list) -> Dict[str, Any]:
         # Ensure it's a 2D array for sklearn
         X = np.array(module_scores).reshape(1, -1)
         
-        # If the input is less than 18 dims (e.g. new topics added), pad with zeros
-        if X.shape[1] < 18:
-            padding = np.zeros((1, 18 - X.shape[1]))
+        # If the input is less than 19 dims (e.g. new topics added), pad with zeros
+        if X.shape[1] < 19:
+            padding = np.zeros((1, 19 - X.shape[1]))
             X = np.hstack((X, padding))
-        elif X.shape[1] > 18:
-            X = X[:, :18]
+        elif X.shape[1] > 19:
+            X = X[:, :19]
             
         cluster_id = int(model.predict(X)[0])
         

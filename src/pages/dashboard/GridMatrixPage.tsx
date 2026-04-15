@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { GridVisualization } from '../../components/GridVisualization';
 import { ControlPanel } from '../../components/ControlPanel';
 import { useDQNSimulation } from '../../hooks/useDQNSimulation';
@@ -49,6 +49,31 @@ const GridMatrixPage: React.FC = () => {
     activityLog: []
   });
   const [showTutorial, setShowTutorial] = useState(false);
+
+  // Derive assimilation points from polylines for grid visualization
+  // Only show Average and Peak Potential markers
+  const assimilationPoints = useMemo(() => {
+    return polylines
+      .filter(p => p.assimilation_position && p.assimilation_position.x !== undefined
+        && ['high_line', 'current_average'].includes(p.id))
+      .map(p => {
+        let color = '#06b6d4'; // cyan default
+        let label = p.name || 'Summary';
+        if (p.id === 'high_line') {
+          color = '#ef4444'; // red
+          label = 'Peak Potential';
+        } else if (p.id === 'current_average') {
+          color = '#06b6d4'; // cyan
+          label = 'You (Avg)';
+        }
+        return {
+          id: p.id,
+          position: p.assimilation_position!,
+          label,
+          color,
+        };
+      });
+  }, [polylines]);
 
   // Sync local agent with global agent on mount
   useEffect(() => {
@@ -374,6 +399,7 @@ const GridMatrixPage: React.FC = () => {
               isPlaying={isPlaying}
               playbackPath={playbackPath}
               onPlaybackComplete={() => setIsPlaying(false)}
+              assimilationPoints={assimilationPoints}
             />
           </div>
 

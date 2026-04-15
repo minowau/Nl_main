@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Resource, Agent, GridPosition, Polyline } from '../types';
-import { BookOpen, Play, FileText, PenTool, RefreshCw, MapPin, Search, X, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
+import { BookOpen, Play, FileText, PenTool, RefreshCw, MapPin, Search, X, ChevronRight, ZoomIn, ZoomOut, Diamond } from 'lucide-react';
 const avatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=f1f5f9";
+
+interface AssimilationPoint {
+  id: string;
+  position: GridPosition;
+  label: string;
+  color: string;
+}
 
 interface GridVisualizationProps {
   resources: Resource[];
@@ -16,6 +23,7 @@ interface GridVisualizationProps {
   isPlaying?: boolean;
   playbackPath?: GridPosition[];
   onPlaybackComplete?: () => void;
+  assimilationPoints?: AssimilationPoint[];
 }
 
 const GRID_SIZE = 20;
@@ -78,7 +86,8 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   onRefreshDQNPath,
   isPlaying = false,
   playbackPath = [],
-  onPlaybackComplete
+  onPlaybackComplete,
+  assimilationPoints = []
 }) => {
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [hoveredResource, setHoveredResource] = useState<string | null>(null);
@@ -87,6 +96,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [zoomLevel, setZoomLevel] = useState(1.5);
+  const [showAssimilationPath, setShowAssimilationPath] = useState(true);
   const gridRef = React.useRef<HTMLDivElement>(null);
 
   // Auto-scroll to agent on load or movement
@@ -102,6 +112,23 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
       });
     }
   }, [agent.position.x, agent.position.y, zoomLevel]);
+
+  // Build the assimilation path from polyline assimilation positions
+  // This traces how the user's average assimilation evolved over time
+  const assimilationPath = React.useMemo(() => {
+    return polylines
+      .filter(p => !['learning-path-1', 'dqn-simulation', 'high_line', 'current_average'].includes(p.id))
+      .filter(p => p.assimilation_position && p.assimilation_position.x !== undefined)
+      .map(p => p.assimilation_position!)
+  }, [polylines]);
+
+  // Find the resource the agent is currently sitting on
+  const currentResource = React.useMemo(() => {
+    return resources.find(
+      r => r.position.x === agent.position.x && r.position.y === agent.position.y
+    ) || null;
+  }, [resources, agent.position]);
+
   const [videoResource, setVideoResource] = useState<Resource | null>(null);
   // @ts-ignore
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
@@ -216,6 +243,122 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
             />
         </svg>
     ));
+  };
+
+  // Render the Assimilation Path — animated trail through visited resources
+  const renderAssimilationPath = () => {
+    if (assimilationPath.length < 2) return null;
+
+    const CELL_SIZE = 1000 / GRID_SIZE;
+    const HALF_CELL = CELL_SIZE / 2;
+
+    // Build quadratic Bézier segments between consecutive visited resources
+    const segments: { d: string; idx: number }[] = [];
+    for (let i = 0; i < assimilationPath.length - 1; i++) {
+      const p1 = assimilationPath[i];
+      const p2 = assimilationPath[i + 1];
+      const x1 = p1.x * CELL_SIZE + HALF_CELL;
+      const y1 = p1.y * CELL_SIZE + HALF_CELL;
+      const x2 = p2.x * CELL_SIZE + HALF_CELL;
+      const y2 = p2.y * CELL_SIZE + HALF_CELL;
+
+      // Arc perpendicular offset
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const arcH = 20;
+      const cx = (x1 + x2) / 2 + (-dy / len) * arcH;
+      const cy = (y1 + y2) / 2 + (dx / len) * arcH;
+
+      segments.push({ d: `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`, idx: i });
+    }
+
+    // Full polyline path for the moving dot
+    const fullPath = assimilationPath.map((p, i) => {
+      const px = p.x * CELL_SIZE + HALF_CELL;
+      const py = p.y * CELL_SIZE + HALF_CELL;
+      return `${i === 0 ? 'M' : 'L'} ${px} ${py}`;
+    }).join(' ');
+
+    return (
+      <div className="absolute inset-0 z-15 pointer-events-none">
+        <svg width="100%" height="100%" viewBox="0 0 1000 1000" className="overflow-visible">
+          <defs>
+            <linearGradient id="assimPathGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#06b6d4" />
+              <stop offset="50%" stopColor="#8b5cf6" />
+              <stop offset="100%" stopColor="#ec4899" />
+            </linearGradient>
+            <filter id="assimGlow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+            <marker id="assimArrow" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+              <path d="M 0 0 L 5 2.5 L 0 5 L 1.5 2.5 Z" fill="#8b5cf6" />
+            </marker>
+          </defs>
+
+          {/* Background glow trail */}
+          {segments.map((seg) => (
+            <path
+              key={`assimBg-${seg.idx}`}
+              d={seg.d}
+              fill="none"
+              stroke="url(#assimPathGrad)"
+              strokeWidth="6"
+              strokeLinecap="round"
+              opacity="0.12"
+            />
+          ))}
+
+          {/* Main animated dashed path */}
+          {segments.map((seg) => (
+            <path
+              key={`assimLine-${seg.idx}`}
+              d={seg.d}
+              fill="none"
+              stroke="url(#assimPathGrad)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeDasharray="6 4"
+              markerEnd="url(#assimArrow)"
+              filter="url(#assimGlow)"
+              opacity="0.7"
+            >
+              <animate
+                attributeName="stroke-dashoffset"
+                from="20"
+                to="0"
+                dur="1.5s"
+                repeatCount="indefinite"
+              />
+            </path>
+          ))}
+
+          {/* Waypoint dots at each visited resource */}
+          {assimilationPath.map((p, i) => {
+            const px = p.x * CELL_SIZE + HALF_CELL;
+            const py = p.y * CELL_SIZE + HALF_CELL;
+            return (
+              <g key={`wp-${i}`}>
+                <circle cx={px} cy={py} r="5" fill="white" stroke="#8b5cf6" strokeWidth="2" opacity="0.9" />
+                <text x={px} y={py + 1} textAnchor="middle" dominantBaseline="middle" fontSize="7" fontWeight="bold" fill="#6d28d9">
+                  {i + 1}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Animated traveling dot along the full path */}
+          <circle r="4" fill="#ec4899" filter="url(#assimGlow)">
+            <animateMotion dur={`${Math.max(3, assimilationPath.length * 1.2)}s`} repeatCount="indefinite">
+              <mpath href="#assimFullPath" />
+            </animateMotion>
+          </circle>
+          <path id="assimFullPath" d={fullPath} fill="none" stroke="none" />
+        </svg>
+      </div>
+    );
   };
 
   const renderPlaybackOverlay = () => {
@@ -386,6 +529,17 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                     <ResourceIcon type={resource.type} />
                   </div>
 
+                  {/* Current Resource Highlight - pulsing golden ring */}
+                  {currentResource?.id === resource.id && (
+                    <>
+                      <div className="absolute inset-0 rounded-full border-2 border-amber-400 animate-ping opacity-40" style={{ animationDuration: '2s' }} />
+                      <div className="absolute inset-[-3px] rounded-full border-2 border-amber-400 opacity-80" />
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[6px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-md whitespace-nowrap leading-none">
+                        CURRENT
+                      </div>
+                    </>
+                  )}
+
                   <div
                     className={`${tooltipClass} w-72 transition-opacity duration-200 z-50 ${showTooltip ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                     onMouseEnter={() => handleMouseEnter(resource.id)}
@@ -530,6 +684,32 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
               <div className="w-2.5 h-2.5 bg-[#A855F7] rounded-full"></div>
               <span className="text-xs font-medium text-gray-600">Resource</span>
             </div>
+            {assimilationPoints.length > 0 && (
+              <>
+                <div className="w-px h-3 bg-gray-200"></div>
+                <div className="flex items-center gap-1.5">
+                  <Diamond className="w-3 h-3 text-cyan-500 fill-cyan-400" />
+                  <span className="text-xs font-medium text-gray-600">Assimilation</span>
+                </div>
+              </>
+            )}
+            {assimilationPath.length >= 2 && (
+              <>
+                <div className="w-px h-3 bg-gray-200"></div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-0.5 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-full"></div>
+                  <span className="text-xs font-medium text-gray-600">Path</span>
+                  <button
+                    onClick={() => setShowAssimilationPath(prev => !prev)}
+                    className={`relative w-7 h-4 rounded-full transition-colors duration-200 ${showAssimilationPath ? 'bg-purple-500' : 'bg-gray-300'}`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform duration-200 ${showAssimilationPath ? 'translate-x-3' : 'translate-x-0'}`}
+                    />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -633,8 +813,71 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
 
 
             {/* {renderNeuralRoad()} */}
+            {showAssimilationPath && renderAssimilationPath()}
             {renderGrid()}
             {renderPlaybackOverlay()}
+
+            {/* Assimilation Point Markers */}
+            {assimilationPoints.map((point) => (
+              <motion.div
+                key={`assim-${point.id}`}
+                className="absolute z-35 pointer-events-none flex items-center justify-center"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  left: `${(point.position.x + 0.5) * (100 / GRID_SIZE)}%`,
+                  top: `${(point.position.y + 0.5) * (100 / GRID_SIZE)}%`,
+                }}
+                transition={{ type: 'spring', damping: 20, stiffness: 100, delay: 0.2 }}
+                style={{
+                  width: `${100 / GRID_SIZE}%`,
+                  height: `${100 / GRID_SIZE}%`,
+                  x: '-50%',
+                  y: '-50%',
+                }}
+              >
+                {/* Outer animated glow ring */}
+                <motion.div
+                  className="absolute rounded-full"
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    background: `radial-gradient(circle, ${point.color}40 0%, transparent 70%)`,
+                  }}
+                  animate={{
+                    scale: [1, 1.6, 1],
+                    opacity: [0.6, 0.15, 0.6],
+                  }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                {/* Diamond marker */}
+                <div
+                  className="relative w-5 h-5 flex items-center justify-center"
+                  style={{ transform: 'rotate(45deg)' }}
+                >
+                  <div
+                    className="w-4 h-4 rounded-sm shadow-lg border-2 border-white"
+                    style={{ backgroundColor: point.color }}
+                  />
+                </div>
+                {/* Label tooltip below */}
+                <div
+                  className="absolute top-[calc(100%+2px)] left-1/2 -translate-x-1/2 whitespace-nowrap"
+                >
+                  <span
+                    className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md shadow-sm border"
+                    style={{
+                      color: point.color,
+                      backgroundColor: `${point.color}10`,
+                      borderColor: `${point.color}30`,
+                    }}
+                  >
+                    {point.label}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
 
             {/* Animated Student Agent Marker */}
             <motion.div
