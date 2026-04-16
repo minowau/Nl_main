@@ -770,17 +770,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             {/* Timeline Body */}
             <div className="flex-1 overflow-y-auto px-6 py-6">
               {(() => {
-                const filteredPolylines = polylines
-                  .filter(p => p.id.startsWith('polyline_') || ['high_line', 'current_average'].includes(p.id))
-                  .sort((a, b) => {
-                    // Keep High Line and Average at top
-                    if (a.id === 'high_line') return -1;
-                    if (b.id === 'high_line') return 1;
-                    if (a.id === 'current_average') return -1;
-                    if (b.id === 'current_average') return 1;
-                    // Sort summaries by ID decending (newest first)
-                    return b.id.localeCompare(a.id);
-                  });
+                const filteredPolylines = polylines.filter(p => ['high_line', 'current_average'].includes(p.id));
 
                 if (filteredPolylines.length === 0) {
                   return (

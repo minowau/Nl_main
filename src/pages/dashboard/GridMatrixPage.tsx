@@ -15,23 +15,18 @@ const GridMatrixPage: React.FC = () => {
   const queryResourceId = new URLSearchParams(search).get('resource');
   
   const {
-    resources: globalResources,
-    polylines: globalPolylines,
-    learningData: globalLearningData,
-    isLoading: isGlobalLoading,
     agent: globalAgent,
     bookmarks,
     toggleBookmark,
     updateAgentPosition,
-    visitResource: globalVisitResource,
-    refreshData
+    visitResource: globalVisitResource
   } = useAppContext();
 
   const {
     agent,
     setAgent,
     isSimulationRunning,
-    isLoading: isSimulationLoading,
+    isLoading,
     setIsSimulationRunning,
     setIsLoading,
     moveAgent,
@@ -51,25 +46,9 @@ const GridMatrixPage: React.FC = () => {
     strengths: [],
     recommendations: [],
     nextOptimalResource: null,
-    totalReward: 0,
     activityLog: []
   });
   const [showTutorial, setShowTutorial] = useState(false);
-
-  // Sync local states with global state from AppContext
-  useEffect(() => {
-    if (globalResources.length > 0) setResources(globalResources);
-    if (globalPolylines.length > 0) setPolylines(globalPolylines);
-    if (globalLearningData) {
-      setLearningData({
-        ...globalLearningData,
-        totalResources: globalResources.length
-      });
-    }
-    if (globalAgent) setAgent(globalAgent);
-  }, [globalResources, globalPolylines, globalLearningData, globalAgent, setAgent]);
-
-  const combinedLoading = isGlobalLoading || isSimulationLoading;
 
   // Derive assimilation points from polylines for grid visualization
   // Only show Average and Peak Potential markers
@@ -115,10 +94,34 @@ const GridMatrixPage: React.FC = () => {
     }
   }, [queryResourceId, resources]);
 
-  // Re-fetch everything to ensure synchronization on mount if not already done
+  // Load resources and history from backend on mount
   useEffect(() => {
-    refreshData();
-  }, [refreshData]);
+    const initApp = async () => {
+      setIsLoading(true);
+      try {
+        const [resourceData, polylineData, learningStats] = await Promise.all([
+          nlpApi.getResources(),
+          nlpApi.getPolylines(),
+          nlpApi.getLearningData('default')
+        ]);
+
+        setResources(resourceData);
+        setPolylines(polylineData);
+        setLearningData({
+          ...learningStats,
+          totalResources: resourceData.length
+        });
+
+        // Initialize resources and history from backend on mount
+
+      } catch (error) {
+        console.error('Failed to initialize app data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    initApp();
+  }, [setIsLoading]);
 
   const handleResourceClick = useCallback(async (resource: Resource, skipMove: boolean = false) => {
     // If skipMove is true, we don't displace the agent icon
@@ -410,7 +413,7 @@ const GridMatrixPage: React.FC = () => {
               learningData={learningData}
               polylines={polylines}
               isSimulationRunning={isSimulationRunning}
-              isLoading={combinedLoading}
+              isLoading={isLoading}
               learningPath={learningPath}
               bookmarks={bookmarks}
               toggleBookmark={toggleBookmark}

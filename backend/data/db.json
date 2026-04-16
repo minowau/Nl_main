@@ -27,6 +27,41 @@
             ],
             "notifications": [
                 {
+                    "id": "notif_1776372396",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1776372396301,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776372366",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1776372366164,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776372202",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1776372202256,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776372060",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1776372060449,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776371886",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1776371886334,
+                    "read": false
+                },
+                {
                     "id": "notif_1776371765",
                     "type": "success",
                     "message": "Level up! You are now Stage 20",
