@@ -27,6 +27,27 @@
             ],
             "notifications": [
                 {
+                    "id": "notif_1776371765",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1776371765999,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776371710",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1776371710271,
+                    "read": false
+                },
+                {
+                    "id": "notif_1776371607",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1776371607404,
+                    "read": false
+                },
+                {
                     "id": "notif_1776367594",
                     "type": "success",
                     "message": "Level up! You are now Stage 20",

@@ -49,7 +49,7 @@ const SocialAgent: React.FC<{ isMoving: boolean }> = ({ isMoving }) => {
   return (
     <motion.div
       className="relative flex flex-col items-center justify-center -translate-y-4"
-      animate={isMoving ? { 
+      animate={isMoving ? {
         scale: [1, 1.1, 1],
         rotateY: 0
       } : { rotateY: 0 }}
@@ -57,15 +57,15 @@ const SocialAgent: React.FC<{ isMoving: boolean }> = ({ isMoving }) => {
     >
       {/* Tooltip */}
       <div className="absolute -bottom-8 bg-[#1A1F2E] text-white text-[10px] font-medium px-2 py-0.5 rounded shadow-lg whitespace-nowrap z-50">
-          You are here
-          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-b-4 border-b-[#1A1F2E]" />
+        You are here
+        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-b-4 border-b-[#1A1F2E]" />
       </div>
 
       {/* Main Avatar Container */}
       <div className="relative w-12 h-12 rounded-full border-2 border-white shadow-xl overflow-visible p-0.5 bg-white">
-        <img 
-          src={avatar} 
-          alt="User Profile" 
+        <img
+          src={avatar}
+          alt="User Profile"
           className="w-full h-full rounded-full object-cover"
         />
         {/* Online Indicator */}
@@ -74,6 +74,154 @@ const SocialAgent: React.FC<{ isMoving: boolean }> = ({ isMoving }) => {
     </motion.div>
   );
 };
+
+// --- Optimized Grid Cell Component ---
+interface GridCellProps {
+  x: number;
+  y: number;
+  resource?: Resource;
+  isAgent: boolean;
+  isSelected: boolean;
+  isCurrent: boolean;
+  isHovered: boolean;
+  onMouseEnter: (id: string) => void;
+  onMouseLeave: () => void;
+  onClick: (x: number, y: number) => void;
+  isPlaying: boolean;
+  onPlay: () => void;
+}
+
+const GridCell = React.memo(({
+  x, y, resource, isAgent, isSelected, isCurrent, isHovered,
+  onMouseEnter, onMouseLeave, onClick, isPlaying, onPlay
+}: GridCellProps) => {
+  // Dynamic Tooltip Positioning
+  let tooltipClass = "absolute bottom-full left-1/2 -translate-x-1/2 mb-2";
+  if (x < 4) tooltipClass = "absolute bottom-full left-0 mb-2";
+  else if (x > 15) tooltipClass = "absolute bottom-full right-0 mb-2";
+
+  if (y < 4) {
+    if (x < 4) tooltipClass = "absolute top-full left-0 mt-2";
+    else if (x > 15) tooltipClass = "absolute top-full right-0 mt-2";
+    else tooltipClass = "absolute top-full left-1/2 -translate-x-1/2 mt-2";
+  }
+
+  const showTooltip = resource && isHovered;
+
+  return (
+    <div
+      className={`relative transition-all duration-300 ${isAgent ? 'z-40' : 'z-30'} ${showTooltip ? 'z-[100]' : ''}`}
+      style={{ gridColumn: x + 1, gridRow: y + 1 }}
+      onClick={() => onClick(x, y)}
+    >
+      {resource && (
+        <div
+          className="absolute inset-0 m-auto flex items-center justify-center w-full h-full"
+          onMouseEnter={() => onMouseEnter(resource.id)}
+          onMouseLeave={onMouseLeave}
+        >
+          <div className={`
+            relative flex items-center justify-center
+            w-10 h-10 transform transition-all duration-300
+            ${isCurrent ? 'scale-150 z-50 animate-pulse' : (isSelected ? 'scale-110' : 'hover:scale-110 hover:-translate-y-1')}
+          `}>
+            {/* Outer Glow */}
+            <div className={`absolute inset-0 rounded-full blur-[8px] opacity-25 ${
+              resource.visited ? 'bg-green-400' :
+              resource.difficulty <= 2 ? 'bg-purple-400' :
+              resource.difficulty <= 4 ? 'bg-blue-400' :
+              resource.difficulty <= 6 ? 'bg-amber-400' : 'bg-red-400'
+            }`} />
+
+            {/* Pin Head */}
+            <div className={`
+              w-8 h-8 rounded-full shadow-lg flex items-center justify-center border-2 border-white
+              ${resource.visited ? 'bg-emerald-500' :
+                resource.difficulty <= 2 ? 'bg-[#A855F7]' :
+                resource.difficulty <= 4 ? 'bg-[#3B82F6]' :
+                resource.difficulty <= 6 ? 'bg-[#F59E0B]' : 'bg-[#EF4444]'}
+            `}>
+              <ResourceIcon type={resource.type} />
+            </div>
+
+            {/* Current Resource Highlight */}
+            {isCurrent && (
+              <>
+                <div className="absolute inset-[-12px] rounded-full bg-blue-400/20 blur-xl animate-pulse pointer-events-none" />
+                <div className="absolute inset-0 rounded-full border-2 border-amber-400 animate-ping opacity-40" style={{ animationDuration: '2s' }} />
+                <div className="absolute inset-[-3px] rounded-full border-2 border-amber-400 opacity-80" />
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[6px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-md whitespace-nowrap leading-none">
+                  CURRENT
+                </div>
+              </>
+            )}
+
+            {/* Tooltip */}
+            <div
+              className={`${tooltipClass} w-72 transition-opacity duration-200 z-50 ${showTooltip ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+              onMouseEnter={() => onMouseEnter(resource.id)}
+              onMouseLeave={onMouseLeave}
+            >
+              <div className="bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden cursor-default" onClick={(e) => e.stopPropagation()}>
+                <div className={`h-32 w-full relative overflow-hidden ${resource.visited ? 'bg-gradient-to-tr from-emerald-500 to-teal-400' : 'bg-gradient-to-tr from-blue-600 to-indigo-500'}`}>
+                  {resource.youtube_url ? (
+                    <img
+                      src={`https://img.youtube.com/vi/${getYouTubeVideoId(resource.youtube_url)}/hqdefault.jpg`}
+                      alt="Preview"
+                      className="w-full h-full object-cover opacity-90"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-white/50">
+                      <ResourceIcon type={resource.type} />
+                      <div className="absolute transform scale-[5] opacity-10"><ResourceIcon type={resource.type} /></div>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <Play size={32} className="text-white fill-current" />
+                  </div>
+                </div>
+
+                <div className="p-4 text-left">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-gray-900 text-lg leading-tight line-clamp-2">{resource.title}</h4>
+                    {resource.visited && (
+                      <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide shrink-0 ml-2">
+                        Completed
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                    <span className="capitalize">{resource.type} Lesson</span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isAgent && resource.youtube_url) {
+                        onPlay();
+                      } else {
+                        onClick(x, y);
+                      }
+                    }}
+                    className={`w-full py-2.5 ${isAgent ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-blue-600 hover:bg-blue-700'} text-white text-sm font-semibold rounded-xl transition-all shadow-lg active:scale-95`}
+                  >
+                    {isAgent ? 'View Content' : 'Navigate Here'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+
+// Helper for YouTube IDs
+function getYouTubeVideoId(url: string) {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url?.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
 
 export const GridVisualization: React.FC<GridVisualizationProps> = ({
   resources,
@@ -95,7 +243,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   const [pathProgress, setPathProgress] = useState(0);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [zoomLevel, setZoomLevel] = useState(1.5);
+  const [zoomLevel, setZoomLevel] = useState(1);
   const [showAssimilationPath, setShowAssimilationPath] = useState(true);
   const gridRef = React.useRef<HTMLDivElement>(null);
 
@@ -104,7 +252,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
     if (gridRef.current && agent.position) {
       const scrollY = (agent.position.y * (1000 / GRID_SIZE) * zoomLevel) - (gridRef.current.clientHeight / 2);
       const scrollX = (agent.position.x * (1000 / GRID_SIZE) * zoomLevel) - (gridRef.current.clientWidth / 2);
-      
+
       gridRef.current.scrollTo({
         top: scrollY,
         left: scrollX,
@@ -122,12 +270,19 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
       .map(p => p.assimilation_position!)
   }, [polylines]);
 
-  // Find the resource the agent is currently sitting on
+  // Build a 2D map of resources for O(1) lookup during rendering
+  const resourceMap = React.useMemo(() => {
+    const map = new Map<string, Resource>();
+    resources.forEach(r => {
+      map.set(`${r.position.x},${r.position.y}`, r);
+    });
+    return map;
+  }, [resources]);
+
+  // Efficiently find the resource the agent is currently sitting on
   const currentResource = React.useMemo(() => {
-    return resources.find(
-      r => r.position.x === agent.position.x && r.position.y === agent.position.y
-    ) || null;
-  }, [resources, agent.position]);
+    return resourceMap.get(`${agent.position.x},${agent.position.y}`) || null;
+  }, [resourceMap, agent.position]);
 
   const [videoResource, setVideoResource] = useState<Resource | null>(null);
   // @ts-ignore
@@ -202,7 +357,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
     const resource = resources.find(r => r.position.x === x && r.position.y === y);
     if (resource) {
       setSelectedResource(resource);
-      
+
       // Always show video directly without moving the agent on manual click
       if (resource.youtube_url) {
         setVideoResource(resource);
@@ -217,31 +372,31 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
 
   const renderNeuralRoad = () => {
     return polylines.filter(p => p.isActive).map(polyline => (
-        <svg key={polyline.id} className="absolute inset-0 w-full h-full pointer-events-none z-10">
-            <path
-                d={polyline.path.map((pos, i) => 
-                    `${i === 0 ? 'M' : 'L'} ${(pos.x + 0.5) * 50} ${(pos.y + 0.5) * 50}`
-                ).join(' ')}
-                fill="none"
-                stroke={polyline.color}
-                strokeWidth="12"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="opacity-20 filter blur-[2px]"
-            />
-            <path
-                d={polyline.path.map((pos, i) => 
-                    `${i === 0 ? 'M' : 'L'} ${(pos.x + 0.5) * 50} ${(pos.y + 0.5) * 50}`
-                ).join(' ')}
-                fill="none"
-                stroke={polyline.color}
-                strokeWidth="4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeDasharray="1 8"
-                className="opacity-40"
-            />
-        </svg>
+      <svg key={polyline.id} className="absolute inset-0 w-full h-full pointer-events-none z-10">
+        <path
+          d={polyline.path.map((pos, i) =>
+            `${i === 0 ? 'M' : 'L'} ${(pos.x + 0.5) * 50} ${(pos.y + 0.5) * 50}`
+          ).join(' ')}
+          fill="none"
+          stroke={polyline.color}
+          strokeWidth="12"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="opacity-20 filter blur-[2px]"
+        />
+        <path
+          d={polyline.path.map((pos, i) =>
+            `${i === 0 ? 'M' : 'L'} ${(pos.x + 0.5) * 50} ${(pos.y + 0.5) * 50}`
+          ).join(' ')}
+          fill="none"
+          stroke={polyline.color}
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray="1 8"
+          className="opacity-40"
+        />
+      </svg>
     ));
   };
 
@@ -453,174 +608,35 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
 
     for (let y = 0; y < GRID_SIZE; y++) {
       for (let x = 0; x < GRID_SIZE; x++) {
-        const resource = resources.find(r => r.position.x === x && r.position.y === y);
+        const resource = resourceMap.get(`${x},${y}`);
         const isAgent = agent.position.x === x && agent.position.y === y;
 
-        // Dynamic Tooltip Positioning
-        let tooltipClass = "absolute bottom-full left-1/2 -translate-x-1/2 mb-2";
-        let arrowClass = "absolute left-1/2 -translate-x-1/2 -bottom-2";
-
-        if (x < 4) {
-          tooltipClass = "absolute bottom-full left-0 mb-2";
-          arrowClass = "absolute left-4 -bottom-2";
-        } else if (x > 15) {
-          tooltipClass = "absolute bottom-full right-0 mb-2";
-          arrowClass = "absolute right-4 -bottom-2";
-        }
-
-        if (y < 4) {
-          if (x < 4) {
-            tooltipClass = "absolute top-full left-0 mt-2";
-            arrowClass = "absolute left-4 -top-2";
-          } else if (x > 15) {
-            tooltipClass = "absolute top-full right-0 mt-2";
-            arrowClass = "absolute right-4 -top-2";
-          } else {
-            tooltipClass = "absolute top-full left-1/2 -translate-x-1/2 mt-2";
-            arrowClass = "absolute left-1/2 -translate-x-1/2 -top-2";
-          }
-        }
-
-        const showTooltip = resource && hoveredResource === resource.id;
-
         cells.push(
-            <div
+          <GridCell
             key={`${x}-${y}`}
-            className={`
-              relative transition-all duration-300
-              ${isAgent ? 'z-40' : 'z-30'}
-              ${showTooltip ? 'z-[100]' : ''}
-            `}
-            style={{
-              gridColumn: x + 1,
-              gridRow: y + 1,
+            x={x}
+            y={y}
+            resource={resource}
+            isAgent={isAgent}
+            isSelected={selectedResource?.id === resource?.id}
+            isCurrent={currentResource?.id === resource?.id}
+            isHovered={hoveredResource === resource?.id}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onClick={handleCellClick}
+            isPlaying={isPlaying}
+            onPlay={() => {
+              if (resource?.youtube_url) {
+                setVideoResource(resource);
+                setHoveredResource(null);
+              }
             }}
-            onClick={() => handleCellClick(x, y)}
-          >
-            {resource && (
-              <div
-                className="absolute inset-0 m-auto flex items-center justify-center w-full h-full"
-                onMouseEnter={() => handleMouseEnter(resource.id)}
-                onMouseLeave={handleMouseLeave}
-              >
-                {/* Circular Reference Marker */}
-                <div className={`
-                  relative flex items-center justify-center
-                  w-10 h-10 transform transition-all duration-300
-                  ${currentResource?.id === resource.id ? 'scale-150 z-50 animate-pulse' : (selectedResource?.id === resource.id ? 'scale-110' : 'hover:scale-110 hover:-translate-y-1')}
-                `}>
-                  {/* Outer Glow */}
-                  <div className={`absolute inset-0 rounded-full blur-[8px] opacity-25 ${
-                    resource.visited ? 'bg-green-400' :
-                    resource.difficulty <= 2 ? 'bg-purple-400' : 
-                    resource.difficulty <= 4 ? 'bg-blue-400' : 
-                    resource.difficulty <= 6 ? 'bg-amber-400' : 'bg-red-400'
-                  }`} />
-                  
-                  {/* Pin Head — green when visited */}
-                  <div className={`
-                    w-8 h-8 rounded-full shadow-lg flex items-center justify-center border-2 border-white
-                    transition-colors duration-500
-                    ${resource.visited ? 'bg-emerald-500' :
-                      resource.difficulty <= 2 ? 'bg-[#A855F7]' :
-                      resource.difficulty <= 4 ? 'bg-[#3B82F6]' :
-                      resource.difficulty <= 6 ? 'bg-[#F59E0B]' : 'bg-[#EF4444]'}
-                  `}>
-                    <ResourceIcon type={resource.type} />
-                  </div>
-                  
-                  {/* Current Resource "Pop-out" Highlight */}
-                  {currentResource?.id === resource.id && (
-                    <div className="absolute inset-[-12px] rounded-full bg-blue-400/20 blur-xl animate-pulse pointer-events-none" />
-                  )}
-
-                  {/* Current Resource Highlight - pulsing golden ring */}
-                  {currentResource?.id === resource.id && (
-                    <>
-                      <div className="absolute inset-0 rounded-full border-2 border-amber-400 animate-ping opacity-40" style={{ animationDuration: '2s' }} />
-                      <div className="absolute inset-[-3px] rounded-full border-2 border-amber-400 opacity-80" />
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[6px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-md whitespace-nowrap leading-none">
-                        CURRENT
-                      </div>
-                    </>
-                  )}
-
-                  <div
-                    className={`${tooltipClass} w-72 transition-opacity duration-200 z-50 ${showTooltip ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-                    onMouseEnter={() => handleMouseEnter(resource.id)}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <div className="bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden cursor-default" onClick={(e) => e.stopPropagation()}>
-                      <div className={`h-32 w-full relative overflow-hidden ${resource.visited ? 'bg-gradient-to-tr from-emerald-500 to-teal-400' : 'bg-gradient-to-tr from-blue-600 to-indigo-500'}`}>
-                        {resource.youtube_url ? (
-                          <img 
-                            src={`https://img.youtube.com/vi/${getYouTubeVideoId(resource.youtube_url)}/hqdefault.jpg`} 
-                            alt="Preview"
-                            className="w-full h-full object-cover opacity-90 transition-opacity hover:opacity-100"
-                          />
-                        ) : (
-                          <>
-                            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }}></div>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <ResourceIcon type={resource.type} />
-                              <div className="absolute transform scale-[5] opacity-10"><ResourceIcon type={resource.type} /></div>
-                            </div>
-                          </>
-                        )}
-                        <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                           <Play size={32} className="text-white fill-current" />
-                        </div>
-                      </div>
-
-                      <div className="p-4 text-left">
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-bold text-gray-900 text-lg leading-tight line-clamp-2">{resource.title}</h4>
-                          {resource.visited && (
-                            <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide shrink-0 ml-2">
-                              Completed
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-                          <span className="capitalize">{resource.type} Lesson</span>
-                          <span>•</span>
-                          <span>{['Beginner', 'Intermediate', 'Advanced', 'Expert', 'Master'][resource.difficulty - 1] || 'Intermediate'}</span>
-                        </div>
-
-                        {/* Removed mins, Target, and pts per user request */}
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (isAgent && resource.youtube_url) {
-                              setVideoResource(resource);
-                              setHoveredResource(null);
-                            } else {
-                              handleCellClick(x, y);
-                            }
-                          }}
-                          className={`w-full py-2.5 ${isAgent ? 'bg-indigo-600 hover:bg-indigo-700 border-indigo-500/20 shadow-indigo-500/20' : 'bg-blue-600 hover:bg-blue-700 border-blue-500/20 shadow-blue-500/10'} text-white text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95 transform duration-100 border`}
-                        >
-                          {isAgent ? '▶ Start Lesson' : '▶ View Lesson'}
-                          <span className="text-lg leading-none">→</span>
-                        </button>
-                      </div>
-                    </div>
-                    <div className={`w-4 h-4 bg-white transform rotate-45 shadow-lg z-[-1] ${arrowClass}`}></div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Resource cell placeholder */}
-          </div>
+          />
         );
       }
     }
     return cells;
   };
-
   return (
     <div className="flex flex-col h-full bg-gray-50/30 overflow-hidden">
       <div className="flex-none px-6 py-4 bg-white/90 backdrop-blur-sm border-b border-gray-100 flex justify-between items-center z-10">
@@ -634,29 +650,29 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
 
         <div className="flex items-center gap-4">
           <div className="flex items-center bg-white border border-gray-100 rounded-lg shadow-sm p-1">
-             <button 
+            <button
               onClick={() => setZoomLevel(prev => Math.max(1, prev - 0.25))}
               className="p-1.5 hover:bg-gray-50 text-gray-500 transition-colors rounded-md"
               title="Zoom Out"
-             >
-                <ZoomOut size={16} />
-             </button>
-             <div className="w-px h-4 bg-gray-100 mx-1"></div>
-             <button 
+            >
+              <ZoomOut size={16} />
+            </button>
+            <div className="w-px h-4 bg-gray-100 mx-1"></div>
+            <button
               onClick={() => setZoomLevel(1.5)}
               className="px-2 py-1 hover:bg-gray-50 text-gray-400 text-[10px] font-bold transition-colors rounded-md"
               title="Reset Zoom"
-             >
-                {Math.round(zoomLevel * 100)}%
-             </button>
-             <div className="w-px h-4 bg-gray-100 mx-1"></div>
-             <button 
+            >
+              {Math.round(zoomLevel * 100)}%
+            </button>
+            <div className="w-px h-4 bg-gray-100 mx-1"></div>
+            <button
               onClick={() => setZoomLevel(prev => Math.min(3, prev + 0.25))}
               className="p-1.5 hover:bg-gray-50 text-gray-500 transition-colors rounded-md"
               title="Zoom In"
-             >
-                <ZoomIn size={16} />
-             </button>
+            >
+              <ZoomIn size={16} />
+            </button>
           </div>
 
           <button
@@ -666,7 +682,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
             <Search className="w-3.5 h-3.5" />
             <span>Search</span>
           </button>
-          
+
           {isSimulationRunning && (
             <button
               onClick={onRefreshDQNPath}
@@ -678,12 +694,12 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
           )}
 
           <div className="flex items-center gap-3 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full border border-blue-200 overflow-hidden bg-white shadow-sm">
-                        <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
-                    </div>
-                    <span className="text-xs font-medium text-gray-600">You (Agent)</span>
-                  </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-full border border-blue-200 overflow-hidden bg-white shadow-sm">
+                <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+              </div>
+              <span className="text-xs font-medium text-gray-600">You (Agent)</span>
+            </div>
             <div className="w-px h-3 bg-gray-200"></div>
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 bg-[#A855F7] rounded-full"></div>
@@ -757,12 +773,12 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                   // Tier boundaries based on radii 3,7,11,15 grid units × 50px/unit
                   // Boundaries (midpoints between radii): 0-250, 250-450, 450-650, 650-900
                   const tierDefs = [
-                    { name: 'Fundamentals', color: '#A855F7', from: 0,   to: 250 },
+                    { name: 'Fundamentals', color: '#A855F7', from: 0, to: 250 },
                     { name: 'Intermediate', color: '#3B82F6', from: 250, to: 450 },
-                    { name: 'Advance',      color: '#F59E0B', from: 450, to: 650 },
-                    { name: 'Mastery',      color: '#EF4444', from: 650, to: 900 },
+                    { name: 'Advance', color: '#F59E0B', from: 450, to: 650 },
+                    { name: 'Mastery', color: '#EF4444', from: 650, to: 900 },
                   ];
-                  const allArcs = [100,200,300,400,500,600,700,800,900];
+                  const allArcs = [100, 200, 300, 400, 500, 600, 700, 800, 900];
                   return allArcs.map((r) => {
                     const tier = tierDefs.find(t => r > t.from && r <= t.to) || tierDefs[tierDefs.length - 1];
                     return (
@@ -781,7 +797,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                   });
                 })()}
                 {/* Radial spokes every 10° */}
-                {[10,20,30,40,50,60,70,80].map((deg) => {
+                {[10, 20, 30, 40, 50, 60, 70, 80].map((deg) => {
                   const rad = (deg * Math.PI) / 180;
                   return <line key={`sp-${deg}`}
                     x1={0} y1={1000}
@@ -792,20 +808,20 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                   />;
                 })}
                 {/* X-axis (bottom) and Y-axis (left) */}
-                <line x1="0" y1="999" x2="980" y2="999" stroke="#94A3B8" strokeWidth="1.5"/>
-                <line x1="1" y1="1000" x2="1" y2="20" stroke="#94A3B8" strokeWidth="1.5"/>
+                <line x1="0" y1="999" x2="980" y2="999" stroke="#94A3B8" strokeWidth="1.5" />
+                <line x1="1" y1="1000" x2="1" y2="20" stroke="#94A3B8" strokeWidth="1.5" />
                 {/* Tier boundary tick marks */}
-                {[250,450,650].map(x => (
-                  <line key={`tick-${x}`} x1={x} y1={992} x2={x} y2={1000} stroke="#94A3B8" strokeWidth="1.5"/>
+                {[250, 450, 650].map(x => (
+                  <line key={`tick-${x}`} x1={x} y1={992} x2={x} y2={1000} stroke="#94A3B8" strokeWidth="1.5" />
                 ))}
               </svg>
               {/* Bottom tier labels aligned to arc radii */}
               <div className="absolute bottom-1 left-0 w-full pointer-events-none">
                 {[
                   { label: 'FUNDAMENTALS', pct: '12.5%', color: 'text-purple-400' },
-                  { label: 'INTERMEDIATE', pct: '35%',   color: 'text-blue-400'   },
-                  { label: 'ADVANCE',      pct: '55%',   color: 'text-amber-400'  },
-                  { label: 'MASTERY',      pct: '77.5%', color: 'text-red-400'    },
+                  { label: 'INTERMEDIATE', pct: '35%', color: 'text-blue-400' },
+                  { label: 'ADVANCE', pct: '55%', color: 'text-amber-400' },
+                  { label: 'MASTERY', pct: '77.5%', color: 'text-red-400' },
                 ].map((t) => (
                   <span key={t.label}
                     className={`absolute text-[9px] font-black uppercase tracking-[0.15em] -translate-x-1/2 ${t.color}`}
@@ -860,9 +876,9 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                 {point.id === 'current_average' ? (
                   /* Avatar Icon for Average Knowledge */
                   <div className="relative w-10 h-10 rounded-full border-2 border-white shadow-xl overflow-hidden bg-white p-0.5 animate-in zoom-in-50 duration-500">
-                    <img 
-                      src={avatar} 
-                      alt="Current Average" 
+                    <img
+                      src={avatar}
+                      alt="Current Average"
                       className="w-full h-full rounded-full object-cover"
                     />
                     <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-blue-500 border border-white rounded-full shadow-sm" />
@@ -969,7 +985,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                 <span className="px-3 py-1 bg-gray-100 rounded-lg text-xs font-bold uppercase tracking-wider text-gray-600">{selectedResource.type}</span>
               </div>
             </div>
-            
+
             <div className="flex flex-col items-end border-l border-gray-100 pl-8 ml-auto">
               <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-1">Potential Reward</span>
               <div className="flex items-baseline gap-1">
@@ -993,7 +1009,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                   <h3 className="text-lg font-bold text-gray-900">Resource Navigator</h3>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setIsSearching(false)}
                 className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
               >
