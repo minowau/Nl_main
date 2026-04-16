@@ -507,7 +507,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                 <div className={`
                   relative flex items-center justify-center
                   w-10 h-10 transform transition-all duration-300
-                  ${selectedResource?.id === resource.id ? 'scale-110' : 'hover:scale-110 hover:-translate-y-1'}
+                  ${currentResource?.id === resource.id ? 'scale-150 z-50 animate-pulse' : (selectedResource?.id === resource.id ? 'scale-110' : 'hover:scale-110 hover:-translate-y-1')}
                 `}>
                   {/* Outer Glow */}
                   <div className={`absolute inset-0 rounded-full blur-[8px] opacity-25 ${
@@ -528,6 +528,11 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                   `}>
                     <ResourceIcon type={resource.type} />
                   </div>
+                  
+                  {/* Current Resource "Pop-out" Highlight */}
+                  {currentResource?.id === resource.id && (
+                    <div className="absolute inset-[-12px] rounded-full bg-blue-400/20 blur-xl animate-pulse pointer-events-none" />
+                  )}
 
                   {/* Current Resource Highlight - pulsing golden ring */}
                   {currentResource?.id === resource.id && (
@@ -851,16 +856,29 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                   }}
                   transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
                 />
-                {/* Diamond marker */}
-                <div
-                  className="relative w-5 h-5 flex items-center justify-center"
-                  style={{ transform: 'rotate(45deg)' }}
-                >
+                {/* Icon/Marker Rendering */}
+                {point.id === 'current_average' ? (
+                  /* Avatar Icon for Average Knowledge */
+                  <div className="relative w-10 h-10 rounded-full border-2 border-white shadow-xl overflow-hidden bg-white p-0.5 animate-in zoom-in-50 duration-500">
+                    <img 
+                      src={avatar} 
+                      alt="Current Average" 
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-blue-500 border border-white rounded-full shadow-sm" />
+                  </div>
+                ) : (
+                  /* Standard Diamond for Peak Potential */
                   <div
-                    className="w-4 h-4 rounded-sm shadow-lg border-2 border-white"
-                    style={{ backgroundColor: point.color }}
-                  />
-                </div>
+                    className="relative w-5 h-5 flex items-center justify-center"
+                    style={{ transform: 'rotate(45deg)' }}
+                  >
+                    <div
+                      className="w-4 h-4 rounded-sm shadow-lg border-2 border-white"
+                      style={{ backgroundColor: point.color }}
+                    />
+                  </div>
+                )}
                 {/* Label tooltip below */}
                 <div
                   className="absolute top-[calc(100%+2px)] left-1/2 -translate-x-1/2 whitespace-nowrap"

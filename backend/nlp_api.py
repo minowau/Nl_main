@@ -556,11 +556,20 @@ def create_learning_summary():
             if score >= hl:
                 total_earned_base_pts += resource.get('base_points', 50)
     
-    high_line_sum = max(0.1, high_line_sum)
-    xp_earned = int(total_earned_base_pts * (current_polyline_sum / high_line_sum))
+    # ──── XP SYNC & REWARD CALCULATION ──────────────────────────
+    # Ensure backend Reward stays synced with frontend. 
+    current_reward = session.get('totalReward', 0)
+    base_visited_reward = sum(r.get('reward', 50) for r in visited_resources)
     
-    # Update session with new XP
-    session['totalReward'] = session.get('totalReward', 0) + xp_earned
+    # Calculate summary quality bonus
+    high_line_sum = max(0.1, high_line_sum)
+    summary_bonus = int(total_earned_base_pts * (current_polyline_sum / high_line_sum))
+    
+    # Final XP Earned (ensure participation reward)
+    xp_earned = max(25, summary_bonus)
+    
+    # Update session (ensuring no point loss)
+    session['totalReward'] = max(current_reward, base_visited_reward) + xp_earned
     session = sync_agent_progression(session)
     update_session(session_id, session)
     
@@ -631,10 +640,13 @@ def create_learning_summary():
             'name': 'Current Average Knowledge',
             'module_scores': avg_scores,
             'isActive': True,
-            'color': 'rgba(59, 130, 246, 0.8)'
+            'color': 'rgba(59, 130, 246, 0.8)',
+            'assimilation_position': radial_mapper.polyline_to_grid(avg_scores, num_topics=len(ordered_modules))
         },
         'next_recommendation': new_polyline['next_recommendation'],
-        'keywords_found': keywords_found
+        'keywords_found': keywords_found,
+        'totalReward': session['totalReward'],
+        'xp_earned': xp_earned
     })
 
 
@@ -642,7 +654,6 @@ def create_learning_summary():
 # POLYLINE ENDPOINTS
 # =============================================
 
-@app.route('/api/polylines', methods=['GET'])
 @app.route('/api/polylines', methods=['GET'])
 def get_polylines_route():
     """Get all polylines including dynamically generated High Line and Current Average polylines"""
