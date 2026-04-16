@@ -51,19 +51,16 @@ def log_polyline_step(step, details):
     with open(POLYLINE_LOG_FILE, 'a', encoding='utf-8') as f:
         f.write(f"[{timestamp}] [{step}]\n{details}\n{'-'*50}\n")
 
-_bert_model = None
+try:
+    from sentence_transformers import SentenceTransformer
+    print("Loading BERT model (on startup)...")
+    _bert_model = SentenceTransformer('all-MiniLM-L6-v2')
+    print("BERT model loaded successfully")
+except Exception as e:
+    print(f"Error loading BERT model: {e}")
+    _bert_model = None
 
 def get_bert_model():
-    global _bert_model
-    if _bert_model is None:
-        try:
-            from sentence_transformers import SentenceTransformer
-            print("Loading BERT model (lazy)...")
-            _bert_model = SentenceTransformer('all-MiniLM-L6-v2')
-            print("BERT model loaded successfully")
-        except Exception as e:
-            print(f"Error loading BERT model: {e}")
-            _bert_model = None
     return _bert_model
 
 # Load NLP data from JSON (Excel was rejected by HF)
@@ -234,8 +231,8 @@ def compute_module_embeddings():
         module_embeddings[m] = bert_model.encode(clean_doc)
     print(f"Computed embeddings for {len(module_embeddings)} modules")
 
-# Compute embeddings on startup (REMOVED: Too slow on startup, will compute lazily or skip if needed)
-# compute_module_embeddings()
+# Compute embeddings on startup for immediate availability
+compute_module_embeddings()
 
 # =============================================
 # RESOURCES ENDPOINTS

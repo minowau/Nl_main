@@ -897,7 +897,8 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
               </motion.div>
             ))}
 
-            {/* Animated Student Agent Marker */}
+            {/* Animated Student Agent Marker - Removed per user request */}
+            {/* 
             <motion.div
               key={`agent-at-${agent.position.x}-${agent.position.y}`}
               className="absolute pointer-events-none z-40 flex items-center justify-center"
@@ -923,6 +924,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
             >
               <SocialAgent isMoving={isPlaying} />
             </motion.div>
+            */}
 
             {showTravelArrow && (
               <svg className="absolute inset-0 w-full h-full pointer-events-none z-30">
