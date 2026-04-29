@@ -284,6 +284,15 @@ def reset_database():
 
 @app.route('/api/resources', methods=['GET'])
 def get_resources():
+    # RELOAD CSV DYNAMICALLY FOR DEV
+    global coords
+    try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        csv_path = os.path.join(base_dir, 'topic_2d_coordinates.csv')
+        coords = _load_csv_coordinates(csv_path)
+    except Exception as e:
+        print("Error reloading csv:", e)
+
     """Get all NLP learning resources with their grid positions and correct visited state"""
     session_id = request.args.get('session_id', 'default')
     session = get_session(session_id)
