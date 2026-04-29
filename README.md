@@ -1,3 +1,12 @@
+---
+title: Navigated Learning
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # Navigated Learning Platform 🚀
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
