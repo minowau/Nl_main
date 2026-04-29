@@ -27,6 +27,55 @@
             ],
             "notifications": [
                 {
+                    "id": "notif_1777444902",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777444902450,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777444896",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777444896421,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777444867",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777444867690,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777444824",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777444824029,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777444691",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777444691322,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777444688",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777444688938,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777444569",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777444569847,
+                    "read": false
+                },
+                {
                     "id": "notif_1777442709",
                     "type": "success",
                     "message": "Level up! You are now Stage 20",

@@ -5,11 +5,11 @@ export default {
     extend: {
       colors: {
         brand: {
-          light: '#38bdf8',
-          DEFAULT: '#0ea5e9',
-          dark: '#0284c7',
+          light: '#027baeff',
+          DEFAULT: '#0575a9ff',
+          dark: '#015483ff',
         },
-        secondary: '#38BDF8', // Soft Blue
+        secondary: '#0e95cfff', // Soft Blue
         surface: {
           light: '#F8F9FA',
           DEFAULT: '#FFFFFF',

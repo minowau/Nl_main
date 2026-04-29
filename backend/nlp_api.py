@@ -68,10 +68,16 @@ nlp_json_path = os.path.join(os.path.dirname(__file__), 'nlp', 'nlp_resources.js
 
 def _load_csv_coordinates():
     """Load topic → (grid_x, grid_y) mapping from topic_2d_coordinates.csv"""
-    csv_path = os.path.join(os.path.dirname(__file__), '..', 'topic_2d_coordinates.csv')
+    # Look in the same directory as this file first
+    csv_path = os.path.join(os.path.dirname(__file__), 'topic_2d_coordinates.csv')
+    # Fallback to parent directory
+    if not os.path.exists(csv_path):
+        csv_path = os.path.join(os.path.dirname(__file__), '..', 'topic_2d_coordinates.csv')
+    
     coords = {}
     try:
         if os.path.exists(csv_path):
+            print(f"[INFO] Loading coordinates from: {csv_path}")
             import csv
             with open(csv_path, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
@@ -83,11 +89,11 @@ def _load_csv_coordinates():
                     gx = mx * 18
                     gy = my * 18
                     coords[topic.lower()] = (gx, gy)
-            print(f"Loaded {len(coords)} topic coordinates from CSV")
+            print(f"[SUCCESS] Loaded {len(coords)} topic coordinates from CSV")
         else:
-            print(f"CSV coordinate file not found: {csv_path}")
+            print(f"[ERROR] CSV coordinate file not found at {csv_path}")
     except Exception as e:
-        print(f"Error loading CSV coordinates: {e}")
+        print(f"[ERROR] Error loading CSV coordinates: {e}")
     return coords
 
 # Pre-load CSV coordinates once
@@ -98,7 +104,7 @@ def load_nlp_resources():
     """Load NLP resources using CSV as the master topic list, enriched with JSON metadata."""
     try:
         if not _csv_coords:
-            print("[ERROR] No CSV coordinates loaded — cannot build resources")
+            print("[ERROR] No CSV coordinates available — cannot build resources")
             return []
 
         # Load JSON metadata for enrichment (title, description, links)
@@ -111,10 +117,13 @@ def load_nlp_resources():
                     key = str(row.get('module', '')).strip().lower()
                     if key and key not in json_lookup:
                         json_lookup[key] = row
-            print(f"Loaded {len(json_lookup)} module metadata entries from JSON")
+            print(f"[INFO] Loaded {len(json_lookup)} module metadata entries from JSON")
 
         # Build ordered topic list from CSV (preserving CSV row order)
-        csv_path = os.path.join(os.path.dirname(__file__), '..', 'topic_2d_coordinates.csv')
+        csv_path = os.path.join(os.path.dirname(__file__), 'topic_2d_coordinates.csv')
+        if not os.path.exists(csv_path):
+            csv_path = os.path.join(os.path.dirname(__file__), '..', 'topic_2d_coordinates.csv')
+            
         import csv as csv_mod
         ordered_topics = []
         with open(csv_path, 'r', encoding='utf-8') as f:
