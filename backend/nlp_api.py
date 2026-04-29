@@ -77,11 +77,11 @@ def _load_csv_coordinates():
                 reader = csv.DictReader(f)
                 for row in reader:
                     topic = row['topic'].strip()
-                    # Scale 0-1 floats to 0-18 integer grid coords
+                    # Keep raw float points, scaled to the 0-18 grid space directly
                     mx = float(row['mapped_x'])
                     my = float(row['mapped_y'])
-                    gx = int(round(np.clip(mx * 18, 0, 18)))
-                    gy = int(round(np.clip(my * 18, 0, 18)))
+                    gx = mx * 18
+                    gy = my * 18
                     coords[topic.lower()] = (gx, gy)
             print(f"Loaded {len(coords)} topic coordinates from CSV")
         else:
@@ -141,20 +141,14 @@ def load_nlp_resources():
                     topic_difficulty[idx] = tier['difficulty']
                     idx += 1
 
-        used_positions = set()
         resources = []
         import random as _rnd
 
         for i, topic_name in enumerate(ordered_topics):
             x, y = _csv_coords[topic_name.lower()]
 
-            # Resolve collisions by nudging
-            attempts = 0
-            while (x, y) in used_positions and attempts < 20:
-                y = max(0, min(18, y - 1 if attempts % 2 == 0 else y + 1))
-                attempts += 1
-            used_positions.add((x, y))
-
+            # No collision nudging here, we use the exact points requested from CSV
+            
             # Tier-based points
             difficulty = topic_difficulty.get(i, 8)
             base_pts = tier_points.get(difficulty, 50)
@@ -172,7 +166,7 @@ def load_nlp_resources():
 
             resources.append({
                 'id':          str(len(resources) + 1),
-                'position':    {'x': int(x), 'y': int(y)},
+                'position':    {'x': float(x), 'y': float(y)},
                 'type':        res_type,
                 'title':       title,
                 'visited':     False,

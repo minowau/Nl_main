@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { AuthLayout } from '../../components/Layout/AuthLayout';
 
 // Import the generated illustration
-import educationIllustration from '../../assets/education_illustration.png';
+import { educationIllustration } from '../../assets/education_illustration';
 
 export const SignupPage: React.FC = () => {
   const [formData, setFormData] = useState({
