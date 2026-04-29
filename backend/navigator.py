@@ -63,11 +63,8 @@ except Exception as e:
 ORDERED_MODULES = [
     "Pre training objectives",
     "Pre trained models",
-    "Tutorial: Introduction to huggingface",
     "Fine tuning LLM",
     "Instruction tuning",
-    "Prompt based learning",
-    "Parameter efficient fine tuning",
     "Incontext Learning",
     "Prompting methods",
     "Multiprompt Learning",
@@ -80,6 +77,9 @@ ORDERED_MODULES = [
     "Mixture of Experts Model",
     "Agentic AI",
     "Multimodal LLMs",
+    "Vision Language Models",
+    "Policy learning using DQN",
+    "RLHF",
 ]
 
 

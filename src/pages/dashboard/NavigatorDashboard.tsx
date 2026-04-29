@@ -191,10 +191,10 @@ export const NavigatorDashboard: React.FC = () => {
               <div className="lg:w-72 flex-shrink-0 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-slate-100 pt-6 lg:pt-0 lg:pl-8">
                  <button 
                     onClick={() => navigate('/navigator/course')}
-                    className="w-full py-4 bg-brand hover:bg-brand-dark text-white rounded-2xl font-bold transition-all shadow-lg shadow-brand/30 hover:shadow-brand/50 flex flex-col items-center justify-center gap-2 group active:scale-95"
+                    className="w-full py-4 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-2xl font-bold transition-all shadow-lg shadow-[#1a73e8]/30 hover:shadow-[#1a73e8]/50 flex flex-col items-center justify-center gap-2 group active:scale-95"
                  >
                     <Map size={24} className="group-hover:-translate-y-1 transition-transform" />
-                    <span className="uppercase tracking-widest text-[11px]">Enter Neural Matrix</span>
+                    <span className="uppercase tracking-widest text-[11px]">Enter the Navigator</span>
                  </button>
                  <p className="text-center text-[10px] font-semibold text-slate-400 mt-4 uppercase tracking-widest">Connect to Network</p>
               </div>

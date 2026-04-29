@@ -66,99 +66,126 @@ def get_bert_model():
 # Load NLP data from JSON (Excel was rejected by HF)
 nlp_json_path = os.path.join(os.path.dirname(__file__), 'nlp', 'nlp_resources.json')
 
-def load_nlp_resources():
-    """Load NLP resources from JSON file"""
+def _load_csv_coordinates():
+    """Load topic → (grid_x, grid_y) mapping from topic_2d_coordinates.csv"""
+    csv_path = os.path.join(os.path.dirname(__file__), '..', 'topic_2d_coordinates.csv')
+    coords = {}
     try:
-        # Check if the JSON file exists
-        if not os.path.exists(nlp_json_path):
-            print(f"File not found: {nlp_json_path}")
-            return []
-            
-        with open(nlp_json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            
-        if not isinstance(data, list):
-            print(f"Unexpected data format in {nlp_json_path}")
-            return []
-            
-        # First-quadrant arc projection (bottom-left origin)
-        # Resources fan from 5° to 85° like Q1 of a polar chart
-        # Origin: bottom-LEFT of 20×20 grid
-        cx, cy = 0.0, 19.5
+        if os.path.exists(csv_path):
+            import csv
+            with open(csv_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    topic = row['topic'].strip()
+                    # Scale 0-1 floats to 0-18 integer grid coords
+                    mx = float(row['mapped_x'])
+                    my = float(row['mapped_y'])
+                    gx = int(round(np.clip(mx * 18, 0, 18)))
+                    gy = int(round(np.clip(my * 18, 0, 18)))
+                    coords[topic.lower()] = (gx, gy)
+            print(f"Loaded {len(coords)} topic coordinates from CSV")
+        else:
+            print(f"CSV coordinate file not found: {csv_path}")
+    except Exception as e:
+        print(f"Error loading CSV coordinates: {e}")
+    return coords
 
-        # Sequential split: now 19 modules
-        ordered_data = data[:19] if len(data) >= 19 else data
+# Pre-load CSV coordinates once
+_csv_coords = _load_csv_coordinates()
 
+
+def load_nlp_resources():
+    """Load NLP resources using CSV as the master topic list, enriched with JSON metadata."""
+    try:
+        if not _csv_coords:
+            print("[ERROR] No CSV coordinates loaded — cannot build resources")
+            return []
+
+        # Load JSON metadata for enrichment (title, description, links)
+        json_lookup = {}  # module_name_lower -> row dict
+        if os.path.exists(nlp_json_path):
+            with open(nlp_json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            if isinstance(data, list):
+                for row in data:
+                    key = str(row.get('module', '')).strip().lower()
+                    if key and key not in json_lookup:
+                        json_lookup[key] = row
+            print(f"Loaded {len(json_lookup)} module metadata entries from JSON")
+
+        # Build ordered topic list from CSV (preserving CSV row order)
+        csv_path = os.path.join(os.path.dirname(__file__), '..', 'topic_2d_coordinates.csv')
+        import csv as csv_mod
+        ordered_topics = []
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv_mod.DictReader(f)
+            for row in reader:
+                ordered_topics.append(row['topic'].strip())
+
+        # Tier assignment: first 5 = Fundamentals, next 5 = Intermediate,
+        # next 5 = Advance, remaining = Mastery
         tier_configs = [
-            {'label': 'Fundamentals', 'count': 5, 'radius':  3, 'difficulty': 2},
-            {'label': 'Intermediate', 'count': 5, 'radius':  7, 'difficulty': 4},
-            {'label': 'Advance',      'count': 5, 'radius': 11, 'difficulty': 6},
-            {'label': 'Mastery',      'count': 4, 'radius': 15, 'difficulty': 8},
+            {'label': 'Fundamentals', 'count': 5, 'difficulty': 2},
+            {'label': 'Intermediate', 'count': 5, 'difficulty': 4},
+            {'label': 'Advance',      'count': 5, 'difficulty': 6},
+            {'label': 'Mastery',      'count': 4, 'difficulty': 8},
         ]
+        tier_points = {2: 50, 4: 100, 6: 150, 8: 200}
+
+        # Map topic index → tier difficulty
+        topic_difficulty = {}
+        idx = 0
+        for tier in tier_configs:
+            for _ in range(tier['count']):
+                if idx < len(ordered_topics):
+                    topic_difficulty[idx] = tier['difficulty']
+                    idx += 1
 
         used_positions = set()
         resources = []
-        resource_idx = 0
+        import random as _rnd
 
-        # Fan: 8° to 82° (keeps resources comfortably inside axes)
-        angle_start_deg = 8.0
-        angle_end_deg   = 82.0
+        for i, topic_name in enumerate(ordered_topics):
+            x, y = _csv_coords[topic_name.lower()]
 
-        for t_idx, tier in enumerate(tier_configs):
-            count  = tier['count']
-            r_val  = tier['radius']
-            tier_data = ordered_data[resource_idx : resource_idx + count]
-            resource_idx += count
+            # Resolve collisions by nudging
+            attempts = 0
+            while (x, y) in used_positions and attempts < 20:
+                y = max(0, min(18, y - 1 if attempts % 2 == 0 else y + 1))
+                attempts += 1
+            used_positions.add((x, y))
 
-            n = len(tier_data)
-            if n == 0:
-                continue
+            # Tier-based points
+            difficulty = topic_difficulty.get(i, 8)
+            base_pts = tier_points.get(difficulty, 50)
 
-            angle_step = (angle_end_deg - angle_start_deg) / (n - 1) if n > 1 else 0.0
+            # Per-resource high_line: seeded random 0.70-0.85
+            _rnd.seed(i + 42)
+            high_line = round(_rnd.uniform(0.70, 0.85), 2)
 
-            for i, row in enumerate(tier_data):
-                angle_deg  = angle_start_deg + i * angle_step
-                angle_rad  = np.radians(angle_deg)
+            # Enrich from JSON metadata if available
+            json_row = json_lookup.get(topic_name.lower(), {})
+            title = str(json_row.get('name', topic_name)).strip()
+            url = str(json_row.get('links', '')).strip()
+            description = str(json_row.get('description', '')).strip()
+            res_type = 'video' if 'youtube' in url.lower() else 'book'
 
-                x_raw = cx + r_val * np.cos(angle_rad)
-                y_raw = cy - r_val * np.sin(angle_rad)
+            resources.append({
+                'id':          str(len(resources) + 1),
+                'position':    {'x': int(x), 'y': int(y)},
+                'type':        res_type,
+                'title':       title,
+                'visited':     False,
+                'difficulty':  difficulty,
+                'reward':      base_pts,
+                'base_points': base_pts,
+                'high_line':   high_line,
+                'url':         url,
+                'description': description,
+                'module':      topic_name
+            })
 
-                x = int(round(np.clip(x_raw, 0, 18)))
-                y = int(round(np.clip(y_raw, 0, 18)))
-
-                # Resolve collisions by nudging along the arc (y direction)
-                attempts = 0
-                while (x, y) in used_positions and attempts < 20:
-                    y = max(0, min(18, y - 1 if attempts % 2 == 0 else y + 1))
-                    attempts += 1
-
-                used_positions.add((x, y))
-
-                # Tier-based points: Fundamentals=50, Intermediate=100, Advance=150, Mastery=200
-                tier_points = {2: 50, 4: 100, 6: 150, 8: 200}
-                base_pts = tier_points.get(tier['difficulty'], 50)
-
-                # Per-resource high_line: seeded random 0.70-0.85
-                import random as _rnd
-                _rnd.seed(len(resources) + 42)  # deterministic per resource index
-                high_line = round(_rnd.uniform(0.70, 0.85), 2)
-
-                resources.append({
-                    'id':         str(len(resources) + 1),
-                    'position':   {'x': int(x), 'y': int(y)},
-                    'type':       'video' if 'youtube' in str(row.get('links', '')).lower() else 'book',
-                    'title':      str(row.get('name', f'Resource {len(resources) + 1}')).strip(),
-                    'visited':    False,
-                    'difficulty': tier['difficulty'],
-                    'reward':     base_pts,
-                    'base_points': base_pts,
-                    'high_line':  high_line,
-                    'url':        str(row.get('links', '')).strip(),
-                    'description':str(row.get('description', '')).strip(),
-                    'module':     str(row.get('module', 'NLP Concept')).strip()
-                })
-
-        print(f"Successfully projected {len(resources)} resources into 4-tier Radar arcs")
+        print(f"Successfully loaded {len(resources)} resources from CSV master list")
         return resources
     except Exception as e:
         print(f"Error loading NLP resources: {e}")
