@@ -50,9 +50,15 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
   return (
     <div className="min-h-screen bg-[#F0F4F8] text-slate-800 font-['Poppins'] overflow-hidden flex transition-colors duration-500">
-      {/* Background Blobs - Subtle & Airy */}
-      <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-light/5 rounded-full blur-[120px] pointer-events-none" />
+      {/* Flowing Curved Background Lines (As seen in the ID Card) */}
+      <div className="fixed top-[-20%] left-[-10%] w-[140vw] h-[140vw] rounded-[100%] border-[12px] border-white pointer-events-none z-0 transform -translate-y-1/2 opacity-80 shadow-[inset_0_0_20px_rgba(255,255,255,0.5)]" />
+      <div className="fixed top-[-10%] left-[-5%] w-[150vw] h-[150vw] rounded-[100%] border-[16px] border-white pointer-events-none z-0 transform -translate-y-1/2 rotate-3 opacity-60 shadow-[0_0_30px_rgba(255,255,255,0.4)]" />
+      <div className="fixed top-[-30%] left-[5%] w-[160vw] h-[160vw] rounded-[100%] border-[8px] border-white pointer-events-none z-0 transform -translate-y-1/2 -rotate-6 opacity-40 shadow-sm" />
+
+      {/* Background Blobs - Deep Navy Gradient */}
+      <div className="fixed top-[-15%] left-[-10%] w-[45vw] h-[45vw] bg-gradient-to-br from-brand to-brand-dark rounded-full blur-[120px] opacity-[0.10] pointer-events-none z-0" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[35vw] h-[35vw] bg-gradient-to-tl from-brand-light to-brand-dark rounded-full blur-[100px] opacity-[0.08] pointer-events-none z-0" />
+      <div className="fixed top-[30%] left-[50%] w-[30vw] h-[30vw] bg-brand-dark rounded-full blur-[140px] opacity-[0.05] pointer-events-none z-0" />
 
       {/* Sidebar - Desktop */}
       <motion.aside
@@ -67,7 +73,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="text-xl font-extrabold whitespace-nowrap bg-clip-text text-transparent bg-gradient-to-r from-brand to-brand-dark uppercase tracking-tighter"
+                className="text-xl font-extrabold whitespace-nowrap bg-clip-text text-transparent bg-gradient-to-r from-brand-dark to-brand uppercase tracking-tighter"
               >
                 Navigated Learning
               </motion.span>

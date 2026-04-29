@@ -18,14 +18,14 @@ Welcome to the **Navigated Learning Platform** — a next-generation, AI-driven 
 
 ---
 
-## 🌟 Core Philosophy
+## 🌟 Core Philosophy: The Spatial Learning Loop
 
 Instead of a traditional list of courses, topics are mapped onto a **2D Coordinate Grid** based on conceptual similarity.
 When a student interacts with materials and writes summaries, the system:
-1. **Analyzes** their comprehension using BERT sentence embeddings.
-2. **Maps** their knowledge trajectory as an active, glowing "Polyline".
-3. **Recommends** their next optimal learning node using a Deep Q-Network (DQN) trained on historical student paths.
-4. **Visualizes** their assimilation by plotting an aggregated point (The Center of Gravity) showing exactly where their knowledge sits conceptually.
+1.  **Analyzes** their comprehension using BERT sentence embeddings.
+2.  **Maps** their knowledge trajectory as an active, glowing "Polyline".
+3.  **Recommends** their next optimal learning node using a Deep Q-Network (DQN) trained on historical student paths.
+4.  **Visualizes** their assimilation by plotting an aggregated point (The Center of Gravity) showing exactly where their knowledge sits conceptually.
 
 ---
 
@@ -40,6 +40,7 @@ graph TD
         UI -->|Grid Exploration| GV[Grid Visualization]
         UI -->|Node Interation| MM[Media & Modules]
         UI -->|Knowledge Check| SM[Summary Submission]
+        GV -->|Rendering| ABS[Absolute Position Engine]
     end
 
     subgraph API [Flask REST API]
@@ -76,8 +77,8 @@ graph TD
 
 ## 🧠 The Neural Matrix & Polyline Engine
 
-### 1. Spatial Grid Generation
-Topics are assigned hard coordinates using the master file `topic_2d_coordinates.csv`. The backend scales these 0.0-1.0 floats perfectly onto the frontend's spatial grid. 
+### 1. Spatial Grid Generation (Master-Point System)
+Topics are assigned hard coordinates using the master file `topic_2d_coordinates.csv`. The backend scales these 0.0-1.0 floats perfectly onto the frontend's spatial grid. Unlike traditional grids, our **Absolute Position Engine** supports floating-point coordinates, allowing nodes to sit organically between grid lines for a more fluid, conceptually accurate layout.
 
 ### 2. The Assimilation Loop
 When a user completes a module and submits a summary, the **Assimilation Loop** triggers:
@@ -104,7 +105,12 @@ sequenceDiagram
 
 ---
 
-## ⚡ Key Modules
+## ⚡ Key Modules & Visual Identity
+
+### 🎨 Premium Visual Identity
+The platform has been redesigned with a **Vibrant Sky Blue** theme, replacing generic violet tones with a curated palette that feels professional, expansive, and high-tech. 
+- **Brand Colors:** `#3B82F6` (Primary Blue), `#60A5FA` (Light Sky), `#1E3A8A` (Deep Navy).
+- **Aesthetics:** Glassmorphism, smooth CSS transitions, and SVG-animated polylines.
 
 ### The Navigator Dashboard
 The launchpad for students. Displays the active "Advances in NLP" map, their accumulated XP, their current level (S1, S2, etc.), and their uniquely calculated **Educational Persona**.
@@ -112,11 +118,8 @@ The launchpad for students. Displays the active "Advances in NLP" map, their acc
 ### The Grid Visualization
 The interactive 2D map. 
 - **Nodes**: Educational content (Videos, Texts, Quizzes) placed according to the CSV.
-- **Paths**: The current user's learning path, combined with the "Average Knowledge" paths of past sessions.
+- **Floating-Point Mapping**: Resources are rendered using absolute CSS positioning (left/top %) based on precise CSV coordinates.
 - **The "High Line"**: A visual representation of peak potential — the optimal path a mastery-level student would take.
-
-### AI Persona Synthesis
-As the user completes content, the system derives an Educational Persona (e.g., "The Synthesizer", "The Pragmatist") based on the semantic density of their summaries, directly impacting UI colors and prompts.
 
 ---
 
@@ -134,7 +137,7 @@ source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 ```
-*(Note: The first run will automatically download the required NLTK datasets and HuggingFace `all-MiniLM-L6-v2` BERT models. This may take a minute).*
+*(Note: The first run will automatically download the required NLTK datasets and HuggingFace `all-MiniLM-L6-v2` BERT models).*
 
 ### 2. Start the Frontend (React)
 ```bash
@@ -146,11 +149,6 @@ npm run dev
 ### 3. Enter the Matrix
 Open your browser to `http://localhost:5173`. 
 Create a new student account using the ID Badge auth flow, click **Enter the Navigator**, and begin traversing the grid!
-
----
-
-## 📝 A Note on Coordinate Shifting
-Previously, the Grid used an integer rounding and collision-nudging algorithm which caused topics to shift slightly depending on load order. **This has been completely overhauled.** The system now streams exact floating-point metrics (`mapped_x`, `mapped_y`) from `topic_2d_coordinates.csv`, ensuring hyper-accurate, deterministic spatial placement across all sessions. 
 
 ---
 

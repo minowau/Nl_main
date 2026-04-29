@@ -3,11 +3,11 @@
     "learning_sessions": {
         "default": {
             "position": {
-                "x": 2,
-                "y": 5
+                "x": 12.227922061357855,
+                "y": 6.772077938642145
             },
             "level": 20,
-            "totalReward": 1914,
+            "totalReward": 1939,
             "visitedResources": [
                 "4",
                 "3",
@@ -26,6 +26,160 @@
                 "14"
             ],
             "notifications": [
+                {
+                    "id": "notif_1777462300",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777462300914,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777462169",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777462169266,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777461733",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777461733863,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777461714",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777461714447,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777460873",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777460873979,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777460743",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777460743692,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777460739",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777460739190,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777460475",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777460475566,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777460472",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777460472286,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777460388",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777460388772,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777460076",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777460076105,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777459875",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777459875065,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777459808",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777459808557,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777459660",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777459660910,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777459654",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777459654814,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777451665",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777451665294,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777449883",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777449883302,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777448455",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777448455699,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777448292",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777448292105,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777448241",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777448241148,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777448231",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777448231930,
+                    "read": false
+                },
+                {
+                    "id": "notif_1777446728",
+                    "type": "success",
+                    "message": "Level up! You are now Stage 20",
+                    "timestamp": 1777446728770,
+                    "read": false
+                },
                 {
                     "id": "notif_1777446240",
                     "type": "success",
@@ -1132,6 +1286,122 @@
                 "module": "Multimodal LLMs",
                 "reason": "fallback"
             }
+        },
+        "polyline_20260429_165949": {
+            "id": "polyline_20260429_165949",
+            "name": "hello",
+            "path": [
+                {
+                    "x": 1.2320508075688776,
+                    "y": 18.5
+                },
+                {
+                    "x": 0.5000000000000003,
+                    "y": 17.76794919243112
+                },
+                {
+                    "x": 3.1252311481465997,
+                    "y": 17.809526953037203
+                },
+                {
+                    "x": 2.3284271247461903,
+                    "y": 16.67157287525381
+                },
+                {
+                    "x": 4.696152422706632,
+                    "y": 16.5
+                },
+                {
+                    "x": 2.5000000000000004,
+                    "y": 14.303847577293368
+                },
+                {
+                    "x": 6.750462296293199,
+                    "y": 16.119053906074406
+                },
+                {
+                    "x": 5.156854249492381,
+                    "y": 13.84314575050762
+                },
+                {
+                    "x": 8.160254037844387,
+                    "y": 14.5
+                },
+                {
+                    "x": 4.500000000000001,
+                    "y": 10.839745962155613
+                },
+                {
+                    "x": 10.375693444439799,
+                    "y": 14.428580859111609
+                },
+                {
+                    "x": 7.985281374238571,
+                    "y": 11.014718625761429
+                },
+                {
+                    "x": 9.399494936611667,
+                    "y": 9.600505063388333
+                },
+                {
+                    "x": 13.356406460551021,
+                    "y": 11.5
+                },
+                {
+                    "x": 7.500000000000003,
+                    "y": 5.643593539448982
+                }
+            ],
+            "color": "rgba(128, 120, 255, 0.4)",
+            "isActive": false,
+            "summary": "helloooo",
+            "keywords_found": [],
+            "module_scores": [
+                0.17019569873809814,
+                0.14351871609687805,
+                0.11499147117137909,
+                0.1,
+                0.02717156894505024,
+                0.1082766205072403,
+                0.12598824501037598,
+                0.12174657732248306,
+                0.12331365048885345,
+                0.04806344956159592,
+                0.1,
+                0.10544370114803314,
+                0.10802245140075684,
+                0.12293491512537003,
+                0.053020771592855453,
+                0.13546964526176453,
+                0.22238630056381226,
+                0.18784940242767334,
+                0.1995585858821869
+            ],
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Fine tuning LLM",
+                "Instruction tuning"
+            ],
+            "dominant_topics": [
+                "Pre training objectives",
+                "Agentic AI"
+            ],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Stage 20 achieved with 1939 points.",
+            "assimilation_position": {
+                "x": 1,
+                "y": 17
+            },
+            "next_recommendation": {
+                "id": "19",
+                "title": "RLHF",
+                "position": {
+                    "x": 12.227922061357855,
+                    "y": 6.772077938642145
+                },
+                "module": "RLHF",
+                "reason": "fallback"
+            }
         }
     },
     "notes": {},
@@ -1333,6 +1603,31 @@
             "totalReward": 1664,
             "xp_earned": 114,
             "timestamp": 1776038119584
+        },
+        {
+            "id": "summary_default_20260429_165949",
+            "title": "hello",
+            "summary": "helloooo",
+            "keywords_found": [],
+            "totalResources": 19,
+            "visitedResources": 15,
+            "currentLevel": 20,
+            "strengths": [
+                "Pre training objectives",
+                "Pre trained models",
+                "Fine tuning LLM",
+                "Instruction tuning"
+            ],
+            "recommendations": [
+                "Incontext Learning",
+                "Retrieval Augmented Generation",
+                "Agentic AI"
+            ],
+            "ai_analysis": "Learning profile enriched by modules like Basics. Stage 20 achieved with 1939 points.",
+            "avgDifficulty": 4.8,
+            "totalReward": 1939,
+            "xp_earned": 25,
+            "timestamp": 1777462189899
         }
     ]
 }

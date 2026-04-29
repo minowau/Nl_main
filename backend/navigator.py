@@ -208,7 +208,7 @@ def recommend_next(visited_ids: list, module_scores: list, nlp_resources: list) 
         candidates = module_to_resources[best_module]
         candidates.sort(key=lambda r: -r['reward'])
         chosen = candidates[0]
-        print(f"[NAV DEBUG] ✓ Chose '{best_module}' → '{chosen['title']}' (id={chosen['id']}, score={best_score:.3f})")
+        print(f"[NAV DEBUG] SUCCESS: Chose '{best_module}' -> '{chosen['title']}' (id={chosen['id']}, score={best_score:.3f})")
         return {
             "resource": chosen,
             "module": best_module,

@@ -50,29 +50,20 @@ const GridMatrixPage: React.FC = () => {
   });
   const [showTutorial, setShowTutorial] = useState(false);
 
-  // Derive assimilation points from polylines for grid visualization
-  // Only show Average and Peak Potential markers
   const assimilationPoints = useMemo(() => {
-    return polylines
-      .filter(p => p.assimilation_position && p.assimilation_position.x !== undefined
-        && ['high_line', 'current_average'].includes(p.id))
-      .map(p => {
-        let color = '#06b6d4'; // cyan default
-        let label = p.name || 'Summary';
-        if (p.id === 'high_line') {
-          color = '#ef4444'; // red
-          label = 'Peak Potential';
-        } else if (p.id === 'current_average') {
-          color = '#06b6d4'; // cyan
-          label = 'You (Avg)';
-        }
-        return {
-          id: p.id,
-          position: p.assimilation_position!,
-          label,
-          color,
-        };
-      });
+    const points = [];
+    
+    const highLine = polylines.find(p => p.id === 'high_line');
+    const currentAvg = polylines.find(p => p.id === 'current_average');
+
+    if (highLine && highLine.assimilation_position) {
+      points.push({ id: highLine.id, position: highLine.assimilation_position, label: 'Peak Potential', color: '#ef4444' });
+    }
+    if (currentAvg && currentAvg.assimilation_position) {
+      points.push({ id: currentAvg.id, position: currentAvg.assimilation_position, label: 'You (Avg)', color: '#06b6d4' });
+    }
+    
+    return points;
   }, [polylines]);
 
   // Sync local agent with global agent on mount

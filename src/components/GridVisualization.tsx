@@ -591,7 +591,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                           setHoveredResource(null);
                         }
                       }}
-                      className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-200"
+                      className="w-full py-2.5 bg-brand hover:bg-brand-dark text-white rounded-xl font-bold transition-all shadow-lg shadow-brand/20"
                     >
                       Open Lesson
                     </button>
@@ -604,8 +604,32 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
         </div>
       );
     });
+    const assimilationNodes = (assimilationPoints || []).map((ap, index) => {
+      const left = (ap.position.x + 0.5) * (100 / GRID_SIZE);
+      const top = (ap.position.y + 0.5) * (100 / GRID_SIZE);
+      return (
+        <motion.div
+          key={`ap-${ap.id}-${index}`}
+          className="absolute z-20 pointer-events-none"
+          style={{ left: `${left}%`, top: `${top}%` }}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+        >
+          <div className="relative -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+            <div className="absolute -top-8 text-white text-[10px] font-bold px-2.5 py-1 rounded-md shadow-xl whitespace-nowrap" style={{ backgroundColor: ap.color }}>
+              {ap.label}
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 transform rotate-45" style={{ backgroundColor: ap.color }}></div>
+            </div>
+            <div 
+              className="w-4 h-4 rounded-full border-2 border-white shadow-lg animate-pulse"
+              style={{ backgroundColor: ap.color, boxShadow: `0 0 15px ${ap.color}80` }}
+            />
+          </div>
+        </motion.div>
+      );
+    });
 
-    return [...cells, ...resourceNodes];
+    return [...cells, ...resourceNodes, ...assimilationNodes];
   };
 
   return (
@@ -973,7 +997,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
           <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden border border-white/20 animate-in zoom-in-95 duration-300 flex flex-col max-h-[80vh]">
             <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white/50">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                <div className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white shadow-lg shadow-brand/20">
                   <Search className="w-5 h-5" />
                 </div>
                 <div>

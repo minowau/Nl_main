@@ -49,11 +49,11 @@ export const ResourcesDashboard: React.FC = () => {
         className="max-w-7xl mx-auto px-6 py-8 space-y-12"
       >
         {/* Study Dashboard Hero */}
-        <motion.div variants={itemVariants} className="relative overflow-hidden group rounded-[32px] border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.02)] bg-white">
+        <motion.div variants={itemVariants} className="relative overflow-hidden group rounded-[32px] border border-white/60 shadow-[0_12px_40px_rgba(6,32,141,0.08)] bg-gradient-to-br from-white via-[#fcfdff] to-brand/5 backdrop-blur-xl">
           {/* Complex Background Layers */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(108,99,255,0.08),transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_80%,rgba(64,196,99,0.05),transparent_50%)]" />
-          <div className="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.02] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(6,32,141,0.08),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_80%,rgba(14,149,207,0.06),transparent_60%)]" />
+          <div className="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] pointer-events-none" />
           
           <div className="relative p-10 lg:p-14 flex flex-col lg:flex-row items-center justify-between gap-12">
             <div className="max-w-2xl text-center lg:text-left flex flex-col gap-8">
