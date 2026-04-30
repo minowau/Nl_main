@@ -1,11 +1,3 @@
----
-title: Navigated Learning
-emoji: 🚀
-colorFrom: blue
-colorTo: indigo
-sdk: docker
-pinned: false
----
 
 # Navigated Learning Platform 🚀
 
