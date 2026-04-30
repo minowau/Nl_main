@@ -45,9 +45,9 @@ graph TD
 
     subgraph API [Flask REST API]
         R[Router]
-        R --> EP1[/api/resources]
-        R --> EP2[/api/summary/create]
-        R --> EP3[/api/agent]
+        R --> EP1["/api/resources"]
+        R --> EP2["/api/summary/create"]
+        R --> EP3["/api/agent"]
     end
 
     subgraph Core AI Systems [Python Backend]
