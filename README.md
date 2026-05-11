@@ -6,11 +6,11 @@
 ![Python](https://img.shields.io/badge/Backend-Python%20%7C%20Flask-3776AB.svg?logo=python)
 ![TailwindCSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC.svg?logo=tailwind-css)
 
-Welcome to the **Navigated Learning Platform** — a next-generation, AI-driven educational operating system. This platform transforms linear, boring curriculum into an interactive 2D spatial learning grid ("The Neural Matrix"). By leveraging Reinforcement Learning (DQN) and Semantic Analysis (BERT), the system creates dynamic, deeply personalized learning paths (Polylines) tailored perfectly to each student's evolving comprehension.
+Welcome to the **Navigated Learning Platform** a next-generation, AI-driven educational operating system. This platform transforms linear, boring curriculum into an interactive 2D spatial learning grid . By leveraging Reinforcement Learning (DQN) and Semantic Analysis (BERT), the system creates dynamic, deeply personalized learning paths (Polylines) tailored perfectly to each student's evolving comprehension.
 
 ---
 
-## 🌟 Core Philosophy: The Spatial Learning Loop
+## Core Philosophy: The Spatial Learning Loop
 
 Instead of a traditional list of courses, topics are mapped onto a **2D Coordinate Grid** based on conceptual similarity.
 When a student interacts with materials and writes summaries, the system:
