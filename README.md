@@ -1,5 +1,5 @@
 
-# Navigated Learning Platform 🚀
+# Navigated Learning Platform 
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![React](https://img.shields.io/badge/Frontend-React%20%7C%20Vite-61DAFB.svg?logo=react)
@@ -21,7 +21,7 @@ When a student interacts with materials and writes summaries, the system:
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 The architecture relies on a synergy between an interactive React frontend and a heavyweight Python/Flask AI backend.
 
@@ -67,7 +67,7 @@ graph TD
 
 ---
 
-## 🧠 The Neural Matrix & Polyline Engine
+## The Neural Matrix & Polyline Engine
 
 ### 1. Spatial Grid Generation (Master-Point System)
 Topics are assigned hard coordinates using the master file `topic_2d_coordinates.csv`. The backend scales these 0.0-1.0 floats perfectly onto the frontend's spatial grid. Unlike traditional grids, our **Absolute Position Engine** supports floating-point coordinates, allowing nodes to sit organically between grid lines for a more fluid, conceptually accurate layout.
@@ -97,9 +97,9 @@ sequenceDiagram
 
 ---
 
-## ⚡ Key Modules & Visual Identity
+##  Key Modules & Visual Identity
 
-### 🎨 Premium Visual Identity
+###  Premium Visual Identity
 The platform has been redesigned with a **Vibrant Sky Blue** theme, replacing generic violet tones with a curated palette that feels professional, expansive, and high-tech. 
 - **Brand Colors:** `#3B82F6` (Primary Blue), `#60A5FA` (Light Sky), `#1E3A8A` (Deep Navy).
 - **Aesthetics:** Glassmorphism, smooth CSS transitions, and SVG-animated polylines.
@@ -115,7 +115,7 @@ The interactive 2D map.
 
 ---
 
-## 🔧 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js (v18+)
