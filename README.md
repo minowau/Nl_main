@@ -144,4 +144,3 @@ Create a new student account using the ID Badge auth flow, click **Enter the Nav
 
 ---
 
-*Engineered for the future of interactive learning.*
