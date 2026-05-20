@@ -1,5 +1,5 @@
 
-# Navigated Learning Platform 
+# Active Learning Map 
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![React](https://img.shields.io/badge/Frontend-React%20%7C%20Vite-61DAFB.svg?logo=react)
