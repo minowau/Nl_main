@@ -13,6 +13,8 @@ def index():
     return "NLP Learning Grid Backend is Running!"
 
 if __name__ == '__main__':
-    # Run on port 5000 by default
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    import os
+    use_reloader = os.environ.get('FLASK_USE_RELOADER', 'false').lower() == 'true'
+    print("[INFO] Starting Flask server on http://0.0.0.0:5000...")
+    app.run(debug=True, port=5000, host='0.0.0.0', use_reloader=use_reloader)
 

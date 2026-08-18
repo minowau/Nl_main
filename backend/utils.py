@@ -17,20 +17,38 @@ import math
 import heapq
 import re
 from bs4 import BeautifulSoup
+import ssl
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
+
 import nltk
 from nltk.stem import WordNetLemmatizer, PorterStemmer
-from nltk.corpus import stopwords
 
 # Ensure NLTK data is downloaded
 try:
     nltk.data.find('corpora/stopwords')
 except LookupError:
-    nltk.download('stopwords')
+    try:
+        nltk.download('stopwords', quiet=True)
+    except Exception as e:
+        print(f"Warning: Could not download NLTK stopwords: {e}")
 
 try:
     nltk.data.find('corpora/wordnet')
 except LookupError:
-    nltk.download('wordnet')
+    try:
+        nltk.download('wordnet', quiet=True)
+    except Exception as e:
+        print(f"Warning: Could not download NLTK wordnet: {e}")
+
+try:
+    from nltk.corpus import stopwords
+except Exception:
+    stopwords = None
 
 # ===========================
 # utils_preprocess_text

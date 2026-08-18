@@ -10,6 +10,13 @@ from flask import jsonify, request
 import numpy as np
 from datetime import datetime
 import nltk
+import ssl
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
 
 # Ensure requisite NLTK data is available
 try:
@@ -40,7 +47,11 @@ except ImportError:
     import radial_mapper
 
 # Define stopwords
-stop_words = set(stopwords.words('english'))
+try:
+    from nltk.corpus import stopwords
+    stop_words = set(stopwords.words('english'))
+except Exception:
+    stop_words = STOPWORDS
 
 # Polyline logging
 POLYLINE_LOG_FILE = os.path.join(os.path.dirname(__file__), 'polyline_generation.log')
@@ -51,16 +62,21 @@ def log_polyline_step(step, details):
     with open(POLYLINE_LOG_FILE, 'a', encoding='utf-8') as f:
         f.write(f"[{timestamp}] [{step}]\n{details}\n{'-'*50}\n")
 
-try:
-    from sentence_transformers import SentenceTransformer
-    print("Loading BERT model (on startup)...")
-    _bert_model = SentenceTransformer('all-MiniLM-L6-v2')
-    print("BERT model loaded successfully")
-except Exception as e:
-    print(f"Error loading BERT model: {e}")
-    _bert_model = None
+_bert_model = None
+_bert_model_attempted = False
 
 def get_bert_model():
+    global _bert_model, _bert_model_attempted
+    if _bert_model is None and not _bert_model_attempted:
+        _bert_model_attempted = True
+        try:
+            from sentence_transformers import SentenceTransformer
+            print("[INFO] Lazily loading SentenceTransformer ('all-MiniLM-L6-v2')...")
+            _bert_model = SentenceTransformer('all-MiniLM-L6-v2')
+            print("[SUCCESS] BERT model loaded successfully")
+        except Exception as e:
+            print(f"[ERROR] Could not load BERT model: {e}")
+            _bert_model = None
     return _bert_model
 
 # Load NLP data from JSON (Excel was rejected by HF)
