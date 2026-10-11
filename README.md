@@ -1,12 +1,12 @@
 
-# Active Learning Map 
+# Intelligent Learning Map 
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![React](https://img.shields.io/badge/Frontend-React%20%7C%20Vite-61DAFB.svg?logo=react)
 ![Python](https://img.shields.io/badge/Backend-Python%20%7C%20Flask-3776AB.svg?logo=python)
 ![TailwindCSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC.svg?logo=tailwind-css)
 
-Welcome to the **Navigated Learning Platform** a next-generation, AI-driven educational operating system. This platform transforms linear, boring curriculum into an interactive 2D spatial learning grid . By leveraging Reinforcement Learning (DQN) and Semantic Analysis (BERT), the system creates dynamic, deeply personalized learning paths (Polylines) tailored perfectly to each student's evolving comprehension.
+The Intelligent Learning Map is an interpretable, human-centered Intelligent Tutoring System (ITS) designed to replace "black-box" pedagogical recommenders with an intuitive spatial interface. While traditional adaptive learning platforms hide student mastery behind opaque internal probability scores, the Active Learning Map externalizes the learning journey as a continuous, visually navigable 2D manifold. Students and educators do not simply receive arbitrary resource recommendations; they visually inspect where they stand, trace where they have been, and observe where the system's algorithmic guidance is leading them.
 
 ---
 
