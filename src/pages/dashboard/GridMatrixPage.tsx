@@ -5,7 +5,7 @@ import { useDQNSimulation } from '../../hooks/useDQNSimulation';
 import { Resource, Polyline, LearningSummary, GridPosition } from '../../types';
 import { nlpApi } from '../../services/nlpApi';
 import { useAppContext } from '../../context/AppContext';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Sparkles, X, PlayCircle, MapPin } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import DashboardTutorial from '../../components/Dashboard/DashboardTutorial';
 
@@ -37,8 +37,10 @@ const GridMatrixPage: React.FC = () => {
 
   const [resources, setResources] = useState<Resource[]>([]);
   const [polylines, setPolylines] = useState<Polyline[]>([]);
-  const [learningPath, setLearningPath] = useState<string[]>([]);
+  const [learningPath, setLearningPath] = useState<GridPosition[]>([]);
   const [dqnPathInfo, setDqnPathInfo] = useState<{ resource: Resource | null, reward: number } | null>(null);
+  const [nextRecommendation, setNextRecommendation] = useState<NonNullable<Polyline['next_recommendation']> | null>(null);
+  const [showRecommendationAlert, setShowRecommendationAlert] = useState(false);
   const [learningData, setLearningData] = useState<LearningSummary>({
     totalResources: 0,
     visitedResources: 0,
@@ -54,13 +56,9 @@ const GridMatrixPage: React.FC = () => {
     const points = [];
     
     const highLine = polylines.find(p => p.id === 'high_line');
-    const currentAvg = polylines.find(p => p.id === 'current_average');
 
     if (highLine && highLine.assimilation_position) {
       points.push({ id: highLine.id, position: highLine.assimilation_position, label: 'Peak Potential', color: '#ef4444' });
-    }
-    if (currentAvg && currentAvg.assimilation_position) {
-      points.push({ id: currentAvg.id, position: currentAvg.assimilation_position, label: 'You (Avg)', color: '#06b6d4' });
     }
     
     return points;
@@ -98,8 +96,22 @@ const GridMatrixPage: React.FC = () => {
 
         setResources(resourceData);
         setPolylines(polylineData);
+
+        const historyWithRec = polylineData.filter(
+          p => !['high_line', 'current_average', 'dqn-simulation', 'learning-path-1'].includes(p.id) && p.next_recommendation
+        );
+        const latestRec = historyWithRec.length > 0
+          ? historyWithRec[historyWithRec.length - 1].next_recommendation || null
+          : null;
+        if (latestRec) {
+          setNextRecommendation(latestRec);
+        }
+
         setLearningData({
           ...learningStats,
+          recommendations: latestRec?.title
+            ? [latestRec.title, ...(learningStats.recommendations || []).filter(r => r !== latestRec.title)].slice(0, 3)
+            : (learningStats.recommendations || []),
           totalResources: resourceData.length
         });
 
@@ -133,7 +145,7 @@ const GridMatrixPage: React.FC = () => {
       visitResource(resource.id, resource.reward);
       await globalVisitResource(resource.id);
       
-      setLearningPath(prev => [...prev, resource.title]);
+      setLearningPath(prev => [...prev, resource.position]);
 
       setLearningData(prev => ({
         ...prev,
@@ -167,37 +179,71 @@ const GridMatrixPage: React.FC = () => {
   const handleSummarizeLearning = useCallback(async (title: string, summary: string) => {
     setIsLoading(true);
     try {
-      const visitedIds = resources.filter(r => r.visited).map(r => r.id);
+      // Ensure if the user summarized a lesson matching by title or module, it is counted as visited
+      const matchedResource = resources.find(
+        r =>
+          r.title.toLowerCase() === title.trim().toLowerCase() ||
+          r.module.toLowerCase() === title.trim().toLowerCase()
+      );
+      if (matchedResource && !matchedResource.visited) {
+        setResources(prev =>
+          prev.map(r => (r.id === matchedResource.id ? { ...r, visited: true } : r))
+        );
+        visitResource(matchedResource.id, matchedResource.reward);
+        await globalVisitResource(matchedResource.id);
+      }
+
+      const visitedIds = Array.from(
+        new Set([
+          ...resources.filter(r => r.visited).map(r => r.id),
+          ...(matchedResource ? [matchedResource.id] : [])
+        ])
+      );
       const result = await nlpApi.createLearningSummary('default', title, summary, visitedIds);
 
-      // Move agent to DQN-recommended resource or fallback to nearest unvisited
+      // Determine recommended next lesson from DQN navigator or fallback to next unvisited
+      const unvisited = resources.filter(r => !visitedIds.includes(r.id));
+      const rec = result.next_recommendation || (unvisited.length > 0 ? {
+        id: unvisited[0].id,
+        title: unvisited[0].title,
+        position: unvisited[0].position,
+        module: unvisited[0].module,
+        reason: 'fallback'
+      } : null);
 
-      const nextRecPos = result.next_recommendation?.position;
+      setNextRecommendation(rec);
+      if (rec) {
+        setShowRecommendationAlert(true);
+      }
+
+      // Move agent to DQN-recommended resource or fallback to nearest unvisited
+      const nextRecPos = rec?.position;
       if (nextRecPos) {
         moveAgent(nextRecPos);
         await updateAgentPosition(nextRecPos);
-      } else {
-        const unvisited = resources.filter(r => !r.visited);
-        if (unvisited.length > 0) {
-          moveAgent(unvisited[0].position);
-          await updateAgentPosition(unvisited[0].position);
-        }
       }
 
-      const visitedResources = resources.filter(r => r.visited);
+      const visitedResources = resources.filter(r => visitedIds.includes(r.id));
       const stats = await generateLearningSummary(visitedResources);
 
       // Surface next recommendation and update activity log in a single state update
-      const nextRecTitle = result.next_recommendation?.title;
+      const nextRecTitle = rec?.title;
       setLearningData(prev => ({
         ...stats,
+        visitedResources: visitedIds.length,
         recommendations: nextRecTitle
           ? [nextRecTitle, ...stats.recommendations.filter(r => r !== nextRecTitle)].slice(0, 3)
           : stats.recommendations,
         activityLog: [
+          ...(rec ? [{
+            id: `log-rec-${Date.now()}`,
+            type: 'optimal' as const,
+            title: `Next Recommended: ${rec.title}`,
+            timestamp: new Date().toLocaleTimeString()
+          }] : []),
           {
             id: `log-${Date.now()}`,
-            type: 'summary',
+            type: 'summary' as const,
             title: `Completed Summary: ${title}`,
             timestamp: new Date().toLocaleTimeString()
           },
@@ -208,9 +254,18 @@ const GridMatrixPage: React.FC = () => {
       // Update polylines with both the new summary and the updated average
       setPolylines(prev => {
         const base = prev.filter(p => !['learning-path-1', 'dqn-simulation', 'current_average'].includes(p.id));
-        const updates = [result.polyline];
+        const updates: Polyline[] = [];
+        if (result.polyline) {
+          updates.push({
+            ...result.polyline,
+            path: Array.isArray(result.polyline.path) ? result.polyline.path : []
+          });
+        }
         if (result.average_polyline) {
-          updates.push(result.average_polyline);
+          updates.push({
+            ...result.average_polyline,
+            path: Array.isArray(result.average_polyline.path) ? result.average_polyline.path : []
+          });
         }
         return [...base, ...updates];
       });
@@ -220,7 +275,7 @@ const GridMatrixPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [resources, generateLearningSummary, moveAgent, updateAgentPosition, setIsLoading]);
+  }, [resources, generateLearningSummary, moveAgent, updateAgentPosition, setIsLoading, visitResource, globalVisitResource]);
 
   const handleShowPolyline = useCallback((polylineId: string) => {
     setPolylines(prev => prev.map(p => ({
@@ -309,19 +364,11 @@ const GridMatrixPage: React.FC = () => {
   const handlePlayPath = useCallback(() => {
     if (learningPath.length < 2) return;
 
-    // Reconstruct path from titles
-    const path: GridPosition[] = [];
-    learningPath.forEach(title => {
-      const resource = resources.find(r => r.title === title);
-      const pos = resource ? resource.position : null;
-      if (pos) path.push(pos);
-    });
-
-    if (path.length > 0) {
-      setPlaybackPath(path);
+    if (learningPath.length > 1) {
+      setPlaybackPath(learningPath);
       setIsPlaying(true);
     }
-  }, [learningPath, resources]);
+  }, [learningPath]);
 
   const handleRestartJourney = useCallback(async () => {
     if (!window.confirm("Are you sure you want to restart your Intelligence Journey? This will clear all learning progress and summaries.")) {
@@ -334,6 +381,8 @@ const GridMatrixPage: React.FC = () => {
       
       // Update local state based on reset
       setAgent(response.session);
+      setNextRecommendation(null);
+      setShowRecommendationAlert(false);
       
       // Re-fetch everything to ensure synchronization
       const [resourceData, polylineData, learningStats] = await Promise.all([
@@ -360,24 +409,101 @@ const GridMatrixPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900 relative">
       {showTutorial && <DashboardTutorial onComplete={() => setShowTutorial(false)} page="navigator" />}
+
+      {/* Prominent Alert for Next Recommended Lesson after Summarizing */}
+      {showRecommendationAlert && nextRecommendation && (
+        <div
+          role="alert"
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+        >
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-blue-50 text-brand rounded-xl">
+                  <Sparkles className="w-5 h-5 text-brand fill-brand" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-brand block">
+                    {nextRecommendation.reason === 'dqn' ? 'RL / DQN Recommendation' : 'Navigator Recommendation'}
+                  </span>
+                  <h3 className="text-base font-bold text-gray-900">Next Recommended Lesson</h3>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRecommendationAlert(false)}
+                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                title="Close Alert"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-100">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 block mb-1">
+                  Recommended Lecture to Watch Next
+                </span>
+                <h4 className="text-base font-bold text-gray-900 leading-snug">
+                  {nextRecommendation.title}
+                </h4>
+                {nextRecommendation.module && (
+                  <p className="text-xs font-medium text-gray-600 mt-1">
+                    Module: <span className="text-brand font-semibold">{nextRecommendation.module}</span>
+                  </p>
+                )}
+                {nextRecommendation.position && (
+                  <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-mono font-bold text-brand bg-white px-2.5 py-1 rounded-lg border border-blue-100 shadow-xs">
+                    <MapPin className="w-3.5 h-3.5 text-brand" />
+                    Matrix Coordinates: ({Math.round(nextRecommendation.position.x)}, {Math.round(nextRecommendation.position.y)})
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-1">
+                <button
+                  onClick={() => setShowRecommendationAlert(false)}
+                  className="px-4 py-2 text-xs font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors"
+                >
+                  Dismiss
+                </button>
+                <button
+                  onClick={() => {
+                    const target = resources.find(
+                      r => r.id === nextRecommendation.id || r.title === nextRecommendation.title
+                    );
+                    if (target) {
+                      handleResourceClick(target, true);
+                    }
+                    setShowRecommendationAlert(false);
+                  }}
+                  className="px-5 py-2 bg-brand hover:bg-brand-dark text-white text-xs font-medium rounded-xl shadow-sm flex items-center gap-1.5 transition-all active:scale-95"
+                >
+                  <PlayCircle className="w-4 h-4" />
+                  View on Matrix
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Precision Floating Back Button */}
-      <div className="fixed top-6 left-6 z-[60]">
+      <div className="fixed top-4 left-6 z-[60]">
         <Link 
           to="/dashboard"
-          className="flex items-center gap-3 px-5 py-3 bg-white/80 backdrop-blur-md hover:bg-white text-slate-600 rounded-2xl transition-all shadow-xl shadow-slate-200/50 border border-slate-200 group active:scale-95"
+          className="flex items-center gap-2.5 px-4 py-2.5 bg-white/90 backdrop-blur-md hover:bg-white text-slate-700 rounded-xl transition-all shadow-md shadow-slate-200/60 border border-slate-200/80 group active:scale-95"
           title="Return to Command Center"
         >
-          <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-[11px] font-black uppercase tracking-[0.2em]">Exit Matrix</span>
+          <ChevronLeft size={16} className="group-hover:-translate-x-0.5 transition-transform text-slate-500" />
+          <span className="text-[11px] font-extrabold uppercase tracking-[0.15em]">Exit Matrix</span>
         </Link>
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-[1700px] mx-auto w-full px-6 pt-20 pb-6">
-        <div className="flex flex-col lg:flex-row gap-8 h-[calc(100vh-5rem)] min-h-[600px]">
+      <main className="flex-1 max-w-[1720px] mx-auto w-full px-5 pt-16 pb-5">
+        <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-5.25rem)] min-h-[620px]">
           {/* Left Panel - Grid Visualization */}
-          <div id="matrix-grid" className="flex-1 overflow-hidden flex flex-col rounded-2xl bg-white shadow-xl border border-gray-200">
+          <div id="matrix-grid" className="relative flex-1 overflow-hidden flex flex-col rounded-2xl bg-white shadow-lg shadow-slate-200/60 border border-slate-200/80">
             <GridVisualization
               resources={resources}
               agent={agent}
@@ -391,11 +517,12 @@ const GridMatrixPage: React.FC = () => {
               playbackPath={playbackPath}
               onPlaybackComplete={() => setIsPlaying(false)}
               assimilationPoints={assimilationPoints}
+              nextRecommendation={nextRecommendation}
             />
           </div>
 
           {/* Right Panel - Control Center */}
-          <div id="control-center" className="w-full lg:w-96 flex-shrink-0 flex flex-col rounded-2xl bg-white shadow-xl border border-gray-200 overflow-hidden">
+          <div id="control-center" className="w-full lg:w-[390px] flex-shrink-0 flex flex-col rounded-2xl bg-white shadow-lg shadow-slate-200/60 border border-slate-200/80 overflow-hidden">
             <ControlPanel
               onSummarizeLearning={handleSummarizeLearning}
               onShowPolyline={handleShowPolyline}
@@ -413,6 +540,7 @@ const GridMatrixPage: React.FC = () => {
               onStartTutorial={() => setShowTutorial(true)}
               agent={agent}
               onRestartJourney={handleRestartJourney}
+              nextRecommendation={nextRecommendation}
             />
           </div>
         </div>

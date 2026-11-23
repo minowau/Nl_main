@@ -14,7 +14,6 @@ __pycache__
 Dockerfile
 README.md
 backend/polyline_generation.log
-backend/db.json
 backend/db_backup.json
 .env
 *.pem
@@ -22,3 +21,6 @@ backend/db_backup.json
 scripts
 .vscode
 tests
+training_notebooks
+*.log
+*.ipynb

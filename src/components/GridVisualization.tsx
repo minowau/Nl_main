@@ -24,9 +24,11 @@ interface GridVisualizationProps {
   playbackPath?: GridPosition[];
   onPlaybackComplete?: () => void;
   assimilationPoints?: AssimilationPoint[];
+  nextRecommendation?: Polyline['next_recommendation'];
 }
 
 const GRID_SIZE = 20;
+const MAP_SIZE = 1000;
 
 const ResourceIcon = ({ type }: { type: Resource['type'] }) => {
   const iconProps = { size: 14, className: "text-white drop-shadow-sm" };
@@ -87,7 +89,8 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   isPlaying = false,
   playbackPath = [],
   onPlaybackComplete,
-  assimilationPoints = []
+  assimilationPoints = [],
+  nextRecommendation = null
 }) => {
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [hoveredResource, setHoveredResource] = useState<string | null>(null);
@@ -97,21 +100,100 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [zoomLevel, setZoomLevel] = useState(1);
   const [showAssimilationPath, setShowAssimilationPath] = useState(false);
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = React.useRef<{ x: number; y: number; scrollLeft: number; scrollTop: number } | null>(null);
   const gridRef = React.useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to agent on load or movement
-  React.useEffect(() => {
-    if (gridRef.current && agent.position) {
-      const scrollY = (agent.position.y * (1000 / GRID_SIZE) * zoomLevel) - (gridRef.current.clientHeight / 2);
-      const scrollX = (agent.position.x * (1000 / GRID_SIZE) * zoomLevel) - (gridRef.current.clientWidth / 2);
+  // Center-preserving zoom helper so zooming never jumps or locks scroll bounds
+  const handleZoomChange = React.useCallback((updater: (prev: number) => number) => {
+    const container = gridRef.current;
+    const centerRatioX = container && container.scrollWidth > 0
+      ? (container.scrollLeft + container.clientWidth / 2) / container.scrollWidth
+      : 0.5;
+    const centerRatioY = container && container.scrollHeight > 0
+      ? (container.scrollTop + container.clientHeight / 2) / container.scrollHeight
+      : 0.5;
 
-      gridRef.current.scrollTo({
-        top: scrollY,
-        left: scrollX,
-        behavior: 'smooth'
+    setZoomLevel(prev => {
+      const next = Math.round(Math.min(2.5, Math.max(0.6, updater(prev))) * 100) / 100;
+      requestAnimationFrame(() => {
+        if (gridRef.current) {
+          const newScrollLeft = Math.max(0, centerRatioX * gridRef.current.scrollWidth - gridRef.current.clientWidth / 2);
+          const newScrollTop = Math.max(0, centerRatioY * gridRef.current.scrollHeight - gridRef.current.clientHeight / 2);
+          gridRef.current.scrollLeft = newScrollLeft;
+          gridRef.current.scrollTop = newScrollTop;
+        }
       });
-    }
-  }, [agent.position.x, agent.position.y, zoomLevel]);
+      return next;
+    });
+  }, []);
+
+  const handlePanStart = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0 || !gridRef.current) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('[data-node-pin]')) return;
+    setIsPanning(true);
+    panStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      scrollLeft: gridRef.current.scrollLeft,
+      scrollTop: gridRef.current.scrollTop
+    };
+  };
+
+  const handlePanMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isPanning || !panStartRef.current || !gridRef.current) return;
+    const dx = e.clientX - panStartRef.current.x;
+    const dy = e.clientY - panStartRef.current.y;
+    gridRef.current.scrollLeft = panStartRef.current.scrollLeft - dx;
+    gridRef.current.scrollTop = panStartRef.current.scrollTop - dy;
+  };
+
+  const handlePanEnd = () => {
+    setIsPanning(false);
+    panStartRef.current = null;
+  };
+
+  const coordinateBounds = React.useMemo(() => {
+    const points = resources.length > 0
+      ? [...resources.map(resource => resource.position), agent.position]
+      : [agent.position];
+    const xValues = points.map(point => point.x);
+    const yValues = points.map(point => point.y);
+    const minX = Math.min(...xValues);
+    const maxX = Math.max(...xValues);
+    const minY = Math.min(...yValues);
+    const maxY = Math.max(...yValues);
+    const paddingX = Math.max((maxX - minX) * 0.12, 0.25);
+    const paddingY = Math.max((maxY - minY) * 0.12, 0.25);
+
+    return {
+      minX: minX - paddingX,
+      maxX: maxX + paddingX,
+      minY: minY - paddingY,
+      maxY: maxY + paddingY,
+    };
+  }, [agent.position, assimilationPoints, playbackPath, polylines, resources]);
+
+  const mapPoint = React.useCallback((point: GridPosition) => ({
+    x: ((point.x - coordinateBounds.minX) / (coordinateBounds.maxX - coordinateBounds.minX)) * MAP_SIZE,
+    y: ((point.y - coordinateBounds.minY) / (coordinateBounds.maxY - coordinateBounds.minY)) * MAP_SIZE,
+  }), [coordinateBounds]);
+
+  const mapPercent = React.useCallback((point: GridPosition) => {
+    const mapped = mapPoint(point);
+    return { left: `${mapped.x / MAP_SIZE * 100}%`, top: `${mapped.y / MAP_SIZE * 100}%` };
+  }, [mapPoint]);
+
+  const mapGridPoint = React.useCallback((point: GridPosition) => ({
+    x: (point.x + 0.5) * (MAP_SIZE / GRID_SIZE),
+    y: (point.y + 0.5) * (MAP_SIZE / GRID_SIZE),
+  }), []);
+
+  const mapGridPercent = React.useCallback((point: GridPosition) => {
+    const mapped = mapGridPoint(point);
+    return { left: `${mapped.x / MAP_SIZE * 100}%`, top: `${mapped.y / MAP_SIZE * 100}%` };
+  }, [mapGridPoint]);
 
   // Build the assimilation path from polyline assimilation positions
   // This traces how the user's average assimilation evolved over time
@@ -121,6 +203,34 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
       .filter(p => p.assimilation_position && p.assimilation_position.x !== undefined)
       .map(p => p.assimilation_position!)
   }, [polylines]);
+
+  const currentPositionPoint = assimilationPath.length > 0 ? assimilationPath[assimilationPath.length - 1] : null;
+
+  const centerOnAgent = React.useCallback((smooth = true) => {
+    if (!gridRef.current) return;
+    const targetPoint = currentPositionPoint
+      ? mapGridPoint(currentPositionPoint)
+      : (agent.position ? mapPoint(agent.position) : null);
+
+    if (targetPoint) {
+      const paddingOffset = 36;
+      const maxScrollY = Math.max(0, gridRef.current.scrollHeight - gridRef.current.clientHeight);
+      const maxScrollX = Math.max(0, gridRef.current.scrollWidth - gridRef.current.clientWidth);
+      const scrollY = Math.max(0, Math.min(maxScrollY, (targetPoint.y * zoomLevel) + paddingOffset - (gridRef.current.clientHeight / 2)));
+      const scrollX = Math.max(0, Math.min(maxScrollX, (targetPoint.x * zoomLevel) + paddingOffset - (gridRef.current.clientWidth / 2)));
+
+      gridRef.current.scrollTo({
+        top: scrollY,
+        left: scrollX,
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+    }
+  }, [agent.position, currentPositionPoint, mapPoint, mapGridPoint, zoomLevel]);
+
+  // Auto-scroll to agent or path endpoint on load or agent movement (not on manual zoom)
+  React.useEffect(() => {
+    centerOnAgent(true);
+  }, [agent.position.x, agent.position.y, currentPositionPoint?.x, currentPositionPoint?.y]);
 
   // Find the resource the agent is currently sitting on
   const currentResource = React.useMemo(() => {
@@ -199,7 +309,15 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   }, [isPlaying, playbackPath, onPlaybackComplete]);
 
   const handleCellClick = (x: number, y: number) => {
-    const resource = resources.find(r => r.position.x === x && r.position.y === y);
+    const worldPosition = {
+      x: coordinateBounds.minX + ((x + 0.5) / GRID_SIZE) * (coordinateBounds.maxX - coordinateBounds.minX),
+      y: coordinateBounds.minY + ((y + 0.5) / GRID_SIZE) * (coordinateBounds.maxY - coordinateBounds.minY),
+    };
+    const resource = resources.find(r => {
+      const mapped = mapPoint(r.position);
+      return Math.floor(mapped.x / (MAP_SIZE / GRID_SIZE)) === x &&
+        Math.floor(mapped.y / (MAP_SIZE / GRID_SIZE)) === y;
+    });
     if (resource) {
       setSelectedResource(resource);
 
@@ -211,16 +329,23 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
       onResourceClick(resource, true); // Always skipMove = true for manual clicks
     } else {
       // Clicks on empty cells no longer move the agent (logic moved to GridMatrixPage to ignore)
-      onAgentMove({ x, y });
+      onAgentMove(worldPosition);
     }
   };
 
   const renderNeuralRoad = () => {
-    return polylines.filter(p => p.isActive).map(polyline => (
-      <svg key={polyline.id} className="absolute inset-0 w-full h-full pointer-events-none z-10">
+    return polylines.filter(p => p.isActive && Array.isArray(p.path) && p.path.length > 0).map(polyline => (
+      <svg
+        key={polyline.id}
+        className="absolute inset-0 w-full h-full pointer-events-none z-[25]"
+        viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
+        preserveAspectRatio="none"
+      >
         <path
-          d={polyline.path.map((pos, i) =>
-            `${i === 0 ? 'M' : 'L'} ${(pos.x + 0.5) * 50} ${(pos.y + 0.5) * 50}`
+          d={polyline.path.map((pos, i) => {
+            const mapped = mapPoint(pos);
+            return `${i === 0 ? 'M' : 'L'} ${mapped.x} ${mapped.y}`;
+          }
           ).join(' ')}
           fill="none"
           stroke={polyline.color}
@@ -230,8 +355,10 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
           className="opacity-20 filter blur-[2px]"
         />
         <path
-          d={polyline.path.map((pos, i) =>
-            `${i === 0 ? 'M' : 'L'} ${(pos.x + 0.5) * 50} ${(pos.y + 0.5) * 50}`
+          d={polyline.path.map((pos, i) => {
+            const mapped = mapPoint(pos);
+            return `${i === 0 ? 'M' : 'L'} ${mapped.x} ${mapped.y}`;
+          }
           ).join(' ')}
           fill="none"
           stroke={polyline.color}
@@ -249,18 +376,17 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   const renderAssimilationPath = () => {
     if (assimilationPath.length < 2) return null;
 
-    const CELL_SIZE = 1000 / GRID_SIZE;
-    const HALF_CELL = CELL_SIZE / 2;
-
     // Build quadratic Bézier segments between consecutive visited resources
     const segments: { d: string; idx: number }[] = [];
     for (let i = 0; i < assimilationPath.length - 1; i++) {
       const p1 = assimilationPath[i];
       const p2 = assimilationPath[i + 1];
-      const x1 = p1.x * CELL_SIZE + HALF_CELL;
-      const y1 = p1.y * CELL_SIZE + HALF_CELL;
-      const x2 = p2.x * CELL_SIZE + HALF_CELL;
-      const y2 = p2.y * CELL_SIZE + HALF_CELL;
+      const start = mapGridPoint(p1);
+      const end = mapGridPoint(p2);
+      const x1 = start.x;
+      const y1 = start.y;
+      const x2 = end.x;
+      const y2 = end.y;
 
       // Arc perpendicular offset
       const dx = x2 - x1;
@@ -275,14 +401,15 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
 
     // Full polyline path for the moving dot
     const fullPath = assimilationPath.map((p, i) => {
-      const px = p.x * CELL_SIZE + HALF_CELL;
-      const py = p.y * CELL_SIZE + HALF_CELL;
+      const mapped = mapGridPoint(p);
+      const px = mapped.x;
+      const py = mapped.y;
       return `${i === 0 ? 'M' : 'L'} ${px} ${py}`;
     }).join(' ');
 
     return (
-      <div className="absolute inset-0 z-15 pointer-events-none">
-        <svg width="100%" height="100%" viewBox="0 0 1000 1000" className="overflow-visible">
+      <div className="absolute inset-4 z-[15] pointer-events-none">
+        <svg width="100%" height="100%" viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} className="overflow-visible">
           <defs>
             <linearGradient id="assimPathGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#06b6d4" />
@@ -322,7 +449,6 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
               strokeLinecap="round"
               strokeDasharray="6 4"
               markerEnd="url(#assimArrow)"
-              filter="url(#assimGlow)"
               opacity="0.7"
             >
               <animate
@@ -337,8 +463,9 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
 
           {/* Waypoint dots at each visited resource */}
           {assimilationPath.map((p, i) => {
-            const px = p.x * CELL_SIZE + HALF_CELL;
-            const py = p.y * CELL_SIZE + HALF_CELL;
+            const mapped = mapGridPoint(p);
+            const px = mapped.x;
+            const py = mapped.y;
             return (
               <g key={`wp-${i}`}>
                 <circle cx={px} cy={py} r="5" fill="white" stroke="#8b5cf6" strokeWidth="2" opacity="0.9" />
@@ -350,7 +477,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
           })}
 
           {/* Animated traveling dot along the full path */}
-          <circle r="4" fill="#ec4899" filter="url(#assimGlow)">
+          <circle r="4" fill="#ec4899">
             <animateMotion dur={`${Math.max(3, assimilationPath.length * 1.2)}s`} repeatCount="indefinite">
               <mpath href="#assimFullPath" />
             </animateMotion>
@@ -364,20 +491,17 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   const renderPlaybackOverlay = () => {
     if (!isPlaying || playbackPath.length < 2) return null;
 
-    // Convert grid coordinates to percentages (assuming 1fr grid)
-    // Grid matches 1000x1000px container
-    const CELL_SIZE = 1000 / GRID_SIZE;
-    const HALF_CELL = CELL_SIZE / 2;
-
     const pathSegments = [];
     for (let i = 0; i < playbackPath.length - 1; i++) {
       const start = playbackPath[i];
       const end = playbackPath[i + 1];
 
-      const x1 = start.x * CELL_SIZE + HALF_CELL;
-      const y1 = start.y * CELL_SIZE + HALF_CELL;
-      const x2 = end.x * CELL_SIZE + HALF_CELL;
-      const y2 = end.y * CELL_SIZE + HALF_CELL;
+      const mappedStart = mapPoint(start);
+      const mappedEnd = mapPoint(end);
+      const x1 = mappedStart.x;
+      const y1 = mappedStart.y;
+      const x2 = mappedEnd.x;
+      const y2 = mappedEnd.y;
 
       // Calculate control point for arc
       // Midpoint
@@ -401,8 +525,8 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
     }
 
     return (
-      <div className="absolute inset-0 z-50 pointer-events-none">
-        <svg width="100%" height="100%" viewBox="0 0 1000 1000" className="overflow-visible">
+      <div className="absolute inset-4 z-50 pointer-events-none">
+        <svg width="100%" height="100%" viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} className="overflow-visible">
           <defs>
             <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur stdDeviation="2" result="blur" />
@@ -437,7 +561,6 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                   strokeLinecap="round"
                   strokeDasharray="8 6"
                   markerEnd="url(#arrowhead-swallowtail)"
-                  filter="url(#glow)"
                   strokeDashoffset={dashLen * (1 - segmentProgress)}
                 />
               </g>
@@ -454,7 +577,9 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
     // 1. Render interactive background cells for clicking
     for (let y = 0; y < GRID_SIZE; y++) {
       for (let x = 0; x < GRID_SIZE; x++) {
-        const isAgent = Math.round(agent.position.x) === x && Math.round(agent.position.y) === y;
+        const mappedAgent = mapPoint(agent.position);
+        const isAgent = Math.floor(mappedAgent.x / (MAP_SIZE / GRID_SIZE)) === x &&
+          Math.floor(mappedAgent.y / (MAP_SIZE / GRID_SIZE)) === y;
 
         cells.push(
           <div
@@ -475,41 +600,47 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
 
     // 2. Render actual resource nodes as absolute-positioned overlays
     const resourceNodes = resources.map(resource => {
-      // Dynamic Tooltip Positioning
-      let tooltipClass = "absolute bottom-full left-1/2 -translate-x-1/2 mb-2";
-      let arrowClass = "absolute left-1/2 -translate-x-1/2 -bottom-2";
+      // Dynamic Tooltip Positioning using mapped pixel coordinates so edge tooltips never clip
+      const mappedPos = mapPoint(resource.position);
+      let tooltipClass = "absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5";
+      let arrowClass = "absolute left-1/2 -translate-x-1/2 -bottom-1.5";
 
-      if (resource.position.x < 4) {
-        tooltipClass = "absolute bottom-full left-0 mb-2";
-        arrowClass = "absolute left-4 -bottom-2";
-      } else if (resource.position.x > 15) {
-        tooltipClass = "absolute bottom-full right-0 mb-2";
-        arrowClass = "absolute right-4 -bottom-2";
-      }
+      const isLeftEdge = mappedPos.x < 240;
+      const isRightEdge = mappedPos.x > 760;
+      const isTopEdge = mappedPos.y < 260;
 
-      if (resource.position.y < 4) {
-        if (resource.position.x < 4) {
-          tooltipClass = "absolute top-full left-0 mt-2";
-          arrowClass = "absolute left-4 -top-2";
-        } else if (resource.position.x > 15) {
-          tooltipClass = "absolute top-full right-0 mt-2";
-          arrowClass = "absolute right-4 -top-2";
+      if (isTopEdge) {
+        if (isLeftEdge) {
+          tooltipClass = "absolute top-full left-0 mt-2.5";
+          arrowClass = "absolute left-4 -top-1.5";
+        } else if (isRightEdge) {
+          tooltipClass = "absolute top-full right-0 mt-2.5";
+          arrowClass = "absolute right-4 -top-1.5";
         } else {
-          tooltipClass = "absolute top-full left-1/2 -translate-x-1/2 mt-2";
-          arrowClass = "absolute left-1/2 -translate-x-1/2 -top-2";
+          tooltipClass = "absolute top-full left-1/2 -translate-x-1/2 mt-2.5";
+          arrowClass = "absolute left-1/2 -translate-x-1/2 -top-1.5";
+        }
+      } else {
+        if (isLeftEdge) {
+          tooltipClass = "absolute bottom-full left-0 mb-2.5";
+          arrowClass = "absolute left-4 -bottom-1.5";
+        } else if (isRightEdge) {
+          tooltipClass = "absolute bottom-full right-0 mb-2.5";
+          arrowClass = "absolute right-4 -bottom-1.5";
         }
       }
 
       const showTooltip = hoveredResource === resource.id;
-      const isCurrent = currentResource?.id === resource.id;
+      const isCurrent = !currentPositionPoint && currentResource?.id === resource.id;
+      const isRecommended = Boolean(nextRecommendation && (nextRecommendation.id === resource.id || nextRecommendation.title === resource.title));
 
       return (
         <div
           key={`res-${resource.id}`}
-          className={`absolute transition-all duration-500 ${showTooltip ? 'z-[100]' : 'z-30'}`}
+          data-node-pin="true"
+          className={`absolute transition-all duration-300 ${showTooltip ? 'z-[100]' : (isRecommended ? 'z-40' : 'z-30')}`}
           style={{
-            left: `${(resource.position.x + 0.5) * (100 / GRID_SIZE)}%`,
-            top: `${(resource.position.y + 0.5) * (100 / GRID_SIZE)}%`,
+            ...mapPercent(resource.position),
             width: `${100 / GRID_SIZE}%`,
             height: `${100 / GRID_SIZE}%`,
             transform: 'translate(-50%, -50%)'
@@ -521,10 +652,15 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
             onMouseLeave={handleMouseLeave}
           >
             {/* Circular Reference Marker */}
-            <div className={`
-              relative flex items-center justify-center
+            <div
+              onClick={() => {
+                setSelectedResource(resource);
+                onResourceClick(resource, true);
+              }}
+              className={`
+              relative flex items-center justify-center cursor-pointer
               w-10 h-10 transform transition-all duration-300
-              ${isCurrent ? 'scale-150 z-50 animate-pulse' : (selectedResource?.id === resource.id ? 'scale-110' : 'hover:scale-110 hover:-translate-y-1')}
+              ${isCurrent || isRecommended ? 'scale-150 z-50 animate-pulse' : (selectedResource?.id === resource.id ? 'scale-110' : 'hover:scale-110 hover:-translate-y-1')}
             `}>
               {/* Outer Glow */}
               <div className={`absolute inset-0 rounded-full blur-[8px] opacity-25 ${resource.visited ? 'bg-green-400' :
@@ -545,13 +681,13 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                 <ResourceIcon type={resource.type} />
               </div>
 
-              {/* Highlight - pulsing golden ring */}
-              {isCurrent && (
+              {/* Highlight - pulsing golden/brand ring */}
+              {(isCurrent || isRecommended) && (
                 <>
-                  <div className="absolute inset-0 rounded-full border-2 border-amber-400 animate-ping opacity-40" style={{ animationDuration: '2s' }} />
-                  <div className="absolute inset-[-3px] rounded-full border-2 border-amber-400 opacity-80" />
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[6px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-md whitespace-nowrap leading-none">
-                    CURRENT
+                  <div className={`absolute inset-0 rounded-full border-2 ${isRecommended ? 'border-brand' : 'border-amber-400'} animate-ping opacity-40`} style={{ animationDuration: '2s' }} />
+                  <div className={`absolute inset-[-3px] rounded-full border-2 ${isRecommended ? 'border-brand' : 'border-amber-400'} opacity-80`} />
+                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 ${isRecommended ? 'bg-brand' : 'bg-amber-500'} text-white text-[6px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-md whitespace-nowrap leading-none`}>
+                    {isRecommended ? 'NEXT LESSON' : 'CURRENT'}
                   </div>
                 </>
               )}
@@ -586,6 +722,8 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        setSelectedResource(resource);
+                        onResourceClick(resource, true);
                         if (resource.youtube_url) {
                           setVideoResource(resource);
                           setHoveredResource(null);
@@ -604,75 +742,61 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
         </div>
       );
     });
-    const assimilationNodes = (assimilationPoints || []).map((ap, index) => {
-      const left = (ap.position.x + 0.5) * (100 / GRID_SIZE);
-      const top = (ap.position.y + 0.5) * (100 / GRID_SIZE);
-      return (
-        <motion.div
-          key={`ap-${ap.id}-${index}`}
-          className="absolute z-20 pointer-events-none"
-          style={{ left: `${left}%`, top: `${top}%` }}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-        >
-          <div className="relative -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-            <div className="absolute -top-8 text-white text-[10px] font-bold px-2.5 py-1 rounded-md shadow-xl whitespace-nowrap" style={{ backgroundColor: ap.color }}>
-              {ap.label}
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 transform rotate-45" style={{ backgroundColor: ap.color }}></div>
-            </div>
-            <div 
-              className="w-4 h-4 rounded-full border-2 border-white shadow-lg animate-pulse"
-              style={{ backgroundColor: ap.color, boxShadow: `0 0 15px ${ap.color}80` }}
-            />
-          </div>
-        </motion.div>
-      );
-    });
-
-    return [...cells, ...resourceNodes, ...assimilationNodes];
+    return [...cells, ...resourceNodes];
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50/30 overflow-hidden">
-      <div className="flex-none px-6 py-4 bg-white/90 backdrop-blur-sm border-b border-gray-100 flex justify-between items-center z-10">
+    <div className="relative flex flex-col h-full bg-slate-50/50 overflow-hidden">
+      <div className="flex-none px-5 py-3.5 bg-white/95 backdrop-blur-md border-b border-slate-100 flex flex-wrap justify-between items-center gap-3 z-20">
         <div>
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-blue-600" />
+          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 tracking-tight">
+            <MapPin className="w-4 h-4 text-blue-600" />
             Learning Environment
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5">Explore resources and track your journey</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Drag or scroll to explore • Click any node to open lesson</p>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center bg-white border border-gray-100 rounded-lg shadow-sm p-1">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex items-center bg-slate-50/80 border border-slate-200/80 rounded-xl shadow-sm p-0.5">
             <button
-              onClick={() => setZoomLevel(prev => Math.max(1, prev - 0.25))}
-              className="p-1.5 hover:bg-gray-50 text-gray-500 transition-colors rounded-md"
+              onClick={() => handleZoomChange(prev => prev - 0.2)}
+              disabled={zoomLevel <= 0.6}
+              className="p-1.5 hover:bg-white disabled:opacity-40 text-slate-600 transition-all rounded-lg hover:shadow-xs"
               title="Zoom Out"
             >
-              <ZoomOut size={16} />
+              <ZoomOut size={15} />
             </button>
-            <div className="w-px h-4 bg-gray-100 mx-1"></div>
+            <div className="w-px h-3.5 bg-slate-200 mx-0.5"></div>
             <button
-              onClick={() => setZoomLevel(1.5)}
-              className="px-2 py-1 hover:bg-gray-50 text-gray-400 text-[10px] font-bold transition-colors rounded-md"
-              title="Reset Zoom"
+              onClick={() => handleZoomChange(() => 1)}
+              className="px-2.5 py-1 hover:bg-white text-slate-600 text-[11px] font-bold transition-all rounded-lg min-w-[48px] text-center"
+              title="Reset to 100%"
             >
               {Math.round(zoomLevel * 100)}%
             </button>
-            <div className="w-px h-4 bg-gray-100 mx-1"></div>
+            <div className="w-px h-3.5 bg-slate-200 mx-0.5"></div>
             <button
-              onClick={() => setZoomLevel(prev => Math.min(3, prev + 0.25))}
-              className="p-1.5 hover:bg-gray-50 text-gray-500 transition-colors rounded-md"
+              onClick={() => handleZoomChange(prev => prev + 0.2)}
+              disabled={zoomLevel >= 2.5}
+              className="p-1.5 hover:bg-white disabled:opacity-40 text-slate-600 transition-all rounded-lg hover:shadow-xs"
               title="Zoom In"
             >
-              <ZoomIn size={16} />
+              <ZoomIn size={15} />
             </button>
           </div>
 
           <button
+            onClick={() => centerOnAgent(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl transition-all shadow-xs"
+            title="Center on your position"
+          >
+            <MapPin className="w-3.5 h-3.5 text-blue-600" />
+            <span>Center</span>
+          </button>
+
+          <button
             onClick={() => setIsSearching(true)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-white border border-blue-200 hover:bg-blue-50 text-blue-600 text-xs font-semibold rounded-lg transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-blue-200 hover:bg-blue-50 text-blue-600 text-xs font-semibold rounded-xl transition-all shadow-xs"
           >
             <Search className="w-3.5 h-3.5" />
             <span>Search</span>
@@ -681,43 +805,43 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
           {isSimulationRunning && (
             <button
               onClick={onRefreshDQNPath}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 text-xs font-semibold rounded-lg transition-all shadow-sm group"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 text-xs font-semibold rounded-xl transition-all shadow-xs group"
             >
               <RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
               <span>Optimize Path</span>
             </button>
           )}
 
-          <div className="flex items-center gap-3 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full border border-blue-200 overflow-hidden bg-white shadow-sm">
+          <div className="flex items-center gap-2.5 bg-slate-50/90 px-3 py-1.5 rounded-xl border border-slate-200/70">
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-4 rounded-full border border-blue-200 overflow-hidden bg-white shadow-xs">
                 <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
               </div>
-              <span className="text-xs font-medium text-gray-600">You (Agent)</span>
+              <span className="text-[11px] font-medium text-slate-600">You</span>
             </div>
-            <div className="w-px h-3 bg-gray-200"></div>
+            <div className="w-px h-3 bg-slate-200"></div>
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 bg-[#A855F7] rounded-full"></div>
-              <span className="text-xs font-medium text-gray-600">Resource</span>
+              <span className="text-[11px] font-medium text-slate-600">Lesson</span>
             </div>
             {assimilationPoints.length > 0 && (
               <>
-                <div className="w-px h-3 bg-gray-200"></div>
+                <div className="w-px h-3 bg-slate-200"></div>
                 <div className="flex items-center gap-1.5">
                   <Diamond className="w-3 h-3 text-cyan-500 fill-cyan-400" />
-                  <span className="text-xs font-medium text-gray-600">Assimilation</span>
+                  <span className="text-[11px] font-medium text-slate-600">Target</span>
                 </div>
               </>
             )}
             {assimilationPath.length >= 2 && (
               <>
-                <div className="w-px h-3 bg-gray-200"></div>
+                <div className="w-px h-3 bg-slate-200"></div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-0.5 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-full"></div>
-                  <span className="text-xs font-medium text-gray-600">Path</span>
+                  <span className="text-[11px] font-medium text-slate-600">Path</span>
                   <button
                     onClick={() => setShowAssimilationPath(prev => !prev)}
-                    className={`relative w-7 h-4 rounded-full transition-colors duration-200 ${showAssimilationPath ? 'bg-purple-500' : 'bg-gray-300'}`}
+                    className={`relative w-7 h-4 rounded-full transition-colors duration-200 ${showAssimilationPath ? 'bg-purple-500' : 'bg-slate-300'}`}
                   >
                     <span
                       className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform duration-200 ${showAssimilationPath ? 'translate-x-3' : 'translate-x-0'}`}
@@ -730,38 +854,63 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
         </div>
       </div>
 
-      {isSimulationRunning && dqnPathInfo?.resource && (
-        <div className="absolute top-20 right-6 z-20 animate-in slide-in-from-top-4 fade-in duration-300 pointer-events-none">
-          <div className="bg-white/95 backdrop-blur-md px-4 py-3 rounded-xl shadow-lg border border-red-100 ring-1 ring-red-50 w-64 pointer-events-auto">
+      {((isSimulationRunning && dqnPathInfo?.resource) || nextRecommendation) && (
+        <div className="absolute top-20 right-5 z-30 animate-in slide-in-from-top-4 fade-in duration-300 pointer-events-none">
+          <div
+            onClick={() => {
+              const recId = isSimulationRunning && dqnPathInfo?.resource ? dqnPathInfo.resource.id : nextRecommendation?.id;
+              const target = resources.find(r => r.id === recId || r.title === nextRecommendation?.title);
+              if (target) {
+                setSelectedResource(target);
+                onResourceClick(target, true);
+              }
+            }}
+            className="bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg border border-blue-100 ring-1 ring-blue-50/80 w-72 pointer-events-auto cursor-pointer hover:shadow-xl hover:border-blue-200 transition-all"
+          >
             <div className="flex items-start justify-between gap-3">
-              <div>
-                <span className="text-[10px] font-bold tracking-wider text-red-500 uppercase">Recommendation</span>
-                <h3 className="text-sm font-semibold text-gray-900 mt-0.5 line-clamp-1">{dqnPathInfo.resource.title}</h3>
+              <div className="min-w-0">
+                <span className="text-[10px] font-bold tracking-wider text-brand uppercase block">
+                  {isSimulationRunning && dqnPathInfo?.resource ? 'DQN Recommendation' : 'Next Recommended Lesson'}
+                </span>
+                <h3 className="text-sm font-bold text-gray-900 mt-0.5 line-clamp-2">
+                  {isSimulationRunning && dqnPathInfo?.resource ? dqnPathInfo.resource.title : nextRecommendation?.title}
+                </h3>
+                {!isSimulationRunning && nextRecommendation?.module && (
+                  <p className="text-[10px] text-gray-500 font-medium truncate mt-0.5">{nextRecommendation.module}</p>
+                )}
               </div>
-              <div className="flex flex-col items-end">
-                <span className="text-lg font-bold text-red-600 leading-none">+{dqnPathInfo.reward}</span>
-              </div>
+              {isSimulationRunning && dqnPathInfo?.resource && (
+                <div className="flex flex-col items-end shrink-0">
+                  <span className="text-lg font-bold text-red-600 leading-none">+{dqnPathInfo.reward}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      <div className="flex-1 w-full relative overflow-auto bg-gray-50/30" ref={gridRef}>
-        <div className="min-w-full min-h-full flex items-center justify-center p-8">
+      <div
+        ref={gridRef}
+        onMouseDown={handlePanStart}
+        onMouseMove={handlePanMove}
+        onMouseUp={handlePanEnd}
+        onMouseLeave={handlePanEnd}
+        className={`flex-1 w-full relative overflow-auto bg-slate-100/60 select-none ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
+      >
+        <div className="min-w-full min-h-full w-max flex p-9">
           <div
-            className="grid gap-0 bg-[#F8FAFC] rounded-3xl shadow-2xl p-4 shrink-0 relative overflow-hidden"
+            className="m-auto grid gap-0 bg-[#F8FAFC] rounded-3xl shadow-xl border border-slate-200/80 p-4 shrink-0 relative"
             style={{
-              width: `${1000 * zoomLevel}px`,
-              height: `${1000 * zoomLevel}px`,
+              width: `${MAP_SIZE * zoomLevel}px`,
+              height: `${MAP_SIZE * zoomLevel}px`,
               gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
               gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
-              backgroundImage: `radial-gradient(#E2E8F0 1.5px, transparent 1.5px)`,
+              backgroundImage: `radial-gradient(#CBD5E1 1.5px, transparent 1.5px)`,
               backgroundSize: `${24 * zoomLevel}px ${24 * zoomLevel}px`,
-              transition: 'width 0.3s ease-out, height 0.3s ease-out'
             }}
           >
             {/* Map Terrain: color-coded 0°-90° quarter-circle arcs with hover tooltips */}
-            <div className="absolute inset-0 pointer-events-none z-0">
+            <div className="absolute inset-0 pointer-events-none z-0 rounded-3xl overflow-hidden">
               <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
                 {/* Color-coded concentric arcs — each arc belongs to a tier */}
                 {(() => {
@@ -828,24 +977,115 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
             </div>
 
 
-            {/* {renderNeuralRoad()} */}
+            {renderNeuralRoad()}
             {showAssimilationPath && renderAssimilationPath()}
             {renderGrid()}
             {renderPlaybackOverlay()}
 
             {/* Assimilation Point Markers */}
-            {assimilationPoints.map((point) => (
+            <div className="absolute inset-4 z-[35] pointer-events-none">
+              {assimilationPoints
+                .filter(point => point.id !== 'current_average')
+                .map((point) => (
+                  <motion.div
+                    key={`assim-${point.id}`}
+                    className="absolute flex items-center justify-center"
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{
+                      opacity: 1,
+                      scale: 1,
+                      ...mapGridPercent(point.position),
+                    }}
+                    transition={{ type: 'spring', damping: 20, stiffness: 100, delay: 0.2 }}
+                    style={{
+                      width: `${100 / GRID_SIZE}%`,
+                      height: `${100 / GRID_SIZE}%`,
+                      x: '-50%',
+                      y: '-50%',
+                    }}
+                  >
+                    <motion.div
+                      className="absolute rounded-full"
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        background: `radial-gradient(circle, ${point.color}40 0%, transparent 70%)`,
+                      }}
+                      animate={{
+                        scale: [1, 1.6, 1],
+                        opacity: [0.6, 0.15, 0.6],
+                      }}
+                      transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                    <div
+                      className="relative w-5 h-5 flex items-center justify-center"
+                      style={{ transform: 'rotate(45deg)' }}
+                    >
+                      <div
+                        className="w-4 h-4 rounded-sm shadow-lg border-2 border-white"
+                        style={{ backgroundColor: point.color }}
+                      />
+                    </div>
+                    <div className="absolute top-[calc(100%+2px)] left-1/2 -translate-x-1/2 whitespace-nowrap">
+                      <span
+                        className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md shadow-sm border"
+                        style={{
+                          color: point.color,
+                          backgroundColor: `${point.color}10`,
+                          borderColor: `${point.color}30`,
+                        }}
+                      >
+                        {point.label}
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+            </div>
+
+            {/* Animated Student Agent Marker */}
+            {currentPositionPoint ? (
+              <div className="absolute inset-4 z-40 pointer-events-none">
+                <motion.div
+                  key={`agent-at-path-${currentPositionPoint.x}-${currentPositionPoint.y}`}
+                  className="absolute pointer-events-none flex items-center justify-center"
+                  initial={false}
+                  transition={{
+                    left: { type: "spring", damping: 25, stiffness: 120 },
+                    top: { type: "spring", damping: 25, stiffness: 120 },
+                    scale: { duration: 0.4 },
+                    rotate: { duration: 0.4 }
+                  }}
+                  animate={{
+                    ...mapGridPercent(currentPositionPoint),
+                    scale: isPlaying ? [1, 1.15, 1] : 1,
+                    rotateY: 0
+                  }}
+                  style={{
+                    width: `${100 / GRID_SIZE}%`,
+                    height: `${100 / GRID_SIZE}%`,
+                    x: '-50%',
+                    y: '-50%',
+                  }}
+                >
+                  <SocialAgent isMoving={isPlaying} />
+                </motion.div>
+              </div>
+            ) : (
               <motion.div
-                key={`assim-${point.id}`}
-                className="absolute z-35 pointer-events-none flex items-center justify-center"
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                  left: `${(point.position.x + 0.5) * (100 / GRID_SIZE)}%`,
-                  top: `${(point.position.y + 0.5) * (100 / GRID_SIZE)}%`,
+                key={`agent-at-${agent.position.x}-${agent.position.y}`}
+                className="absolute pointer-events-none z-40 flex items-center justify-center"
+                initial={false}
+                transition={{
+                  left: { type: "spring", damping: 25, stiffness: 120 },
+                  top: { type: "spring", damping: 25, stiffness: 120 },
+                  scale: { duration: 0.4 },
+                  rotate: { duration: 0.4 }
                 }}
-                transition={{ type: 'spring', damping: 20, stiffness: 100, delay: 0.2 }}
+                animate={{
+                  ...mapPercent(agent.position),
+                  scale: isPlaying ? [1, 1.15, 1] : 1,
+                  rotateY: 0
+                }}
                 style={{
                   width: `${100 / GRID_SIZE}%`,
                   height: `${100 / GRID_SIZE}%`,
@@ -853,91 +1093,11 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                   y: '-50%',
                 }}
               >
-                {/* Outer animated glow ring */}
-                <motion.div
-                  className="absolute rounded-full"
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    background: `radial-gradient(circle, ${point.color}40 0%, transparent 70%)`,
-                  }}
-                  animate={{
-                    scale: [1, 1.6, 1],
-                    opacity: [0.6, 0.15, 0.6],
-                  }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                />
-                {/* Icon/Marker Rendering */}
-                {point.id === 'current_average' ? (
-                  /* Avatar Icon for Average Knowledge */
-                  <div className="relative w-10 h-10 rounded-full border-2 border-white shadow-xl overflow-hidden bg-white p-0.5 animate-in zoom-in-50 duration-500">
-                    <img
-                      src={avatar}
-                      alt="Current Average"
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-blue-500 border border-white rounded-full shadow-sm" />
-                  </div>
-                ) : (
-                  /* Standard Diamond for Peak Potential */
-                  <div
-                    className="relative w-5 h-5 flex items-center justify-center"
-                    style={{ transform: 'rotate(45deg)' }}
-                  >
-                    <div
-                      className="w-4 h-4 rounded-sm shadow-lg border-2 border-white"
-                      style={{ backgroundColor: point.color }}
-                    />
-                  </div>
-                )}
-                {/* Label tooltip below */}
-                <div
-                  className="absolute top-[calc(100%+2px)] left-1/2 -translate-x-1/2 whitespace-nowrap"
-                >
-                  <span
-                    className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md shadow-sm border"
-                    style={{
-                      color: point.color,
-                      backgroundColor: `${point.color}10`,
-                      borderColor: `${point.color}30`,
-                    }}
-                  >
-                    {point.label}
-                  </span>
-                </div>
+                <SocialAgent isMoving={isPlaying} />
               </motion.div>
-            ))}
+            )}
 
-            {/* Animated Student Agent Marker - Removed per user request */}
-            {/* 
-            <motion.div
-              key={`agent-at-${agent.position.x}-${agent.position.y}`}
-              className="absolute pointer-events-none z-40 flex items-center justify-center"
-              initial={false}
-              transition={{
-                left: { type: "spring", damping: 25, stiffness: 120 },
-                top: { type: "spring", damping: 25, stiffness: 120 },
-                scale: { duration: 0.4 },
-                rotate: { duration: 0.4 }
-              }}
-              animate={{
-                left: `${(agent.position.x + 0.5) * (100 / GRID_SIZE)}%`,
-                top: `${(agent.position.y + 0.5) * (100 / GRID_SIZE)}%`,
-                scale: isPlaying ? [1, 1.15, 1] : 1, // Subtle bounce effect during playback
-                rotateY: 0 // Force orientation reset to clear potential mirrored state
-              }}
-              style={{
-                width: `${100 / GRID_SIZE}%`,
-                height: `${100 / GRID_SIZE}%`,
-                x: '-50%',
-                y: '-50%',
-              }}
-            >
-              <SocialAgent isMoving={isPlaying} />
-            </motion.div>
-            */}
-
-            {showTravelArrow && (
+            {showTravelArrow && !currentPositionPoint && (
               <svg className="absolute inset-0 w-full h-full pointer-events-none z-30">
                 <defs>
                   <linearGradient id="travelGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -949,10 +1109,10 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                   </marker>
                 </defs>
                 <line
-                  x1={`${(prevPosition.x + 0.5) * (100 / GRID_SIZE)}%`}
-                  y1={`${(prevPosition.y + 0.5) * (100 / GRID_SIZE)}%`}
-                  x2={`${(agent.position.x + 0.5) * (100 / GRID_SIZE)}%`}
-                  y2={`${(agent.position.y + 0.5) * (100 / GRID_SIZE)}%`}
+                  x1={`${mapPoint(prevPosition).x / MAP_SIZE * 100}%`}
+                  y1={`${mapPoint(prevPosition).y / MAP_SIZE * 100}%`}
+                  x2={`${mapPoint(agent.position).x / MAP_SIZE * 100}%`}
+                  y2={`${mapPoint(agent.position).y / MAP_SIZE * 100}%`}
                   stroke="url(#travelGradient)"
                   strokeWidth="4"
                   strokeDasharray="12 6"

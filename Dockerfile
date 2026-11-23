@@ -1,5 +1,5 @@
 # Stage 1: Build the React Frontend
-FROM node:18-alpine as build-frontend
+FROM node:18-alpine AS build-frontend
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
@@ -25,9 +25,13 @@ USER user
 
 WORKDIR /home/user/app
 
-# Install PyTorch CPU-only FIRST (largest package, separate cache layer)
-# This avoids downloading the ~800MB CUDA version
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+# Install packaging tools first so ARM64 dependency metadata resolves correctly.
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Install CPU PyTorch from its wheel index while resolving dependencies from PyPI.
+RUN python -m pip install --no-cache-dir \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    torch
 
 # Install remaining Python dependencies
 COPY --chown=user backend/requirements.txt backend/
@@ -46,4 +50,4 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=7860
 
 # Run the application
-CMD gunicorn -b 0.0.0.0:$PORT backend.nlp_api:app
+CMD gunicorn --bind 0.0.0.0:$PORT --worker-class gthread --threads 4 --workers 1 --timeout 120 --graceful-timeout 30 --keep-alive 5 backend.nlp_api:app

@@ -51,7 +51,7 @@ graph TD
     subgraph Data Layer [Persistence]
         CSV[topic_2d_coordinates.csv]
         JSON[nlp_resources.json]
-        DB[(JSON File DB)]
+        DB[(PostgreSQL)]
     end
 
     UI <--> R
@@ -64,6 +64,24 @@ graph TD
     RM --> DB
     DQN --> DB
 ```
+
+    ## PostgreSQL persistence and migration plan
+
+    The application now uses PostgreSQL for durable, multi-user state.
+
+    1. Start PostgreSQL and the backend with `docker compose up --build`.
+    2. On the first backend startup, `backend/database.py` creates the schema and imports the existing `backend/db.json`, `backend/data/db.json`, `history.json`, `history_archive.json`, `youtube_links.json`, `youtube_transcripts.json`, and NLP resource catalog.
+    3. Create an account or sign in through the frontend. The returned bearer token scopes progress, summaries, polylines, bookmarks, notes, notifications, and reset history to that user.
+    4. Existing JSON data is retained under the legacy `default` user and can be verified before removing the files.
+
+    For a local backend without Compose, set `DATABASE_URL`, for example:
+
+    ```bash
+    export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nl_learning
+    cd backend
+    pip install -r requirements.txt
+    python app.py
+    ```
 
 ---
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthLayout } from '../../components/Layout/AuthLayout';
+import { nlpApi } from '../../services/nlpApi';
 
 // Import the generated illustration
 import { educationIllustration } from '../../assets/education_illustration';
@@ -14,6 +14,24 @@ export const SignupPage: React.FC = () => {
     password: '',
     schoolCode: ''
   });
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError('');
+    try {
+      await nlpApi.signup({
+        full_name: formData.fullName,
+        identifier: formData.email,
+        password: formData.password,
+        school_code: formData.schoolCode
+      });
+      navigate('/dashboard');
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : 'Unable to create account');
+    }
+  };
 
   return (
     <AuthLayout
@@ -45,7 +63,7 @@ export const SignupPage: React.FC = () => {
             <div className="h-px bg-slate-200 flex-1"></div>
         </div>
 
-        <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1.5">
               <label className="text-sm font-bold text-slate-700">Full Name *</label>
               <input
@@ -99,12 +117,11 @@ export const SignupPage: React.FC = () => {
           </div>
 
           <div className="pt-2">
-              <Link to="/dashboard" className="block w-full">
-                  <button className="w-max px-8 py-3.5 text-base font-bold bg-[#f97316] hover:bg-[#ea580c] text-white shadow-sm rounded-md transition-colors">
+                  <button type="submit" className="w-max px-8 py-3.5 text-base font-bold bg-[#f97316] hover:bg-[#ea580c] text-white shadow-sm rounded-md transition-colors">
                     Create Account
                   </button>
-              </Link>
           </div>
+          {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
         </form>
         
         <div className="mt-auto pt-8 text-xs text-slate-400">

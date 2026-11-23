@@ -6,7 +6,7 @@ Provides endpoints for the frontend grid-based NLP learning system.
 import os
 import json
 import pandas as pd
-from flask import jsonify, request
+from flask import g, jsonify, request
 import numpy as np
 from datetime import datetime
 import nltk
@@ -31,20 +31,22 @@ except Exception as e:
 # Import backend modules (support both script and package execution)
 try:
     from .init import app
-    from .database import get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines, get_notes, add_note, get_lectures, reset_db, get_bookmarks, add_bookmark, remove_bookmark, reset_session_data
+    from .database import authenticate_user, create_user, get_user_by_token, init_db, get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines, get_notes, add_note, get_lectures, reset_db, get_bookmarks as get_db_bookmarks, add_bookmark as add_db_bookmark, remove_bookmark as remove_db_bookmark, reset_session_data, save_notification
     from .request_logger import log_request
     from .utils import utils_preprocess_text, get_cos_sim
     from . import navigator
     from . import persona_service
     from . import radial_mapper
+    from . import study_agent
 except ImportError:
     from init import app
-    from database import get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines, get_notes, add_note, get_lectures, reset_db, get_bookmarks, add_bookmark, remove_bookmark, reset_session_data
+    from database import authenticate_user, create_user, get_user_by_token, init_db, get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines, get_notes, add_note, get_lectures, reset_db, get_bookmarks as get_db_bookmarks, add_bookmark as add_db_bookmark, remove_bookmark as remove_db_bookmark, reset_session_data, save_notification
     from request_logger import log_request
     from utils import utils_preprocess_text, get_cos_sim
     import navigator
     import persona_service
     import radial_mapper
+    import study_agent
 
 # Define stopwords
 try:
@@ -55,6 +57,43 @@ except Exception:
 
 # Polyline logging
 POLYLINE_LOG_FILE = os.path.join(os.path.dirname(__file__), 'polyline_generation.log')
+
+
+def current_user_id():
+    return getattr(g, 'user_id', 'default')
+
+
+init_db()
+
+
+@app.before_request
+def authenticate_request():
+    token = request.headers.get('Authorization', '').removeprefix('Bearer ').strip()
+    user = get_user_by_token(token) if token else None
+    g.user_id = user['id'] if user else 'default'
+
+
+@app.route('/api/auth/signup', methods=['POST'])
+def signup():
+    data = request.get_json() or {}
+    required = ('full_name', 'identifier', 'password', 'school_code')
+    if any(not str(data.get(field, '')).strip() for field in required):
+        return jsonify({'error': 'Full name, identifier, password, and school code are required'}), 400
+    try:
+        return jsonify(create_user(data['full_name'], data['identifier'], data['password'], data['school_code'])), 201
+    except Exception as error:
+        if 'duplicate key' in str(error).lower() or 'unique' in str(error).lower():
+            return jsonify({'error': 'An account with that identifier already exists'}), 409
+        raise
+
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    data = request.get_json() or {}
+    user = authenticate_user(str(data.get('identifier', '')), str(data.get('password', '')))
+    if not user:
+        return jsonify({'error': 'Invalid identifier or password'}), 401
+    return jsonify(user)
 
 def log_polyline_step(step, details):
     """Log detailed steps of polyline generation"""
@@ -291,26 +330,17 @@ def before_request_logging():
 
 @app.route('/api/reset', methods=['POST'])
 def reset_database():
-    """Wipes the database memory completely"""
+    """Reset only the authenticated user's learning data."""
     try:
-        reset_db()
-        return jsonify({'status': 'success', 'message': 'Database memory wiped completely'})
+        reset_session_data(current_user_id())
+        return jsonify({'status': 'success', 'message': 'Your learning data was reset'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/api/resources', methods=['GET'])
 def get_resources():
-    # RELOAD CSV DYNAMICALLY FOR DEV
-    global coords
-    try:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        csv_path = os.path.join(base_dir, 'topic_2d_coordinates.csv')
-        coords = _load_csv_coordinates(csv_path)
-    except Exception as e:
-        print("Error reloading csv:", e)
-
     """Get all NLP learning resources with their grid positions and correct visited state"""
-    session_id = request.args.get('session_id', 'default')
+    session_id = current_user_id()
     session = get_session(session_id)
     visited_ids = set(str(v).strip() for v in session.get('visitedResources', []))
     
@@ -340,7 +370,7 @@ def get_resource(resource_id):
 @app.route('/api/agent', methods=['GET'])
 def get_agent_state():
     """Get current agent state (position, level, reward)"""
-    session_id = request.args.get('session_id', 'default')
+    session_id = current_user_id()
     return jsonify(get_session(session_id))
 
 
@@ -348,7 +378,7 @@ def get_agent_state():
 def move_agent():
     """Move agent to a new position"""
     data = request.get_json()
-    session_id = data.get('session_id', 'default')
+    session_id = current_user_id()
     position = data.get('position', {})
     
     session = get_session(session_id)
@@ -365,7 +395,7 @@ def move_agent():
 @app.route('/api/notifications', methods=['GET'])
 def get_notifications():
     """Get all notifications for a session"""
-    session_id = request.args.get('session_id', 'default')
+    session_id = current_user_id()
     session = get_session(session_id)
     return jsonify(session.get('notifications', []))
 
@@ -374,7 +404,7 @@ def get_notifications():
 def add_notification():
     """Add a new notification to the database"""
     data = request.get_json()
-    session_id = data.get('session_id', 'default')
+    session_id = current_user_id()
     message = data.get('message')
     notif_type = data.get('type', 'info')
     
@@ -402,7 +432,7 @@ def add_notification():
 def mark_notifications_read():
     """Mark all notifications as read in the database"""
     data = request.get_json()
-    session_id = data.get('session_id', 'default')
+    session_id = current_user_id()
     
     session = get_session(session_id)
     if 'notifications' in session:
@@ -428,7 +458,7 @@ def sync_agent_progression(session):
 def visit_resource():
     """Mark a resource as visited and update agent"""
     data = request.get_json()
-    session_id = data.get('session_id', 'default')
+    session_id = current_user_id()
     resource_id = data.get('resource_id')
     
     session = get_session(session_id)
@@ -461,7 +491,7 @@ def create_learning_summary():
     Create a learning summary from visited resources
     """
     data = request.get_json()
-    session_id = data.get('session_id', 'default')
+    session_id = current_user_id()
     session = get_session(session_id)
     title = data.get('title', '')
     summary = data.get('summary', '')
@@ -583,7 +613,7 @@ def create_learning_summary():
     strengths = keywords_found if keywords_found else [r['title'] for r in visited_resources if r.get('difficulty', 0) <= 2]
 
     # Analysis results
-    polylines = get_db_polylines()
+    polylines = get_db_polylines(session_id)
     from collections import Counter
     all_keywords = []
     for p in polylines.values():
@@ -651,7 +681,7 @@ def create_learning_summary():
         'xp_earned': xp_earned,
         'timestamp': int(datetime.now().timestamp() * 1000)
     }
-    save_summary(summary_result)
+    save_summary(summary_result, session_id)
 
     # Final result construction — compute true 2D assimilation position
     # using the radial-axis dimensionality reduction (Equations 6-12)
@@ -672,29 +702,14 @@ def create_learning_summary():
             'position': next_recommendation_obj['position'], 'module': rec_result['module'], 'reason': rec_result['reason']
         } if next_recommendation_obj else None
     }
-    save_polyline(polyline_id, new_polyline)
+    save_polyline(polyline_id, new_polyline, session_id)
     
     # Calculate updated average polyline
-    all_polylines = get_db_polylines()
-    history_scores = [p.get('module_scores', []) for p in all_polylines.values() if p.get('module_scores')]
-    num_histories = len(history_scores)
-    avg_scores = [0.0] * 19
-    if num_histories > 0:
-        for scores in history_scores:
-            for i, s in enumerate(scores):
-                if i < 19: avg_scores[i] += s
-        avg_scores = [s / num_histories for s in avg_scores]
+    _, cur_polyline = compute_virtual_polylines(session_id)
 
     return jsonify({
         'polyline': new_polyline,
-        'average_polyline': {
-            'id': 'current_average',
-            'name': 'Current Average Knowledge',
-            'module_scores': avg_scores,
-            'isActive': True,
-            'color': 'rgba(59, 130, 246, 0.8)',
-            'assimilation_position': radial_mapper.polyline_to_grid(avg_scores, num_topics=len(ordered_modules))
-        },
+        'average_polyline': cur_polyline,
         'next_recommendation': new_polyline['next_recommendation'],
         'keywords_found': keywords_found,
         'totalReward': session['totalReward'],
@@ -706,11 +721,10 @@ def create_learning_summary():
 # POLYLINE ENDPOINTS
 # =============================================
 
-@app.route('/api/polylines', methods=['GET'])
-def get_polylines_route():
-    """Get all polylines including dynamically generated High Line and Current Average polylines"""
-    polylines = get_db_polylines()
-    
+def compute_virtual_polylines(session_id, polylines=None):
+    if polylines is None:
+        polylines = get_db_polylines(session_id)
+        
     # Generate ordered_modules to ensure consistent mapping
     seen_modules = set()
     ordered_modules = []
@@ -816,9 +830,15 @@ def get_polylines_route():
         'assimilation_position': cur_assimilation
     }
 
-    # Format result: Return ONLY the virtual polylines, or include histories?
-    # User said "everywhere it should be shown like a high polyline... and current should be average of all histories"
-    # We will return the historical ones but set them to inactive, and these two to strictly active.
+    return hl_polyline, cur_polyline
+
+
+@app.route('/api/polylines', methods=['GET'])
+def get_polylines_route():
+    """Get all polylines including dynamically generated High Line and Current Average polylines"""
+    session_id = current_user_id()
+    polylines = get_db_polylines(session_id)
+    hl_polyline, cur_polyline = compute_virtual_polylines(session_id, polylines)
     
     # Format result: Return ONLY the virtual polylines as active
     result = []
@@ -836,7 +856,8 @@ def get_polylines_route():
 @app.route('/api/polylines/<polyline_id>', methods=['GET'])
 def get_polyline(polyline_id):
     """Get a specific polyline"""
-    polylines = get_db_polylines()
+    session_id = current_user_id()
+    polylines = get_db_polylines(session_id)
     polyline = polylines.get(polyline_id)
     if not polyline:
         return jsonify({'error': 'Polyline not found'}), 404
@@ -849,13 +870,14 @@ def toggle_polyline(polyline_id):
     data = request.get_json()
     is_active = data.get('isActive', False)
     
-    polylines = get_db_polylines()
+    session_id = current_user_id()
+    polylines = get_db_polylines(session_id)
     polyline = polylines.get(polyline_id)
     if not polyline:
         return jsonify({'error': 'Polyline not found'}), 404
     
     polyline['isActive'] = is_active
-    save_polyline(polyline_id, polyline)
+    save_polyline(polyline_id, polyline, session_id)
     return jsonify(polyline)
 
 
@@ -881,7 +903,8 @@ def generate_dqn_path():
     visited_ids = list(data.get('visited_resource_ids', []))
 
     # Get latest module scores from most recent polyline (if any)
-    polylines = get_db_polylines()
+    session_id = current_user_id()
+    polylines = get_db_polylines(session_id)
     latest_scores = []
     if polylines:
         last_polyline = list(polylines.values())[-1]
@@ -929,12 +952,12 @@ def get_next_recommendation():
     Get the DQN navigator's next resource recommendation for a session.
     Returns: { resource, module, reason, q_values }
     """
-    session_id = request.args.get('session_id', 'default')
+    session_id = current_user_id()
     session = get_session(session_id)
     visited_ids = [str(v).strip() for v in session.get('visitedResources', [])]
 
     # Get latest module scores from most recent polyline
-    polylines = get_db_polylines()
+    polylines = get_db_polylines(session_id)
     latest_scores = []
     if polylines:
         last_polyline = list(polylines.values())[-1]
@@ -956,7 +979,7 @@ def get_next_recommendation():
 @app.route('/api/learning-data', methods=['GET'])
 def get_learning_data():
     """Get comprehensive learning data based on session history and latest summary"""
-    session_id = request.args.get('session_id', 'default')
+    session_id = current_user_id()
     session = get_session(session_id)
     
     visited_ids = set(str(v).strip() for v in session.get('visitedResources', []))
@@ -977,7 +1000,7 @@ def get_learning_data():
             from .database import load_db
         except (ImportError, ValueError):
             from database import load_db
-        db = load_db()
+        db = load_db(session_id)
         # Find latest summary for this session (they contain session_id in their ID or we match title)
         matching_summaries = [s for s in db.get('summaries', []) if f"summary_{session_id}" in s.get('id', '')]
         if matching_summaries:
@@ -996,7 +1019,7 @@ def get_learning_data():
     persona_data = None
     try:
         # Use existing top-level import get_db_polylines
-        all_polylines = get_db_polylines()
+        all_polylines = get_db_polylines(session_id)
         history_scores = [p.get('module_scores', []) for p in all_polylines.values() if p.get('module_scores')]
         
         if history_scores:
@@ -1025,7 +1048,7 @@ def get_learning_data():
             from .database import load_db
         except (ImportError, ValueError):
             from database import load_db
-        db = load_db()
+        db = load_db(session_id)
         all_summaries = db.get('summaries', [])
         matching_summaries = [s for s in all_summaries if f"summary_{session_id}" in s.get('id', '')]
         
@@ -1113,8 +1136,7 @@ def get_learning_data():
 @app.route('/api/bookmarks', methods=['GET'])
 def get_bookmarks():
     """Get all bookmarked resources for a session"""
-    session_id = request.args.get('session_id', 'default')
-    from database import get_bookmarks as get_db_bookmarks
+    session_id = current_user_id()
     return jsonify(get_db_bookmarks(session_id))
 
 
@@ -1122,13 +1144,12 @@ def get_bookmarks():
 def add_bookmark():
     """Add a resource to bookmarks"""
     data = request.get_json()
-    session_id = data.get('session_id', 'default')
+    session_id = current_user_id()
     resource_id = data.get('resource_id')
     
     if not resource_id:
         return jsonify({'error': 'Resource ID required'}), 400
         
-    from database import add_bookmark as add_db_bookmark
     add_db_bookmark(session_id, resource_id)
     return jsonify({'status': 'success', 'resource_id': resource_id})
 
@@ -1137,13 +1158,12 @@ def add_bookmark():
 def remove_bookmark():
     """Remove a resource from bookmarks"""
     data = request.get_json()
-    session_id = data.get('session_id', 'default')
+    session_id = current_user_id()
     resource_id = data.get('resource_id')
     
     if not resource_id:
         return jsonify({'error': 'Resource ID required'}), 400
         
-    from database import remove_bookmark as remove_db_bookmark
     remove_db_bookmark(session_id, resource_id)
     return jsonify({'status': 'success', 'resource_id': resource_id})
 
@@ -1155,7 +1175,7 @@ def remove_bookmark():
 @app.route('/api/notes', methods=['GET'])
 def get_notes_route():
     """Get all notes for a session"""
-    session_id = request.args.get('session_id', 'default')
+    session_id = current_user_id()
     return jsonify(get_notes(session_id))
 
 
@@ -1163,7 +1183,7 @@ def get_notes_route():
 def add_note_route():
     """Add a new note"""
     data = request.get_json()
-    session_id = data.get('session_id', 'default')
+    session_id = current_user_id()
     note_data = data.get('note')
     
     if not note_data:
@@ -1209,13 +1229,39 @@ from openai import OpenAI
 
 # AI Client configuration
 # Using Groq (OpenAI-compatible) for free high-quality inference
-_ai_client = None
-try:
-    _api_key = os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY") or "FIXME_YOUR_API_KEY"
-    _base_url = "https://api.groq.com/openai/v1" if "GROQ" in _api_key or _api_key == "FIXME_YOUR_API_KEY" else None
-    _ai_client = OpenAI(api_key=_api_key, base_url=_base_url)
-except Exception as e:
-    print(f"AI Client initialization warning: {e}")
+def get_ai_client():
+    """Retrieve or dynamically initialize OpenAI/Groq client from env or .environment / .env files."""
+    api_key = os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY")
+    if not api_key or api_key in ("FIXME_YOUR_API_KEY", "your_groq_api_key_here"):
+        # Check root .environment and .env
+        for fname in ('.environment', '.env'):
+            env_path = os.path.join(os.path.dirname(__file__), '..', fname)
+            if os.path.exists(env_path):
+                try:
+                    with open(env_path, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            line = line.strip()
+                            if line and not line.startswith('#') and '=' in line:
+                                k, v = line.split('=', 1)
+                                k, v = k.strip(), v.strip().strip('"\'')
+                                if k in ('GROQ_API_KEY', 'OPENAI_API_KEY') and v and v not in ('your_groq_api_key_here', 'your_openai_api_key_here'):
+                                    os.environ[k] = v
+                                    api_key = v
+                                    break
+                except Exception as e:
+                    print(f"[ENV_LOADER] Error reading {fname}: {e}")
+            if api_key and api_key not in ("FIXME_YOUR_API_KEY", "your_groq_api_key_here"):
+                break
+
+    if not api_key or api_key in ("FIXME_YOUR_API_KEY", "your_groq_api_key_here"):
+        return None
+
+    try:
+        base_url = "https://api.groq.com/openai/v1" if ("gsk_" in api_key or "GROQ" in api_key.upper()) else None
+        return OpenAI(api_key=api_key, base_url=base_url)
+    except Exception as e:
+        print(f"[AI_CLIENT] Initialization warning: {e}")
+        return None
 
 @app.route('/api/chat', methods=['POST'])
 def chat_with_ai():
@@ -1262,15 +1308,11 @@ def chat_with_ai():
     context = transcript[:4500] if transcript else resource_desc[:1500]
     
     # 2. Try Premium Inference via OpenAI Package
-    # Check for actual keys, not just the placeholder
-    _key = os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY")
-    if _ai_client and _key and _key != "FIXME_YOUR_API_KEY":
+    ai_cli = get_ai_client()
+    if ai_cli:
         try:
-            # Determine model based on provider
-            if "groq" in (_ai_client.base_url or "").lower():
-                model = "llama-3.3-70b-versatile"
-            else:
-                model = "gpt-3.5-turbo"
+            # Determine model dynamically based on provider & account access
+            model = study_agent._get_llm_model_name(ai_cli)
             
             system_prompt = f"""You are 'Sider AI', a premium learning assistant for an Advanced NLP course.
 Your goal is to help students understand the current lesson module: '{module}'.
@@ -1294,7 +1336,7 @@ INSTRUCTIONS:
             
             messages.append({"role": "user", "content": question})
             
-            completion = _ai_client.chat.completions.create(
+            completion = ai_cli.chat.completions.create(
                 model=model,
                 messages=messages,
                 temperature=0.7,
@@ -1326,10 +1368,93 @@ INSTRUCTIONS:
 
     return jsonify({'answer': answer, 'source': 'transcript-lookup'})
 
+@app.route('/api/agent/orchestrate', methods=['POST'])
+def orchestrate_agents_route():
+    """
+    Main Hierarchical Orchestrator endpoint.
+    Analyses the current lesson & student state, decides which subagent is best suited,
+    allocates directives, and returns orchestrated outputs from all 4 subagents
+    (ConceptCoachSubAgent, NotesSubAgent, FlashcardSubAgent, QuizSubAgent).
+    """
+    data = request.get_json() or {}
+    module = data.get('module', 'Pre training objectives')
+    active_subagent = data.get('active_subagent')
+    session_id = current_user_id()
+    session = get_session(session_id)
+
+    visited_ids = set(str(v).strip() for v in session.get('visitedResources', []))
+    visited_modules = [
+        r['module'] for r in nlp_resources if str(r['id']).strip() in visited_ids
+    ]
+    if isinstance(data.get('visited_modules'), list) and data['visited_modules']:
+        visited_modules = data['visited_modules']
+
+    student_level = int(data.get('student_level') or session.get('level', 1))
+
+    try:
+        result = study_agent.OrchestratorAgent.orchestrate(
+            module_or_title=module,
+            nlp_resources=nlp_resources,
+            visited_modules=visited_modules,
+            student_level=student_level,
+            ai_client=get_ai_client(),
+            active_subagent=active_subagent,
+        )
+        return jsonify(result)
+    except Exception as e:
+        print(f"[ORCHESTRATOR] Error during orchestration: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/agent/quiz', methods=['POST'])
+def generate_agent_quiz_route():
+    """Generate a free, module-grounded concept check quiz via the AI Study Agent."""
+    data = request.get_json() or {}
+    module = data.get('module', 'Pre training objectives')
+    num_questions = int(data.get('num_questions', 3))
+    try:
+        quiz_data = study_agent.generate_module_quiz(
+            module_or_title=module,
+            nlp_resources=nlp_resources,
+            ai_client=get_ai_client(),
+            num_questions=num_questions
+        )
+        return jsonify(quiz_data)
+    except Exception as e:
+        print(f"[STUDY_AGENT] Quiz generation error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/agent/study-notes', methods=['POST'])
+def generate_agent_study_notes_route():
+    """Generate structured study notes and flashcards for a module via the AI Study Agent."""
+    data = request.get_json() or {}
+    module = data.get('module', 'Pre training objectives')
+    save_to_hub = bool(data.get('save_to_hub', False))
+    try:
+        notes_data = study_agent.generate_study_notes(
+            module_or_title=module,
+            nlp_resources=nlp_resources,
+            ai_client=get_ai_client()
+        )
+        if save_to_hub:
+            session_id = current_user_id()
+            saved_note = add_note(session_id, {
+                'section': 'nlp',
+                'title': notes_data['title'],
+                'content': notes_data['formattedNote']
+            })
+            notes_data['savedNote'] = saved_note
+        return jsonify(notes_data)
+    except Exception as e:
+        print(f"[STUDY_AGENT] Study notes generation error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/reset_session', methods=['POST'])
 def reset_session_route():
     data = request.get_json()
-    session_id = data.get('session_id', 'default')
+    session_id = current_user_id()
     
     try:
         new_session = reset_session_data(session_id)
