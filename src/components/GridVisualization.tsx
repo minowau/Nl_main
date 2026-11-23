@@ -681,12 +681,12 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                 <ResourceIcon type={resource.type} />
               </div>
 
-              {/* Highlight - pulsing golden/indigo ring */}
+              {/* Highlight - pulsing golden/brand ring */}
               {(isCurrent || isRecommended) && (
                 <>
-                  <div className={`absolute inset-0 rounded-full border-2 ${isRecommended ? 'border-indigo-500' : 'border-amber-400'} animate-ping opacity-40`} style={{ animationDuration: '2s' }} />
-                  <div className={`absolute inset-[-3px] rounded-full border-2 ${isRecommended ? 'border-indigo-500' : 'border-amber-400'} opacity-80`} />
-                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 ${isRecommended ? 'bg-indigo-600' : 'bg-amber-500'} text-white text-[6px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-md whitespace-nowrap leading-none`}>
+                  <div className={`absolute inset-0 rounded-full border-2 ${isRecommended ? 'border-brand' : 'border-amber-400'} animate-ping opacity-40`} style={{ animationDuration: '2s' }} />
+                  <div className={`absolute inset-[-3px] rounded-full border-2 ${isRecommended ? 'border-brand' : 'border-amber-400'} opacity-80`} />
+                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 ${isRecommended ? 'bg-brand' : 'bg-amber-500'} text-white text-[6px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-md whitespace-nowrap leading-none`}>
                     {isRecommended ? 'NEXT LESSON' : 'CURRENT'}
                   </div>
                 </>
@@ -865,18 +865,18 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                 onResourceClick(target, true);
               }
             }}
-            className="bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg border border-indigo-200/80 ring-1 ring-indigo-50 w-72 pointer-events-auto cursor-pointer hover:shadow-xl hover:border-indigo-300 transition-all"
+            className="bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg border border-blue-100 ring-1 ring-blue-50/80 w-72 pointer-events-auto cursor-pointer hover:shadow-xl hover:border-blue-200 transition-all"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <span className="text-[10px] font-black tracking-wider text-indigo-600 uppercase block">
+                <span className="text-[10px] font-bold tracking-wider text-brand uppercase block">
                   {isSimulationRunning && dqnPathInfo?.resource ? 'DQN Recommendation' : 'Next Recommended Lesson'}
                 </span>
-                <h3 className="text-sm font-bold text-slate-900 mt-0.5 line-clamp-2">
+                <h3 className="text-sm font-bold text-gray-900 mt-0.5 line-clamp-2">
                   {isSimulationRunning && dqnPathInfo?.resource ? dqnPathInfo.resource.title : nextRecommendation?.title}
                 </h3>
                 {!isSimulationRunning && nextRecommendation?.module && (
-                  <p className="text-[10px] text-slate-500 font-medium truncate mt-0.5">{nextRecommendation.module}</p>
+                  <p className="text-[10px] text-gray-500 font-medium truncate mt-0.5">{nextRecommendation.module}</p>
                 )}
               </div>
               {isSimulationRunning && dqnPathInfo?.resource && (

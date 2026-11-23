@@ -37,6 +37,7 @@ try:
     from . import navigator
     from . import persona_service
     from . import radial_mapper
+    from . import study_agent
 except ImportError:
     from init import app
     from database import authenticate_user, create_user, get_user_by_token, init_db, get_session, update_session, save_summary, save_polyline, get_polylines as get_db_polylines, get_notes, add_note, get_lectures, reset_db, get_bookmarks as get_db_bookmarks, add_bookmark as add_db_bookmark, remove_bookmark as remove_db_bookmark, reset_session_data, save_notification
@@ -45,6 +46,7 @@ except ImportError:
     import navigator
     import persona_service
     import radial_mapper
+    import study_agent
 
 # Define stopwords
 try:
@@ -1227,13 +1229,39 @@ from openai import OpenAI
 
 # AI Client configuration
 # Using Groq (OpenAI-compatible) for free high-quality inference
-_ai_client = None
-try:
-    _api_key = os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY") or "FIXME_YOUR_API_KEY"
-    _base_url = "https://api.groq.com/openai/v1" if "GROQ" in _api_key or _api_key == "FIXME_YOUR_API_KEY" else None
-    _ai_client = OpenAI(api_key=_api_key, base_url=_base_url)
-except Exception as e:
-    print(f"AI Client initialization warning: {e}")
+def get_ai_client():
+    """Retrieve or dynamically initialize OpenAI/Groq client from env or .environment / .env files."""
+    api_key = os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY")
+    if not api_key or api_key in ("FIXME_YOUR_API_KEY", "your_groq_api_key_here"):
+        # Check root .environment and .env
+        for fname in ('.environment', '.env'):
+            env_path = os.path.join(os.path.dirname(__file__), '..', fname)
+            if os.path.exists(env_path):
+                try:
+                    with open(env_path, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            line = line.strip()
+                            if line and not line.startswith('#') and '=' in line:
+                                k, v = line.split('=', 1)
+                                k, v = k.strip(), v.strip().strip('"\'')
+                                if k in ('GROQ_API_KEY', 'OPENAI_API_KEY') and v and v not in ('your_groq_api_key_here', 'your_openai_api_key_here'):
+                                    os.environ[k] = v
+                                    api_key = v
+                                    break
+                except Exception as e:
+                    print(f"[ENV_LOADER] Error reading {fname}: {e}")
+            if api_key and api_key not in ("FIXME_YOUR_API_KEY", "your_groq_api_key_here"):
+                break
+
+    if not api_key or api_key in ("FIXME_YOUR_API_KEY", "your_groq_api_key_here"):
+        return None
+
+    try:
+        base_url = "https://api.groq.com/openai/v1" if ("gsk_" in api_key or "GROQ" in api_key.upper()) else None
+        return OpenAI(api_key=api_key, base_url=base_url)
+    except Exception as e:
+        print(f"[AI_CLIENT] Initialization warning: {e}")
+        return None
 
 @app.route('/api/chat', methods=['POST'])
 def chat_with_ai():
@@ -1280,15 +1308,11 @@ def chat_with_ai():
     context = transcript[:4500] if transcript else resource_desc[:1500]
     
     # 2. Try Premium Inference via OpenAI Package
-    # Check for actual keys, not just the placeholder
-    _key = os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY")
-    if _ai_client and _key and _key != "FIXME_YOUR_API_KEY":
+    ai_cli = get_ai_client()
+    if ai_cli:
         try:
-            # Determine model based on provider
-            if "groq" in (_ai_client.base_url or "").lower():
-                model = "llama-3.3-70b-versatile"
-            else:
-                model = "gpt-3.5-turbo"
+            # Determine model dynamically based on provider & account access
+            model = study_agent._get_llm_model_name(ai_cli)
             
             system_prompt = f"""You are 'Sider AI', a premium learning assistant for an Advanced NLP course.
 Your goal is to help students understand the current lesson module: '{module}'.
@@ -1312,7 +1336,7 @@ INSTRUCTIONS:
             
             messages.append({"role": "user", "content": question})
             
-            completion = _ai_client.chat.completions.create(
+            completion = ai_cli.chat.completions.create(
                 model=model,
                 messages=messages,
                 temperature=0.7,
@@ -1343,6 +1367,89 @@ INSTRUCTIONS:
         answer = f"I'm here to help with the lesson on '{module}'. I couldn't find a specific answer in the local material, but you should review the module description for more details. (Tip: Configure an AI API key for better responses)."
 
     return jsonify({'answer': answer, 'source': 'transcript-lookup'})
+
+@app.route('/api/agent/orchestrate', methods=['POST'])
+def orchestrate_agents_route():
+    """
+    Main Hierarchical Orchestrator endpoint.
+    Analyses the current lesson & student state, decides which subagent is best suited,
+    allocates directives, and returns orchestrated outputs from all 4 subagents
+    (ConceptCoachSubAgent, NotesSubAgent, FlashcardSubAgent, QuizSubAgent).
+    """
+    data = request.get_json() or {}
+    module = data.get('module', 'Pre training objectives')
+    active_subagent = data.get('active_subagent')
+    session_id = current_user_id()
+    session = get_session(session_id)
+
+    visited_ids = set(str(v).strip() for v in session.get('visitedResources', []))
+    visited_modules = [
+        r['module'] for r in nlp_resources if str(r['id']).strip() in visited_ids
+    ]
+    if isinstance(data.get('visited_modules'), list) and data['visited_modules']:
+        visited_modules = data['visited_modules']
+
+    student_level = int(data.get('student_level') or session.get('level', 1))
+
+    try:
+        result = study_agent.OrchestratorAgent.orchestrate(
+            module_or_title=module,
+            nlp_resources=nlp_resources,
+            visited_modules=visited_modules,
+            student_level=student_level,
+            ai_client=get_ai_client(),
+            active_subagent=active_subagent,
+        )
+        return jsonify(result)
+    except Exception as e:
+        print(f"[ORCHESTRATOR] Error during orchestration: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/agent/quiz', methods=['POST'])
+def generate_agent_quiz_route():
+    """Generate a free, module-grounded concept check quiz via the AI Study Agent."""
+    data = request.get_json() or {}
+    module = data.get('module', 'Pre training objectives')
+    num_questions = int(data.get('num_questions', 3))
+    try:
+        quiz_data = study_agent.generate_module_quiz(
+            module_or_title=module,
+            nlp_resources=nlp_resources,
+            ai_client=get_ai_client(),
+            num_questions=num_questions
+        )
+        return jsonify(quiz_data)
+    except Exception as e:
+        print(f"[STUDY_AGENT] Quiz generation error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/agent/study-notes', methods=['POST'])
+def generate_agent_study_notes_route():
+    """Generate structured study notes and flashcards for a module via the AI Study Agent."""
+    data = request.get_json() or {}
+    module = data.get('module', 'Pre training objectives')
+    save_to_hub = bool(data.get('save_to_hub', False))
+    try:
+        notes_data = study_agent.generate_study_notes(
+            module_or_title=module,
+            nlp_resources=nlp_resources,
+            ai_client=get_ai_client()
+        )
+        if save_to_hub:
+            session_id = current_user_id()
+            saved_note = add_note(session_id, {
+                'section': 'nlp',
+                'title': notes_data['title'],
+                'content': notes_data['formattedNote']
+            })
+            notes_data['savedNote'] = saved_note
+        return jsonify(notes_data)
+    except Exception as e:
+        print(f"[STUDY_AGENT] Study notes generation error: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/reset_session', methods=['POST'])
 def reset_session_route():

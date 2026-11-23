@@ -433,6 +433,144 @@ class NLPLearningAPI implements LearningPlannerAPI {
     if (!response.ok) throw new Error('Failed to reset session');
     return response.json();
   }
+
+  async orchestrateStudyAgents(
+    module: string,
+    visitedModules: string[] = [],
+    studentLevel: number = 1,
+    activeSubagent?: 'coach' | 'notes' | 'flashcards' | 'quiz'
+  ): Promise<{
+    orchestrator: {
+      lessonProfile: {
+        id: string;
+        title: string;
+        module: string;
+        difficulty: number;
+        nature: string;
+        isVisited: boolean;
+      };
+      primaryAgent: 'coach' | 'notes' | 'flashcards' | 'quiz';
+      activeAgent: 'coach' | 'notes' | 'flashcards' | 'quiz';
+      recommendedSequence: ('coach' | 'notes' | 'flashcards' | 'quiz')[];
+      reasoning: string;
+      source: string;
+      subagents: {
+        id: 'coach' | 'notes' | 'flashcards' | 'quiz';
+        name: string;
+        role: string;
+        directive: string;
+        status: 'primary' | 'allocated';
+        source: string;
+      }[];
+    };
+    outputs: {
+      coach: {
+        agentId: string;
+        agentName: string;
+        directive: string;
+        intuition: string;
+        prerequisiteBridge: string;
+        realWorldAnalogy: string;
+        stepByStepBreakdown: string[];
+        source: string;
+      };
+      notes: {
+        agentId: string;
+        agentName: string;
+        directive: string;
+        module: string;
+        title: string;
+        lessonTitle: string;
+        overview: string;
+        takeaways: string[];
+        examTip?: string;
+        formattedNote: string;
+        source: string;
+      };
+      flashcards: {
+        agentId: string;
+        agentName: string;
+        directive: string;
+        flashcards: { front: string; back: string; tag?: string }[];
+        source: string;
+      };
+      quiz: {
+        agentId: string;
+        agentName: string;
+        directive: string;
+        module: string;
+        title: string;
+        source: string;
+        questions: {
+          id: string;
+          question: string;
+          options: string[];
+          correctIndex: number;
+          explanation: string;
+        }[];
+      };
+    };
+  }> {
+    const response = await apiFetch(`${API_BASE}/agent/orchestrate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        module,
+        visited_modules: visitedModules,
+        student_level: studentLevel,
+        active_subagent: activeSubagent
+      })
+    });
+    if (!response.ok) throw new Error('Failed to orchestrate study agents');
+    return response.json();
+  }
+
+  async generateAgentQuiz(
+    module: string,
+    numQuestions: number = 3
+  ): Promise<{
+    module: string;
+    title: string;
+    source: string;
+    questions: {
+      id: string;
+      question: string;
+      options: string[];
+      correctIndex: number;
+      explanation: string;
+    }[];
+  }> {
+    const response = await apiFetch(`${API_BASE}/agent/quiz`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module, num_questions: numQuestions })
+    });
+    if (!response.ok) throw new Error('Failed to generate quiz');
+    return response.json();
+  }
+
+  async generateAgentStudyNotes(
+    module: string,
+    saveToHub: boolean = false
+  ): Promise<{
+    module: string;
+    title: string;
+    lessonTitle: string;
+    overview: string;
+    takeaways: string[];
+    flashcards: { front: string; back: string }[];
+    formattedNote: string;
+    source: string;
+    savedNote?: Note;
+  }> {
+    const response = await apiFetch(`${API_BASE}/agent/study-notes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module, save_to_hub: saveToHub })
+    });
+    if (!response.ok) throw new Error('Failed to generate study notes');
+    return response.json();
+  }
 }
 
 // Export singleton instance

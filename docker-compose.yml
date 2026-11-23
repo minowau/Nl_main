@@ -26,9 +26,13 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nl_learning
       - GROQ_API_KEY=${GROQ_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    env_file:
+      - .env
     volumes:
       - ./backend/data:/app/backend/data
+      - ./backend:/home/user/app/backend
       - ./dist:/home/user/app/dist
+      - ./.env:/home/user/app/.env
     depends_on:
       postgres:
         condition: service_healthy

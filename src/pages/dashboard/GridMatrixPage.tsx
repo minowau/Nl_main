@@ -414,24 +414,24 @@ const GridMatrixPage: React.FC = () => {
       {showRecommendationAlert && nextRecommendation && (
         <div
           role="alert"
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/45 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-white rounded-2xl shadow-2xl border border-indigo-100 max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 px-6 py-4 flex items-center justify-between text-white">
-              <div className="flex items-center gap-2.5">
-                <div className="p-1.5 bg-white/20 rounded-lg">
-                  <Sparkles className="w-5 h-5 text-amber-300 fill-amber-300" />
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-blue-50 text-brand rounded-xl">
+                  <Sparkles className="w-5 h-5 text-brand fill-brand" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-100 block">
-                    Summary Analysed • {nextRecommendation.reason === 'dqn' ? 'RL / DQN Navigator' : 'Navigator Recommendation'}
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-brand block">
+                    {nextRecommendation.reason === 'dqn' ? 'RL / DQN Recommendation' : 'Navigator Recommendation'}
                   </span>
-                  <h3 className="text-base font-extrabold tracking-tight">Next Recommended Lesson</h3>
+                  <h3 className="text-base font-bold text-gray-900">Next Recommended Lesson</h3>
                 </div>
               </div>
               <button
                 onClick={() => setShowRecommendationAlert(false)}
-                className="p-1 rounded-full hover:bg-white/20 text-white/80 hover:text-white transition-colors"
+                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
                 title="Close Alert"
               >
                 <X className="w-5 h-5" />
@@ -439,21 +439,21 @@ const GridMatrixPage: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="p-4 rounded-xl bg-indigo-50/70 border border-indigo-100">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-500 block mb-1">
+              <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-100">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 block mb-1">
                   Recommended Lecture to Watch Next
                 </span>
-                <h4 className="text-lg font-black text-slate-900 leading-snug">
+                <h4 className="text-base font-bold text-gray-900 leading-snug">
                   {nextRecommendation.title}
                 </h4>
                 {nextRecommendation.module && (
-                  <p className="text-xs font-semibold text-slate-600 mt-1">
-                    Module: <span className="text-indigo-700">{nextRecommendation.module}</span>
+                  <p className="text-xs font-medium text-gray-600 mt-1">
+                    Module: <span className="text-brand font-semibold">{nextRecommendation.module}</span>
                   </p>
                 )}
                 {nextRecommendation.position && (
-                  <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-mono font-bold text-indigo-700 bg-white px-2.5 py-1 rounded-lg border border-indigo-100 shadow-sm">
-                    <MapPin className="w-3.5 h-3.5 text-indigo-500" />
+                  <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-mono font-bold text-brand bg-white px-2.5 py-1 rounded-lg border border-blue-100 shadow-xs">
+                    <MapPin className="w-3.5 h-3.5 text-brand" />
                     Matrix Coordinates: ({Math.round(nextRecommendation.position.x)}, {Math.round(nextRecommendation.position.y)})
                   </div>
                 )}
@@ -462,7 +462,7 @@ const GridMatrixPage: React.FC = () => {
               <div className="flex items-center justify-end gap-3 pt-1">
                 <button
                   onClick={() => setShowRecommendationAlert(false)}
-                  className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
+                  className="px-4 py-2 text-xs font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors"
                 >
                   Dismiss
                 </button>
@@ -476,7 +476,7 @@ const GridMatrixPage: React.FC = () => {
                     }
                     setShowRecommendationAlert(false);
                   }}
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-md shadow-indigo-500/20 flex items-center gap-2 transition-all active:scale-95"
+                  className="px-5 py-2 bg-brand hover:bg-brand-dark text-white text-xs font-medium rounded-xl shadow-sm flex items-center gap-1.5 transition-all active:scale-95"
                 >
                   <PlayCircle className="w-4 h-4" />
                   View on Matrix
