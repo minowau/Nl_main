@@ -899,7 +899,7 @@ def generate_dqn_path():
     }
     """
     data = request.get_json()
-    agent_pos = data.get('agent_position', {'x': 10, 'y': 10})
+    agent_pos = data.get('agent_position', {'x': 0, 'y': 19})
     visited_ids = list(data.get('visited_resource_ids', []))
 
     # Get latest module scores from most recent polyline (if any)

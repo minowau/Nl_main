@@ -156,7 +156,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
 
   const coordinateBounds = React.useMemo(() => {
     const points = resources.length > 0
-      ? [...resources.map(resource => resource.position), agent.position]
+      ? resources.map(resource => resource.position)
       : [agent.position];
     const xValues = points.map(point => point.x);
     const yValues = points.map(point => point.y);
@@ -205,12 +205,17 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
   }, [polylines]);
 
   const currentPositionPoint = assimilationPath.length > 0 ? assimilationPath[assimilationPath.length - 1] : null;
+  // Before any summary is written, always anchor the learner at the bottom-left visual origin (0, 19)
+  const originPosition: GridPosition = { x: 0, y: GRID_SIZE - 1 };
+  const displayAgentPosition: GridPosition = currentPositionPoint
+    ? currentPositionPoint
+    : (agent.visitedResources.length === 0 || (agent.position.x === 10 && agent.position.y === 10)
+        ? originPosition
+        : agent.position);
 
   const centerOnAgent = React.useCallback((smooth = true) => {
     if (!gridRef.current) return;
-    const targetPoint = currentPositionPoint
-      ? mapGridPoint(currentPositionPoint)
-      : (agent.position ? mapPoint(agent.position) : null);
+    const targetPoint = mapGridPoint(displayAgentPosition);
 
     if (targetPoint) {
       const paddingOffset = 36;
@@ -225,12 +230,12 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
         behavior: smooth ? 'smooth' : 'auto'
       });
     }
-  }, [agent.position, currentPositionPoint, mapPoint, mapGridPoint, zoomLevel]);
+  }, [displayAgentPosition, mapGridPoint, zoomLevel]);
 
   // Auto-scroll to agent or path endpoint on load or agent movement (not on manual zoom)
   React.useEffect(() => {
     centerOnAgent(true);
-  }, [agent.position.x, agent.position.y, currentPositionPoint?.x, currentPositionPoint?.y]);
+  }, [displayAgentPosition.x, displayAgentPosition.y]);
 
   // Find the resource the agent is currently sitting on
   const currentResource = React.useMemo(() => {
@@ -577,7 +582,7 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
     // 1. Render interactive background cells for clicking
     for (let y = 0; y < GRID_SIZE; y++) {
       for (let x = 0; x < GRID_SIZE; x++) {
-        const mappedAgent = mapPoint(agent.position);
+        const mappedAgent = mapGridPoint(displayAgentPosition);
         const isAgent = Math.floor(mappedAgent.x / (MAP_SIZE / GRID_SIZE)) === x &&
           Math.floor(mappedAgent.y / (MAP_SIZE / GRID_SIZE)) === y;
 
@@ -1071,30 +1076,32 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                 </motion.div>
               </div>
             ) : (
-              <motion.div
-                key={`agent-at-${agent.position.x}-${agent.position.y}`}
-                className="absolute pointer-events-none z-40 flex items-center justify-center"
-                initial={false}
-                transition={{
-                  left: { type: "spring", damping: 25, stiffness: 120 },
-                  top: { type: "spring", damping: 25, stiffness: 120 },
-                  scale: { duration: 0.4 },
-                  rotate: { duration: 0.4 }
-                }}
-                animate={{
-                  ...mapPercent(agent.position),
-                  scale: isPlaying ? [1, 1.15, 1] : 1,
-                  rotateY: 0
-                }}
-                style={{
-                  width: `${100 / GRID_SIZE}%`,
-                  height: `${100 / GRID_SIZE}%`,
-                  x: '-50%',
-                  y: '-50%',
-                }}
-              >
-                <SocialAgent isMoving={isPlaying} />
-              </motion.div>
+              <div className="absolute inset-4 z-40 pointer-events-none">
+                <motion.div
+                  key={`agent-at-${displayAgentPosition.x}-${displayAgentPosition.y}`}
+                  className="absolute pointer-events-none flex items-center justify-center"
+                  initial={false}
+                  transition={{
+                    left: { type: "spring", damping: 25, stiffness: 120 },
+                    top: { type: "spring", damping: 25, stiffness: 120 },
+                    scale: { duration: 0.4 },
+                    rotate: { duration: 0.4 }
+                  }}
+                  animate={{
+                    ...mapGridPercent(displayAgentPosition),
+                    scale: isPlaying ? [1, 1.15, 1] : 1,
+                    rotateY: 0
+                  }}
+                  style={{
+                    width: `${100 / GRID_SIZE}%`,
+                    height: `${100 / GRID_SIZE}%`,
+                    x: '-50%',
+                    y: '-50%',
+                  }}
+                >
+                  <SocialAgent isMoving={isPlaying} />
+                </motion.div>
+              </div>
             )}
 
             {showTravelArrow && !currentPositionPoint && (
@@ -1109,10 +1116,10 @@ export const GridVisualization: React.FC<GridVisualizationProps> = ({
                   </marker>
                 </defs>
                 <line
-                  x1={`${mapPoint(prevPosition).x / MAP_SIZE * 100}%`}
-                  y1={`${mapPoint(prevPosition).y / MAP_SIZE * 100}%`}
-                  x2={`${mapPoint(agent.position).x / MAP_SIZE * 100}%`}
-                  y2={`${mapPoint(agent.position).y / MAP_SIZE * 100}%`}
+                  x1={`${mapGridPoint(prevPosition).x / MAP_SIZE * 100}%`}
+                  y1={`${mapGridPoint(prevPosition).y / MAP_SIZE * 100}%`}
+                  x2={`${mapGridPoint(agent.position).x / MAP_SIZE * 100}%`}
+                  y2={`${mapGridPoint(agent.position).y / MAP_SIZE * 100}%`}
                   stroke="url(#travelGradient)"
                   strokeWidth="4"
                   strokeDasharray="12 6"

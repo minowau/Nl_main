@@ -152,8 +152,11 @@ def _migrate_legacy_json():
                 continue
     if not legacy:
         return
+    existing_default = _execute("SELECT 1 FROM learning_sessions WHERE user_id = 'default'", fetchone=True)
     session = legacy.get("learning_sessions", {}).get("default")
-    if session:
+    if session and not existing_default:
+        if not session.get("visitedResources") and session.get("position") == {"x": 10, "y": 10}:
+            session = {**session, "position": {"x": 0, "y": 19}}
         update_session("default", session)
     for summary in legacy.get("summaries", []):
         save_summary(summary, "default")
@@ -185,8 +188,15 @@ def load_db(user_id="default") -> Dict[str, Any]:
 def get_session(user_id="default"):
     row = _execute("SELECT payload FROM learning_sessions WHERE user_id = %s", (user_id,), fetchone=True)
     if row:
-        return dict(row["payload"])
-    session = {"position": {"x": 10, "y": 10}, "level": 1, "totalReward": 0, "visitedResources": [], "notifications": [{"id": "initial", "type": "info", "message": "Welcome back to the Intelligence Hub. Neural Sync complete.", "timestamp": int(datetime.now(tz=timezone.utc).timestamp() * 1000), "read": False}]}
+        payload = dict(row["payload"])
+        # Auto-migrate legacy (10, 10) starting position to bottom-left origin (0, 19) for fresh users
+        if payload.get("position") == {"x": 10, "y": 10} and not payload.get("visitedResources"):
+            has_summary = _execute("SELECT 1 FROM summaries WHERE user_id = %s LIMIT 1", (user_id,), fetchone=True)
+            if not has_summary:
+                payload["position"] = {"x": 0, "y": 19}
+                update_session(user_id, payload)
+        return payload
+    session = {"position": {"x": 0, "y": 19}, "level": 1, "totalReward": 0, "visitedResources": [], "notifications": [{"id": "initial", "type": "info", "message": "Welcome back to the Intelligence Hub. Neural Sync complete.", "timestamp": int(datetime.now(tz=timezone.utc).timestamp() * 1000), "read": False}]}
     _execute("INSERT INTO learning_sessions (user_id, payload) VALUES (%s, %s) ON CONFLICT (user_id) DO NOTHING", (user_id, Json(session)))
     return session
 
@@ -240,7 +250,7 @@ def reset_session_data(user_id):
     for table in ("summaries", "polylines"):
         _execute(f"DELETE FROM {table} WHERE user_id = %s", (user_id,))
     _execute("INSERT INTO history_archive (user_id, payload) VALUES (%s, %s)", (user_id, Json({"reset_at": datetime.now(tz=timezone.utc).isoformat()})))
-    session = {"position": {"x": 10, "y": 10}, "level": 1, "totalReward": 0, "visitedResources": [], "notifications": []}
+    session = {"position": {"x": 0, "y": 19}, "level": 1, "totalReward": 0, "visitedResources": [], "notifications": []}
     update_session(user_id, session)
     return session
 

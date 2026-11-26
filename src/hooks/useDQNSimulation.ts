@@ -5,7 +5,7 @@ export interface Agent extends AgentState {}
 
 export const useDQNSimulation = () => {
   const [agent, setAgent] = useState<Agent>({
-    position: { x: 10, y: 10 },
+    position: { x: 0, y: 19 },
     level: 1,
     totalReward: 0,
     visitedResources: []

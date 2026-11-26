@@ -26,7 +26,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [agent, setAgent] = useState<AgentState>({
-    position: { x: 10, y: 10 },
+    position: { x: 0, y: 19 },
     level: 1,
     totalReward: 0,
     visitedResources: []
